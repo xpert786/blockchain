@@ -1,24 +1,3 @@
-// import React from "react";
-// import Hero from "./Hero";
-// import AboutPreview from "./AboutPreview";
-// import Testimonials from "./Testimonials";
-// import ContactUs from "./ContactUs";
-
-
-
-// const HomeMain = () => {
-//   return (
-//     <>
-//       <Hero />
-//        <AboutPreview />
-//       <Testimonials />
-//       <ContactUs/> 
-//     </>
-//   );
-// };
-
-// export default HomeMain;
-
 import React from "react";
 import Hero from "./Hero";
 import AboutPreview from "./AboutPreview";

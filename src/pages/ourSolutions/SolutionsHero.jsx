@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const SolutionsHero = () => {
+const SolutionsHero = ({ onContactClick }) => {
   return (
     <section className="bg-[#001D21] text-white text-center py-40 px-6 md:px-12 ">
       {/* Heading with gradient text */}
@@ -19,14 +19,19 @@ const SolutionsHero = () => {
       </p>
 
       {/* Contact Us Button */}
-      <Link
-        to="/contact"
+       <button
+        onClick={onContactClick}
         className="inline-block bg-[#00E6CC] text-[#001D21] font-semibold px-6 py-2 rounded-md hover:bg-[#00ccb3] transition-all duration-300"
       >
         Contact Us
-      </Link>
+      </button>
     </section>
   );
 };
 
 export default SolutionsHero;
+
+
+
+
+
