@@ -34,7 +34,9 @@ export default defineConfig({
   theme: {
     extend: {
       fontFamily: {
-        aeonik: ['Aeonik', 'sans-serif'],
+        'aeonik': ['Aeonik', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        'poppins': ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        'sans': ['Aeonik', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       animation: {
         'blob': 'blob 7s infinite',

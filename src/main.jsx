@@ -4,9 +4,6 @@ import App from "./App.jsx";
 import "./index.css";
 import './fonts.css';
 
-
-
-
 // 🟢 Ye import add karo
 import { BrowserRouter } from "react-router-dom";
 

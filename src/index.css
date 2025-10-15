@@ -1,6 +1,22 @@
 @import './fonts.css';
 @import "tailwindcss";
 
+/* Import Poppins from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Custom Font Classes */
+.font-poppins-custom {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Global Font Application */
+* {
+  font-family: 'Aeonik', ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  font-family: 'Aeonik', ui-sans-serif, system-ui, sans-serif;
+}
 
 .no-scrollbar {
   -ms-overflow-style: none; /* IE and Edge */
@@ -8,4 +24,14 @@
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
+}
+
+/* Grid Pattern for Login Background */
+.grid-pattern {
+  background-image: 
+    linear-gradient(rgba(0, 240, 195, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 195, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  transform: perspective(1000px) rotateX(60deg);
+  transform-origin: center bottom;
 }
