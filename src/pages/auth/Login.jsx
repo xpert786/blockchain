@@ -1,13 +1,17 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import bgImage from "../../assets/img/bg-images.png";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
     rememberMe: false,
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -17,9 +21,90 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login form submitted:", formData);
+    setLoading(true);
+    setError("");
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL;
+      console.log("API_URL:", API_URL);
+      
+      const finalUrl = `${API_URL.replace(/\/$/, "")}/users/login/`;
+      console.log("Final URL:", finalUrl);
+      
+      const payload = {
+        username: formData.username,
+        password: formData.password,
+      };
+      console.log("Payload:", payload);
+
+      const response = await axios.post(finalUrl, payload, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+
+      console.log("Login successful:", response.data);
+
+      // Save tokens if returned
+      if (response.data?.tokens) {
+        localStorage.setItem("accessToken", response.data.tokens.access);
+        localStorage.setItem("refreshToken", response.data.tokens.refresh);
+        
+        // Save user data
+        localStorage.setItem("userData", JSON.stringify({
+          user_id: response.data.user_id,
+          username: response.data.username,
+          email: response.data.email,
+          role: response.data.role,
+          is_active: response.data.is_active,
+          date_joined: response.data.date_joined,
+        }));
+      }
+
+      // Navigate based on user role
+      const userRole = response.data?.role || JSON.parse(localStorage.getItem("userData") || "{}").role;
+      console.log("User role:", userRole);
+      
+      if (userRole === "syndicate_manager") {
+        navigate("/syndicate-creation");
+      } else if (userRole === "investor") {
+        navigate("/");
+      } else {
+        // Default fallback
+        navigate("/");
+      }
+      
+    } catch (err) {
+      console.error("Login error:", err);
+      console.error("Error response:", err.response);
+      console.error("Error status:", err.response?.status);
+      console.error("Error data:", err.response?.data);
+      
+      const backendData = err.response?.data;
+      if (backendData) {
+        if (typeof backendData === "object") {
+          // Handle specific field errors
+          if (backendData.non_field_errors) {
+            setError(backendData.non_field_errors[0]);
+          } else if (backendData.username) {
+            setError(backendData.username[0]);
+          } else if (backendData.password) {
+            setError(backendData.password[0]);
+          } else {
+            setError(JSON.stringify(backendData));
+          }
+        } else {
+          setError(String(backendData));
+        }
+      } else {
+        setError(err.message || "Login failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,20 +135,23 @@ const Login = () => {
               <p className="text-[#0A2A2E] font-poppins-custom">Sign in to your account to continue</p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Email */}
+              {error && <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">{error}</div>}
+              
+              {/* Username */}
               <div>
-                <label htmlFor="email" className="block text-sm  text-[#0A2A2E] font-poppins-custom mb-2">
-                  Email
+                <label htmlFor="username" className="block text-sm  text-[#0A2A2E] font-poppins-custom mb-2">
+                  Username
                 </label>
                 <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
+                  type="text"
+                  id="username"
+                  name="username"
+                  value={formData.username}
                   onChange={handleInputChange}
-                  placeholder="Enter your email"
+                  placeholder="Enter your username"
                   className="w-full px-4 py-3 !border !border-0.5px border-[#0A2A2E] bg-[#F4F6F5] rounded-lg outline-none "
                   required
+                  disabled={loading}
                 />
               </div>
 
@@ -82,6 +170,7 @@ const Login = () => {
                     placeholder="Enter your password"
                     className="w-full px-4 py-3 pr-12 !border border-0.5px border-[#0A2A2E] bg-[#F4F6F5] rounded-lg outline-none "
                     required
+                    disabled={loading}
                   />
                   <button
                     type="button"
@@ -128,9 +217,10 @@ const Login = () => {
             
               <button
                 type="submit"
-                className="w-30 bg-[#00F0C3] text-[#0A2A2E] font-semibold py-3 px-4 rounded-lg hover:bg-[#00E6B0] transition-colors duration-200 cursor-pointer"
+                disabled={loading}
+                className="w-30 bg-[#00F0C3] text-[#0A2A2E] font-semibold py-3 px-4 rounded-lg hover:bg-[#00E6B0] transition-colors duration-200 cursor-pointer disabled:opacity-50"
               >
-                Log In
+                {loading ? "Logging In..." : "Log In"}
               </button>
 
 

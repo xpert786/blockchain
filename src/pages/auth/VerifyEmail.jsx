@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import bgImage from "../../assets/img/bg-images.png";
 import { VerifyemailIcon } from "../../components/Icons";
 
 const VerifyEmail = () => {
   const navigate = useNavigate();
-  const [otp, setOtp] = useState(["5", "5", "5", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [showPopup, setShowPopup] = useState(false);
   const [email] = useState("john@gmail.com");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleInputChange = (index, value) => {
     if (value.length <= 1 && /^\d*$/.test(value)) {
@@ -30,12 +33,54 @@ const VerifyEmail = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
+    
     const otpCode = otp.join("");
     console.log("OTP submitted:", otpCode);
-    // Show success popup
-    setShowPopup(true);
+    
+    try {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const finalUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/verify_code/`;
+      
+      const payload = {
+        code: otpCode,
+        method: "email"
+      };
+
+      // Get access token from localStorage
+      const accessToken = localStorage.getItem("accessToken");
+      
+      if (!accessToken) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      const response = await axios.post(finalUrl, payload, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+
+      console.log("Email verification successful:", response.data);
+      
+      // Show success popup
+      setShowPopup(true);
+      
+    } catch (err) {
+      console.error("Error verifying email:", err);
+      const backendData = err.response?.data;
+      if (backendData) {
+        setError(typeof backendData === "object" ? JSON.stringify(backendData) : String(backendData));
+      } else {
+        setError(err.message || "Failed to verify email.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleClosePopup = () => {
@@ -93,6 +138,7 @@ const VerifyEmail = () => {
                       onKeyDown={(e) => handleKeyDown(index, e)}
                       className="w-12 h-12 text-center text-xl font-semibold border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CEC6FF] focus:border-transparent"
                       maxLength={1}
+                      disabled={loading}
                     />
                     {index === 2 && (
                       <span className="mx-2 text-gray-400">-</span>
@@ -101,12 +147,14 @@ const VerifyEmail = () => {
                 ))}
               </div>
 
+              {error && <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">{error}</div>}
 
               <button
                 type="submit"
-                className="w-40 bg-[#00F0C3] text-[#0A2A2E] font-semibold py-3 px-4 rounded-lg hover:bg-[#00E6B0] transition-colors duration-200 cursor-pointer"
+                disabled={loading}
+                className="w-40 bg-[#00F0C3] text-[#0A2A2E] font-semibold py-3 px-4 rounded-lg hover:bg-[#00E6B0] transition-colors duration-200 cursor-pointer disabled:opacity-50"
               >
-                Verify Account
+                {loading ? "Verifying..." : "Verify Account"}
               </button>
             </form>
 

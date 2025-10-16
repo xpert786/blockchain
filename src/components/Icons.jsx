@@ -79,11 +79,67 @@ export const PhoneIcon = () => (
 
 );
 
+export const LeadIcon = () => (
+<svg width="62" height="62" viewBox="0 0 62 62" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M1.8335 60.1667H60.1668M48.5002 22.25H36.8335C29.5943 22.25 28.0835 23.7608 28.0835 31V60.1667H57.2502V31C57.2502 23.7608 55.7393 22.25 48.5002 22.25Z" stroke="#01373D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M39.75 60.1663H4.75V10.583C4.75 3.34384 6.26083 1.83301 13.5 1.83301H31C38.2392 1.83301 39.75 3.34384 39.75 10.583V22.2497M4.75 13.4997H13.5M4.75 25.1663H13.5M4.75 36.833H13.5M39.75 33.9163H45.5833M39.75 42.6663H45.5833M42.6667 60.1663V51.4163" stroke="#01373D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+
+);
+
+
+
+export const UpsyndicateIcon = () => (
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M17 8L12 3L7 8" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M12 3V15" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+);
+
+export const RightsIcon = () => (
+<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_418_176)">
+<path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<defs>
+<clipPath id="clip0_418_176">
+<rect width="18" height="18" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
+);
+
+
 // export const HomeIcon = () => (
 
 // );
 
+
 // export const HomeIcon = () => (
 
 // );
+
+
+// export const HomeIcon = () => (
+
+// );
+
+
+// export const HomeIcon = () => (
+
+// );
+
+
+// export const HomeIcon = () => (
+
+// );
+
+
+// export const HomeIcon = () => (
+
+// );
+
 

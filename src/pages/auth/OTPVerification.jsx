@@ -5,7 +5,7 @@ import bgImage from "../../assets/img/bg-images.png";
 const OTPVerification = () => {
   const navigate = useNavigate();
   const [otp, setOtp] = useState(["", "", "", ""]);
-  const [email] = useState("john@gmail.com"); // This would come from props or state
+  const [email] = useState("john@gmail.com"); 
 
   const handleInputChange = (index, value) => {
     if (value.length <= 1 && /^\d*$/.test(value)) {

@@ -20,6 +20,14 @@ import VerifyEmail from "./pages/auth/VerifyEmail";
 import VerifyPhone from "./pages/auth/VerifyPhone";
 import TermsOfService from "./pages/auth/TermsOfService";
 
+// Syndicate Creation pages
+import SyndicateLayout from "./pages/syndicateCreation/SyndicateLayout";
+import LeadInfo from "./pages/syndicateCreation/LeadInfo";
+import EntityProfile from "./pages/syndicateCreation/EntityProfile";
+import KYBVerification from "./pages/syndicateCreation/KYBVerification";
+import ComplianceAttestation from "./pages/syndicateCreation/ComplianceAttestation";
+import FinalReview from "./pages/syndicateCreation/FinalReview";
+
 const App = () => {
   return (
     <Routes>
@@ -45,7 +53,16 @@ const App = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/otp-verification" element={<OTPVerification />} />
       <Route path="/set-new-password" element={<SetNewPassword />} />
-      
+
+      {/* Syndicate Creation Routes (with Layout) */}
+      <Route path="/syndicate-creation" element={<SyndicateLayout />}>
+        <Route index element={<LeadInfo />} />
+        <Route path="lead-info" element={<LeadInfo />} />
+        <Route path="entity-profile" element={<EntityProfile />} />
+        <Route path="kyb-verification" element={<KYBVerification />} />
+        <Route path="compliance-attestation" element={<ComplianceAttestation />} />
+        <Route path="final-review" element={<FinalReview />} />
+      </Route>
 
     </Routes>
   );

@@ -1,17 +1,70 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import bgImage from "../../assets/img/bg-images.png";
 import {EmailIcon, PhoneIcon} from "../../components/Icons";
 
 const SecureAccount2FA = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleVerificationMethod = async (method) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const finalUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/choose_verification_method/`;
+      
+      const payload = {
+        method: method
+      };
+
+      // Get access token from localStorage
+      const accessToken = localStorage.getItem("accessToken");
+      
+      if (!accessToken) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      console.log("Sending verification method:", payload);
+      const response = await axios.post(finalUrl, payload, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      console.log("Verification method set successfully:", response.data);
+      
+      // Navigate based on method
+      if (method === "email") {
+        navigate("/verify-email");
+      } else if (method === "sms") {
+        navigate("/verify-phone");
+      }
+      
+    } catch (err) {
+      console.error("Error setting verification method:", err);
+      const backendData = err.response?.data;
+      if (backendData) {
+        setError(typeof backendData === "object" ? JSON.stringify(backendData) : String(backendData));
+      } else {
+        setError(err.message || "Failed to set verification method.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEmailClick = () => {
-    navigate("/verify-email");
+    handleVerificationMethod("email");
   };
 
   const handlePhoneClick = () => {
-    navigate("/verify-phone");
+    handleVerificationMethod("sms");
   };
 
   return (
@@ -40,11 +93,13 @@ const SecureAccount2FA = () => {
               <p className="text-[#0A2A2E] font-poppins-custom">Two-Factor Authentication adds an extra security layer, protecting your account with a code and password.</p>
             </div>
             
+            {error && <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg mb-4">{error}</div>}
+
             <div className="space-y-4">
               {/* Email Option */}
               <div 
                 onClick={handleEmailClick}
-                className="flex items-center p-4 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-200"
+                className={`flex items-center p-4 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-200 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <div className="w-12 h-12 bg-[#CEC6FF] rounded-lg flex items-center justify-center mr-4">
                   <EmailIcon/> 
@@ -60,9 +115,9 @@ const SecureAccount2FA = () => {
                 </div>
               </div>
 
-              {/* Phone Option */}
+              {/* Phone Option - Static Navigation */}
               <div 
-                onClick={handlePhoneClick}
+                onClick={() => navigate("/verify-phone")}
                 className="flex items-center p-4 bg-white border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-200"
               >
                 <div className="w-12 h-12 bg-[#CEC6FF] rounded-lg flex items-center justify-center mr-4">
