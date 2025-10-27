@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// import bgImage from "../../assets/img/bg-images.png";
+import bgImage from "../../assets/img/bg-images.png";
+import loginLogo from "../../assets/img/loginlogo.png";
 import { VerifyemailIcon } from "../../components/Icons";
 
 const VerifyPhone = () => {
@@ -53,7 +54,7 @@ const VerifyPhone = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative" style={{ backgroundImage: `url(${import.meta.env.BASE_URL}bg-images.png)`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
+    <div className="min-h-screen flex items-center justify-center p-4 relative" style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
 
       {/* Left Panel */}
       <div className="flex w-full max-w-5xl h-[650px] bg-white rounded-3xl overflow-hidden relative">
@@ -63,7 +64,7 @@ const VerifyPhone = () => {
           <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col items-center justify-center relative">
             <h2 className="absolute top-6 left-6 text-2xl font-bold text-[#01373D] font-poppins-custom">Logo</h2>
             <img
-              src="/loginlogo.png"
+              src={loginLogo}
               alt="Profile"
               className="w-60 h-[360px] object-cover rounded-xl"
             />

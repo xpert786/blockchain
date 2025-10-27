@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// import bgImage from "../../assets/img/bg-images.png";
+import bgImage from "../../assets/img/bg-images.png";
 
 const TermsOfService = () => {
   const navigate = useNavigate();
@@ -37,7 +37,7 @@ const TermsOfService = () => {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${import.meta.env.BASE_URL}bg-images.png)`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
 
       {/* Main Container */}
       <div className="w-full max-w-4xl bg-white rounded-3xl p-6">
