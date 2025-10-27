@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import unlockLogo from "../../assets/img/unlocklogo.png";
 
 const SyndicateSuccess = () => {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ const SyndicateSuccess = () => {
             {/* Left side - Logo */}
             <div className="flex items-center gap-3">
               <img
-                src={`${import.meta.env.BASE_URL}unlocklogo.png`}
+                src={unlockLogo}
                 alt="UNLOCKSLEY Logo"
                 className="w-25 h-15 object-contain"
               />

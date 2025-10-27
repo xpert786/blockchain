@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+// import logoImage from "../assets/img/logo.png";
 
 const Header = () => {
     const [activeTab, setActiveTab] = useState("syndicate");

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-// import logoImage from "../../assets/img/image 5746.png";
+import logoImage from "../../assets/img/image 5746.png";
 
 const ManagerLayout = () => {
   const navigate = useNavigate();
@@ -128,7 +128,7 @@ const ManagerLayout = () => {
         {/* Logo */}
         <div className="p-6 border-b border-gray-700">
           <img 
-            src={`${import.meta.env.BASE_URL}image 5746.png`} 
+            src={logoImage} 
             alt="Logo" 
             className="h-12 w-auto object-contain"
           />

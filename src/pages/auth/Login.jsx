@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-// import bgImage from "../../assets/img/bg-images.png";
+import bgImage from "../../assets/img/bg-images.png";
+import loginLogo from "../../assets/img/loginlogo.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -108,7 +109,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${import.meta.env.BASE_URL}bg-images.png)`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
 
 
       {/* Left Panel */}
@@ -119,7 +120,7 @@ const Login = () => {
           <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col items-center justify-center relative">
             <h2 className="absolute top-6 left-6 text-2xl font-bold text-[#01373D] font-poppins-custom">Logo</h2>
             <img
-              src="/loginlogo.png"
+              src={loginLogo}
               alt="Profile"
               className="w-60 h-[360px] object-cover rounded-xl"
             />

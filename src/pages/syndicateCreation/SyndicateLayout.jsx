@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import {RightsIcon} from "../../components/Icons";
+import unlockLogo from "../../assets/img/unlocklogo.png";
 
 const SyndicateLayout = () => {
   const [activeStep, setActiveStep] = useState("lead-info");
@@ -38,7 +39,7 @@ const SyndicateLayout = () => {
             {/* Left side - Logo */}
             <div className="flex items-center gap-3">
               <img
-                src={`${import.meta.env.BASE_URL}unlocklogo.png`}
+                src={unlockLogo}
                 alt="UNLOCKSLEY Logo"
                 className="w-25 h-15 object-contain"
               />

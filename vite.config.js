@@ -6,4 +6,20 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   base: '/blockchain-frontend/',
   plugins: [react(), tailwindcss()],
+  base: './',
+  build: {
+    assetsDir: 'assets',
+    outDir: 'dist',
+    rollupOptions: {
+      output: {
+        assetFileNames: 'assets/[name].[hash].[ext]',
+        chunkFileNames: 'assets/[name].[hash].js',
+        entryFileNames: 'assets/[name].[hash].js'
+      }
+    }
+  },
+  server: {
+    port: 3000,
+    open: true
+  }
 })
