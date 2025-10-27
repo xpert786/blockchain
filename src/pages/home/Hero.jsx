@@ -1,4 +1,5 @@
 import React from "react";
+import fullImg from "../../assets/img/fullimg.png";
 
 const Hero = () => {
   return (
@@ -9,7 +10,7 @@ const Hero = () => {
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: "url('/fullimg.png')",
+          backgroundImage: `url(${fullImg})`,
         }}
       />
 

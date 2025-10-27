@@ -288,11 +288,18 @@ const ManageDocuments = () => {
                   {doc.status}
                 </span>
                 <div className="flex items-center space-x-2">
-                  <button className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg text-sm font-medium transition-colors">
-                    Preview
+                  <button className="p-2 text-[#00F0C3] hover:text-[#00D4A3] transition-colors border border-gray-300 rounded-lg bg-white">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
                   </button>
-                  <button className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg text-sm font-medium transition-colors">
-                    Download
+                  <button className="p-2 text-[#00F0C3] hover:text-[#00D4A3] transition-colors border border-gray-300 rounded-lg bg-white">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                      <path d="M7 10l5 5 5-5" />
+                      <path d="M12 15V3" />
+                    </svg>
                   </button>
                   {doc.status === "Draft" && (
                     <button className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors">
