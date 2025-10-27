@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import config from "../../utils/config";
-import { getImageUrl } from "../../utils/imageUtils";
+import bgImage from "../../assets/img/bg-images.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -28,7 +27,10 @@ const Login = () => {
     setError("");
 
     try {
-      const finalUrl = config.getApiUrl('users/login/');
+      const API_URL = import.meta.env.VITE_API_URL;
+      console.log("API_URL:", API_URL);
+      
+      const finalUrl = `${API_URL.replace(/\/$/, "")}/users/login/`;
       console.log("Final URL:", finalUrl);
       
       const payload = {
@@ -106,7 +108,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${getImageUrl('assets/img/bg-images.png')})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
 
 
       {/* Left Panel */}

@@ -2,7 +2,6 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import HomeMain from "./pages/home/HomeMain";
-import ImageTest from "./components/ImageTest";
 
 // Solutions pages
 import SolutionsLayout from "./pages/ourSolutions/SolutionsLayout";
@@ -62,9 +61,6 @@ const App = () => {
           <Route path=":slug" element={<SolutionDetail />} />
         </Route>
       </Route>
-
-      {/* Test Route */}
-      <Route path="/test-images" element={<ImageTest />} />
 
       {/* Auth Routes (without Layout) */}
       <Route path="/login" element={<Login />} />
