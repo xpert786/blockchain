@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { getImageUrl } from "../utils/imageUtils";
 
 const Header = () => {
     const [activeTab, setActiveTab] = useState("syndicate");
@@ -22,7 +23,7 @@ const Header = () => {
                 {/* Logo */}
                 <div className="flex items-center gap-2">
                     <img
-                        src="/logo.png"
+                        src={getImageUrl("/logo.png")}
                         alt="Unlocksley Logo"
                         className="h-15 w-15 md:h-16 md:w-15 lg:h-15 lg:w-15"
                     />

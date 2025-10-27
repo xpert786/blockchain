@@ -4,9 +4,8 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/blockchain-frontend/',
+  base: process.env.NODE_ENV === 'production' ? '/blockchain-frontend/' : '/',
   plugins: [react(), tailwindcss()],
-  base: process.env.NODE_ENV === 'production' ? '/' : '/',
   server: {
     port: 5173,
     host: true

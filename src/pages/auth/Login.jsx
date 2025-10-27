@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import config from "../../utils/config";
-import bgImage from "../../assets/img/bg-images.png";
+import { getImageUrl } from "../../utils/imageUtils";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -106,7 +106,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${getImageUrl('assets/img/bg-images.png')})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
 
 
       {/* Left Panel */}

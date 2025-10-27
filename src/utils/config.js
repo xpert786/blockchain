@@ -1,13 +1,13 @@
 // Environment configuration utility
 const config = {
   // Base URL for the application
-  baseUrl: import.meta.env.VITE_BASE_URL || 'http://localhost:5173',
+  baseUrl: import.meta.env.VITE_BASE_URL || (import.meta.env.PROD ? 'https://yourdomain.com/blockchain-frontend' : 'http://localhost:5173'),
   
   // API Base URL
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? 'https://yourdomain.com/api' : 'http://localhost:3000/api'),
   
   // Static Assets Base URL
-  staticBaseUrl: import.meta.env.VITE_STATIC_BASE_URL || 'http://localhost:5173',
+  staticBaseUrl: import.meta.env.VITE_STATIC_BASE_URL || (import.meta.env.PROD ? 'https://yourdomain.com/blockchain-frontend' : 'http://localhost:5173'),
   
   // Environment
   nodeEnv: import.meta.env.VITE_NODE_ENV || 'development',
