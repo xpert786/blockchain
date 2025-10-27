@@ -26,7 +26,7 @@ const SyndicateSuccess = () => {
             {/* Left side - Logo */}
             <div className="flex items-center gap-3">
               <img
-                src="/src/assets/img/unlocklogo.png"
+                src={`${import.meta.env.BASE_URL}unlocklogo.png`}
                 alt="UNLOCKSLEY Logo"
                 className="w-25 h-15 object-contain"
               />

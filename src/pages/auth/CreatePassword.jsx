@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import bgImage from "../../assets/img/bg-images.png";
+// import bgImage from "../../assets/img/bg-images.png";
 
 const CreatePassword = () => {
   const navigate = useNavigate();
@@ -86,7 +86,7 @@ const CreatePassword = () => {
     <div
       className="min-h-screen flex items-center justify-center p-4"
       style={{
-        backgroundImage: `url(${bgImage})`,
+        backgroundImage: `url(${import.meta.env.BASE_URL}bg-images.png)`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",

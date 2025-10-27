@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import bgImage from "../../assets/img/bg-images.png";
+// import bgImage from "../../assets/img/bg-images.png";
 import {EmailIcon, PhoneIcon} from "../../components/Icons";
 
 const SecureAccount2FA = () => {
@@ -68,7 +68,7 @@ const SecureAccount2FA = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${import.meta.env.BASE_URL}bg-images.png)`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
 
       {/* Left Panel */}
       <div className="flex w-full max-w-5xl h-[650px] bg-white rounded-3xl overflow-hidden">
