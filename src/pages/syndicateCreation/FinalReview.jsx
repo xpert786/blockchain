@@ -42,8 +42,7 @@ const FinalReview = () => {
     // Simulate API call
     setTimeout(() => {
       setIsSubmitting(false);
-      alert("Application submitted successfully! You will receive a confirmation email shortly.");
-      navigate("/");
+      navigate("/syndicate-creation/success");
     }, 2000);
   };
 

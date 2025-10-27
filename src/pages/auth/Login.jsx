@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import config from "../../utils/config";
 import bgImage from "../../assets/img/bg-images.png";
 
 const Login = () => {
@@ -27,10 +28,7 @@ const Login = () => {
     setError("");
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL;
-      console.log("API_URL:", API_URL);
-      
-      const finalUrl = `${API_URL.replace(/\/$/, "")}/users/login/`;
+      const finalUrl = config.getApiUrl('users/login/');
       console.log("Final URL:", finalUrl);
       
       const payload = {
