@@ -82,7 +82,7 @@ const Login = () => {
       console.error("Login error:", err);
       console.error("Error response:", err.response);
       console.error("Error status:", err.response?.status);
-      console.error("Error data:", err.response?.data);
+      // console.error("Error data:", err.response?.data);
       
       const backendData = err.response?.data;
       if (backendData) {

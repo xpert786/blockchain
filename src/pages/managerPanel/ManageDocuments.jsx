@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Files2Icon, WatchsIcon, SecondFilesIcon,RightssIcon,View1Icon,View2Icon,View3Icon } from "../../components/Icons";
+import { Files2Icon, WatchsIcon, SecondFilesIcon,RightssIcon,View1Icon,View2Icon,View3Icon, FilesaddIcon } from "../../components/Icons";
 
 const ManageDocuments = () => {
   const navigate = useNavigate();
@@ -252,8 +252,32 @@ const ManageDocuments = () => {
           <div key={doc.id} className="bg-white rounded-lg p-6 border border-gray-200">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h3 className="text-lg font-medium text-gray-900 mb-1">{doc.title}</h3>
-                <p className="text-sm text-gray-600 mb-4">{doc.subtitle}</p>
+                <div className="flex items-center space-x-2 mb-1">
+                  <FilesaddIcon />
+                  <h3 className="text-lg font-medium text-gray-900">{doc.title}</h3>
+                </div>
+                <div className="flex items-center text-sm text-gray-600 mb-4">
+                  <svg className="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span className="mr-2">{doc.subtitle.split(' • ')[0]}</span>
+                  <svg className="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span className="mr-2">{doc.subtitle.split(' • ')[1]}</span>
+                  <svg className="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="mr-2">{doc.subtitle.split(' • ')[2]}</span>
+                  {doc.subtitle.split(' • ')[3] && (
+                    <>
+                      <svg className="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      <span>{doc.subtitle.split(' • ')[3]}</span>
+                    </>
+                  )}
+                </div>
                 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div>
@@ -275,12 +299,40 @@ const ManageDocuments = () => {
                 </div>
 
                 {doc.alert && (
-                  <div className={`p-3 rounded-lg mb-4 ${
-                    doc.alert.includes('Admin Review') ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800'
+                  <div className={`p-3 rounded-lg mb-4 flex items-center ${
+                    doc.alert.includes('Admin Review') ? 'bg-[#00CC991A] text-black' : 'bg-[#FFD9661A] text-black'
                   }`}>
+                    {doc.alert.includes('Admin Review') ? (
+                      <svg className="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    )}
                     <p className="text-sm font-medium">{doc.alert}</p>
                   </div>
                 )}
+
+                {/* Bottom Action Buttons */}
+                <div className="flex items-center space-x-3 mt-4">
+                  <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg bg-[#F4F6F5] text-black hover:bg-gray-200 transition-colors">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <span className="text-sm font-medium">Preview</span>
+                  </button>
+                  <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg bg-[#F4F6F5] text-black hover:bg-gray-200 transition-colors">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 10l5 5 5-5" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15V3" />
+                    </svg>
+                    <span className="text-sm font-medium">Download</span>
+                  </button>
+                </div>
               </div>
 
               <div className="flex items-center space-x-3 ml-6">
@@ -288,13 +340,13 @@ const ManageDocuments = () => {
                   {doc.status}
                 </span>
                 <div className="flex items-center space-x-2">
-                  <button className="p-2 text-[#00F0C3] hover:text-[#00D4A3] transition-colors border border-gray-300 rounded-lg bg-white">
+                  <button className="p-2 text-black hover:text-gray-800 transition-colors border border-gray-300 rounded-lg bg-white">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                       <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   </button>
-                  <button className="p-2 text-[#00F0C3] hover:text-[#00D4A3] transition-colors border border-gray-300 rounded-lg bg-white">
+                  <button className="p-2 text-black hover:text-gray-800 transition-colors border border-gray-300 rounded-lg bg-white">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                       <path d="M7 10l5 5 5-5" />
@@ -312,7 +364,7 @@ const ManageDocuments = () => {
                         e.stopPropagation();
                         setOpenDropdown(openDropdown === doc.id ? null : doc.id);
                       }}
-                      className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                      className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
                     >
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                         <circle cx="12" cy="5" r="2"/>

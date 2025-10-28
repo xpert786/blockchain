@@ -1,108 +1,149 @@
-import React from "react";
-import {SignsIcon} from "../../components/Icons";
+import React, { useState } from "react";
+
 const SPVActivity = () => {
+  const [filter, setFilter] = useState("all");
+
   const activities = [
     {
       id: 1,
-      title: "New Investor Joined",
-      details: "Michael Investor - $50,000",
-      timestamp: "4 hours ago",
-      type: "investor"
+      type: "investment",
+      title: "New Investment Received",
+      description: "John Smith invested $50,000 in the SPV",
+      timestamp: "2 hours ago",
+      user: "John Smith",
+      amount: "$50,000",
+      icon: "💰",
+      color: "text-green-600"
     },
     {
       id: 2,
-      title: "Document Updated",
-      details: "Private Placement Memorandum v2.1",
+      type: "document",
+      title: "Document Uploaded",
+      description: "Investment Agreement v1.2 uploaded by John Manager",
       timestamp: "4 hours ago",
-      type: "document"
+      user: "John Manager",
+      document: "Investment Agreement v1.2",
+      icon: "📄",
+      color: "text-blue-600"
     },
     {
       id: 3,
-      title: "Fundraising Milestone",
-      details: "90% of target amount raised",
-      timestamp: "4 hours ago",
-      type: "milestone"
+      type: "status",
+      title: "Status Updated",
+      description: "SPV status changed from 'Draft' to 'Raising'",
+      timestamp: "1 day ago",
+      user: "System",
+      status: "Draft → Raising",
+      icon: "🔄",
+      color: "text-yellow-600"
+    },
+    {
+      id: 4,
+      type: "investor",
+      title: "Investor Invited",
+      description: "Sarah Johnson was invited to join the SPV",
+      timestamp: "2 days ago",
+      user: "John Manager",
+      investor: "Sarah Johnson",
+      icon: "👤",
+      color: "text-purple-600"
+    },
+    {
+      id: 5,
+      type: "document",
+      title: "Document Signed",
+      description: "Term Sheet signed by Michael Brown",
+      timestamp: "3 days ago",
+      user: "Michael Brown",
+      document: "Term Sheet",
+      icon: "✍️",
+      color: "text-green-600"
+    },
+    {
+      id: 6,
+      type: "system",
+      title: "SPV Created",
+      description: "Tech Startup Fund Q4 2024 SPV was created",
+      timestamp: "1 week ago",
+      user: "John Manager",
+      spv: "Tech Startup Fund Q4 2024",
+      icon: "🏗️",
+      color: "text-indigo-600"
     }
   ];
 
-  const getActivityIcon = (type) => {
-    switch (type) {
-      case "investor":
-        return (
-          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-        );
-      case "document":
-        return (
-          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-        );
-      case "milestone":
-        return (
-          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-          </svg>
-        );
-      default:
-        return (
-          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-        );
-    }
-  };
+  const filters = [
+    { id: "all", label: "All Activity", count: activities.length },
+    { id: "investment", label: "Investments", count: activities.filter(a => a.type === "investment").length },
+    { id: "document", label: "Documents", count: activities.filter(a => a.type === "document").length },
+    { id: "status", label: "Status Changes", count: activities.filter(a => a.type === "status").length },
+    { id: "investor", label: "Investors", count: activities.filter(a => a.type === "investor").length }
+  ];
+
+  const filteredActivities = filter === "all" 
+    ? activities 
+    : activities.filter(activity => activity.type === filter);
 
   return (
     <div className="bg-white rounded-lg p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">SPV Documents</h2>
-        
-        {/* Search and Filter */}
-        <div className="flex items-center space-x-4">
-          <div className="relative max-w-md">
-            <input
-              type="text"
-              placeholder="Search SPVs by name, ID, or focus area..."
-              className="w-full pl-10 pr-4 py-2 !border border-[#748A91]  bg-[#F9F8FF] rounded-lg focus:outline-none"
-            />
-            <svg
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z" />
-            </svg>
-            <span className="text=[#0A2A2E]">Filter</span>
+        <h2 className="text-xl font-semibold text-gray-900">Activity Feed</h2>
+        <div className="flex items-center space-x-2">
+          <button className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors">
+            Export
+          </button>
+          <button className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors">
+            Settings
           </button>
         </div>
       </div>
 
-      {/* Activity List */}
+      {/* Filter Tabs */}
+      <div className="flex space-x-1 mb-6">
+        {filters.map((filterItem) => (
+          <button
+            key={filterItem.id}
+            onClick={() => setFilter(filterItem.id)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              filter === filterItem.id
+                ? "bg-[#00F0C3] text-black"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            {filterItem.label} ({filterItem.count})
+          </button>
+        ))}
+      </div>
+
+      {/* Activity Timeline */}
       <div className="space-y-4">
-        {activities.map((activity) => (
-          <div key={activity.id} className="bg-gray-50 rounded-lg p-4 border-l-4 border-purple-500">
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0 mt-1">
-                <SignsIcon className="w-5 h-5 text-gray-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-medium text-gray-900">{activity.title}</h3>
-                <div className="flex items-center space-x-2">
-                  <p className="text-sm text-gray-600">{activity.details}</p>
-                  <div className="flex items-center space-x-1 text-sm text-gray-500">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{activity.timestamp}</span>
+        {filteredActivities.map((activity, index) => (
+          <div key={activity.id} className="flex items-start space-x-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            {/* Timeline Icon */}
+            <div className={`flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg ${activity.color}`}>
+              {activity.icon}
+            </div>
+
+            {/* Activity Content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-gray-900">{activity.title}</h3>
+                  <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
+                  
+                  {/* Activity Details */}
+                  <div className="mt-2 flex items-center space-x-4 text-xs text-gray-500">
+                    <span>By: {activity.user}</span>
+                    {activity.amount && <span>Amount: {activity.amount}</span>}
+                    {activity.document && <span>Document: {activity.document}</span>}
+                    {activity.status && <span>Status: {activity.status}</span>}
+                    {activity.investor && <span>Investor: {activity.investor}</span>}
+                    {activity.spv && <span>SPV: {activity.spv}</span>}
                   </div>
+                </div>
+                
+                <div className="flex-shrink-0 text-xs text-gray-500">
+                  {activity.timestamp}
                 </div>
               </div>
             </div>
@@ -110,15 +151,11 @@ const SPVActivity = () => {
         ))}
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-end mt-6">
-        <div className="flex items-center space-x-2">
-          <button className="px-3 py-1 text-sm text-gray-500 hover:text-gray-700">←</button>
-          <button className="px-3 py-1 text-sm bg-[#00F0C3] text-black rounded">1</button>
-          <button className="px-3 py-1 text-sm text-gray-500 hover:text-gray-700">2</button>
-          <button className="px-3 py-1 text-sm text-gray-500 hover:text-gray-700">3</button>
-          <button className="px-3 py-1 text-sm text-gray-500 hover:text-gray-700">→</button>
-        </div>
+      {/* Load More */}
+      <div className="text-center mt-6">
+        <button className="px-6 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+          Load More Activity
+        </button>
       </div>
     </div>
   );

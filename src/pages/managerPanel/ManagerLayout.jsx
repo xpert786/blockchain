@@ -12,8 +12,12 @@ const ManagerLayout = () => {
     const path = location.pathname;
     if (path.includes('spv-management') || path.includes('spv-details') || path.includes('investor-details')) {
       setActiveMenu('spv-management');
-            } else if (path.includes('documents') || path.includes('document-template-engine') || path.includes('manage-templates') || path.includes('generated-documents') || path.includes('generate-document')) {
-              setActiveMenu('documents');
+    } else if (path.includes('documents') || path.includes('document-template-engine') || path.includes('manage-templates') || path.includes('generated-documents') || path.includes('generate-document')) {
+      setActiveMenu('documents');
+    } else if (path.includes('transfers')) {
+      setActiveMenu('transfers');
+    } else if (path.includes('requests-system')) {
+      setActiveMenu('requests-system');
     } else if (path.includes('dashboard')) {
       setActiveMenu('dashboard');
     } else if (path.includes('notifications')) {
@@ -28,7 +32,7 @@ const ManagerLayout = () => {
     { id: "spv-management", name: "SPV Management", icon: "document", path: "/manager-panel/spv-management" },
     { id: "documents", name: "Documents", icon: "documents", path: "/manager-panel/documents" },
     { id: "transfers", name: "Transfers", icon: "transfers", path: "/manager-panel/transfers" },
-    { id: "requests", name: "Requests System", icon: "requests", path: "/manager-panel/requests" },
+    { id: "requests-system", name: "Requests System", icon: "requests", path: "/manager-panel/requests-system" },
     { id: "analytics", name: "Analytics", icon: "analytics", path: "/manager-panel/analytics" },
     { id: "settings", name: "Settings", icon: "settings", path: "/manager-panel/settings" }
   ];
