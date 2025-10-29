@@ -49,6 +49,8 @@ import GeneratedDocuments from "./pages/managerPanel/GeneratedDocuments";
 import GenerateDocument from "./pages/managerPanel/GenerateDocument";
 import TransferTemp from "./pages/managerPanel/Transfer/TransferTemp";
 import RequestSystem from "./pages/managerPanel/Requests-System/RequestSystem";
+import RequestDetails from "./pages/managerPanel/Requests-System/RequestDetails";
+import SettingsLayout from "./pages/managerPanel/Settings/SettingsLayout";
 
 const App = () => {
   return (
@@ -115,6 +117,8 @@ const App = () => {
                 <Route path="generate-document" element={<GenerateDocument />} />
                 <Route path="transfers" element={<TransferTemp />} />
                 <Route path="requests-system" element={<RequestSystem />} />
+                <Route path="request-details" element={<RequestDetails />} />
+                <Route path="settings/*" element={<SettingsLayout />} />
       </Route>
 
     </Routes>

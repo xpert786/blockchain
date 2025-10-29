@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Files2Icon, WatchsIcon, SecondFilesIcon,RightssIcon,View1Icon,View2Icon,View3Icon, FilesaddIcon,RightLeftErrorIcon, RighIcon, GreenIcon, RedIcon, BlackfileIcon, CrossesIcon  } from "../../../components/Icons";
+import {  WatchsIcon, DollerssIcon,RightssIcon,View1Icon,View2Icon,View3Icon, FilesaddIcon,RightLeftErrorIcon, RighIcon, GreenIcon, RedIcon, BlackfileIcon, CrossesIcon,EyessIcon,RightLeftIcon  } from "../../../components/Icons";
 
 const TransferTemp = () => {
   const navigate = useNavigate();
@@ -171,7 +171,7 @@ const TransferTemp = () => {
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm text-gray-600">Total Transfers</p>
-            <Files2Icon />
+            <RightLeftIcon />
           </div>
           <div className="flex items-center justify-between">
             <p className="text-2xl font-bold text-gray-900">4</p>
@@ -201,7 +201,7 @@ const TransferTemp = () => {
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm text-gray-600">Completed</p>
-            <SecondFilesIcon />
+            <RightssIcon />
           </div>
           <div className="flex items-center justify-between">
             <p className="text-2xl font-bold text-gray-900">1</p>
@@ -216,7 +216,7 @@ const TransferTemp = () => {
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm text-gray-600">Transfer Volumes</p>
-            <RightssIcon />
+            <DollerssIcon/>
           </div>
           <div className="flex items-center justify-between">
             <p className="text-2xl font-bold text-gray-900">$250k</p>
@@ -418,12 +418,7 @@ const TransferTemp = () => {
                     onClick={() => handleReview(transfer)}
                     className="flex items-center space-x-2 bg-white border border-[#01373D] hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors"
                   >
-                    <div className="w-5 h-5 bg-[#F4F6F5] border border-[#01373D] rounded-full flex items-center justify-center">
-                      <svg className="w-3 h-3 text-[#01373D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    </div>
+                    <EyessIcon />
                     <span>Review Details</span>
                   </button>
                 )}

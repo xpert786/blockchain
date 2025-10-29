@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Files2Icon, FilesaddIcon, RightLeftErrorIcon, RighIcon, GreenIcon, RedIcon, BlackfileIcon, CrossesIcon, View1Icon, View2Icon, View3Icon, WatchsIcon, SecondFilesIcon, RightssIcon } from "../../../components/Icons";
+import { RighIcon, GreenIcon,  CrossesIcon, View1Icon, View2Icon, View3Icon, WatchsIcon, SecondFilesIcon, RightssIcon, UpdateSpvIcon, UpdateContactIcon,Users2Icon,Spv2Icon,EyessIcon,RejecIcon,AlertsIcon } from "../../../components/Icons";
 
 const RequestSystem = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [viewMode, setViewMode] = useState("list");
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [showRequestDetails, setShowRequestDetails] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
 
@@ -62,8 +61,7 @@ const RequestSystem = () => {
   };
 
   const handleReview = (request) => {
-    setSelectedRequest(request);
-    setShowRequestDetails(true);
+    navigate('/manager-panel/request-details', { state: { request } });
   };
 
   // Close dropdown when clicking outside
@@ -102,7 +100,7 @@ const RequestSystem = () => {
               </div>
               <div className="flex items-center justify-between">
                 <p className="text-2xl font-bold text-gray-900">2</p>
-                <p className="text-xs text-green-600">+1 this week</p>
+               
               </div>
             </div>
           </div>
@@ -117,7 +115,7 @@ const RequestSystem = () => {
               </div>
               <div className="flex items-center justify-between">
                 <p className="text-2xl font-bold text-gray-900">3</p>
-                <p className="text-xs text-green-600">+2 this week</p>
+                
               </div>
             </div>
           </div>
@@ -128,11 +126,11 @@ const RequestSystem = () => {
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm text-gray-600">Rejected</p>
-                <RedIcon />
+                <RejecIcon />
               </div>
               <div className="flex items-center justify-between">
                 <p className="text-2xl font-bold text-gray-900">2</p>
-                <p className="text-xs text-green-600">+1 this week</p>
+                
               </div>
             </div>
           </div>
@@ -143,11 +141,11 @@ const RequestSystem = () => {
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm text-gray-600">High Priority</p>
-                <RightssIcon />
+                <AlertsIcon />
               </div>
               <div className="flex items-center justify-between">
                 <p className="text-2xl font-bold text-gray-900">1</p>
-                <p className="text-xs text-green-600">+1 this week</p>
+              
               </div>
             </div>
           </div>
@@ -215,19 +213,32 @@ const RequestSystem = () => {
           <div key={request.id} className="bg-white rounded-lg p-6 border border-gray-200">
             <div className="flex items-start space-x-4">
               {/* Avatar */}
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
+              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">AI</span>
               </div>
 
               {/* Content */}
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">{request.title}</h3>
+                <div className="flex items-center space-x-2 mb-1">
+                  {request.title === "Update SPV Investment Terms" && <UpdateSpvIcon />}
+                  {request.title === "Update Contact Information" && <UpdateContactIcon />}
+                  <h3 className="text-lg font-semibold text-gray-900">{request.title}</h3>
+                </div>
                 <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
-                  <span>{request.requester}</span>
-                  <span>{request.date}</span>
-                  <span>{request.spvId}</span>
+                  <div className="flex items-center space-x-1">
+                    <Users2Icon />
+                    <span>{request.requester}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>{request.date}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Spv2Icon />
+                    <span>{request.spvId}</span>
+                  </div>
                 </div>
                 <p className="text-gray-700 mb-4">{request.description}</p>
 
@@ -246,9 +257,9 @@ const RequestSystem = () => {
                     {request.actions.includes("reject") && (
                       <button
                         onClick={() => handleReject(request)}
-                        className="flex items-center space-x-2 bg-white border border-[#01373D] hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        className="flex items-center space-x-2 bg-[#F4F6F5] !border border-[#01373D] hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                       >
-                        <div className="w-5 h-5 border border-[#01373D] rounded-full flex items-center justify-center">
+                        <div className="w-5 h-5 !border border-[#01373D] rounded-full flex items-center justify-center">
                           <svg className="w-3 h-3 text-[#01373D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -259,14 +270,9 @@ const RequestSystem = () => {
                     {request.actions.includes("review") && (
                       <button
                         onClick={() => handleReview(request)}
-                        className="flex items-center space-x-2 bg-white border border-[#01373D] hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        className="flex items-center space-x-2 bg-[#F4F6F5] !border border-[#01373D] hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                       >
-                        <div className="w-5 h-5 bg-[#F4F6F5] border border-[#01373D] rounded-full flex items-center justify-center">
-                          <svg className="w-3 h-3 text-[#01373D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                        </div>
+                        <EyessIcon />
                         <span>Review Details</span>
                       </button>
                     )}
@@ -288,94 +294,6 @@ const RequestSystem = () => {
         ))}
       </div>
 
-      {/* Request Details Modal */}
-      {showRequestDetails && selectedRequest && (
-        <div className="fixed inset-0 bg-[#01373DB2] bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">Request Details</h2>
-                <p className="text-sm text-gray-600">Request ID: {selectedRequest.id}</p>
-              </div>
-              <button
-                onClick={() => setShowRequestDetails(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <CrossesIcon />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-6 space-y-6">
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{selectedRequest.title}</h3>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
-                    <span>{selectedRequest.requester}</span>
-                    <span>{selectedRequest.date}</span>
-                    <span>{selectedRequest.spvId}</span>
-                  </div>
-                  <p className="text-gray-700">{selectedRequest.description}</p>
-                </div>
-              </div>
-
-              {/* Request Information */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Requester</label>
-                  <p className="text-sm text-gray-900">{selectedRequest.requester}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">SPV ID</label>
-                  <p className="text-sm text-gray-900">{selectedRequest.spvId}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Request Date</label>
-                  <p className="text-sm text-gray-900">{selectedRequest.date}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                  <p className="text-sm text-gray-900">{selectedRequest.priority}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
-              <button
-                onClick={() => {
-                  setShowRequestDetails(false);
-                  handleReject(selectedRequest);
-                }}
-                className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-[#01373D] rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <div className="w-5 h-5 border border-[#01373D] rounded-full flex items-center justify-center">
-                  <svg className="w-3 h-3 text-[#01373D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </div>
-                <span>Reject</span>
-              </button>
-              <button
-                onClick={() => {
-                  setShowRequestDetails(false);
-                  handleApprove(selectedRequest);
-                }}
-                className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <RighIcon />
-                <span>Approve Request</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Reject Request Modal */}
       {showRejectModal && selectedRequest && (

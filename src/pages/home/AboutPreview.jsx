@@ -10,7 +10,7 @@ const steps = [
 const AboutPreview = () => {
   return (
     <section className="py-20 flex justify-center">
-      <div className="w-full bg-[#F9F8FF] backdrop-blur-sm rounded-3xl shadow-md p-10">
+      <div className="w-full bg-[#F9F8FF] backdrop-blur-sm rounded-3xl p-10">
         {/* Badge */}
         <span className="inline-block border border-gray-400 text-gray-800 text-sm px-4 py-1 rounded-full mb-4">
           Process
