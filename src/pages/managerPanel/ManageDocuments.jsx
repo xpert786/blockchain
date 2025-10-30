@@ -102,9 +102,9 @@ const ManageDocuments = () => {
   {/* Header Section */}
   <div className="flex items-center justify-between mb-6">
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">
+      <h3 className="text-2xl font-bold text-gray-900 mb-2">
         Manage <span className="text-[#9889FF]">Documents</span>
-      </h1>
+      </h3>
       <p className="text-lg text-gray-600">
         Manage investment documents and agreements
       </p>

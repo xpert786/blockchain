@@ -33,7 +33,7 @@ const ManagerLayout = () => {
     { id: "documents", name: "Documents", icon: "documents", path: "/manager-panel/documents" },
     { id: "transfers", name: "Transfers", icon: "transfers", path: "/manager-panel/transfers" },
     { id: "requests-system", name: "Requests System", icon: "requests", path: "/manager-panel/requests-system" },
-    { id: "analytics", name: "Analytics", icon: "analytics", path: "/manager-panel/analytics" },
+    // { id: "analytics", name: "Analytics", icon: "analytics", path: "/manager-panel/analytics" },
     { id: "settings", name: "Settings", icon: "settings", path: "/manager-panel/settings" }
   ];
 

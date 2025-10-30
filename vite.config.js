@@ -6,7 +6,6 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   base: '/blockchain-frontend/',
   plugins: [react(), tailwindcss()],
-  base: './',
   build: {
     assetsDir: 'assets',
     outDir: 'dist',
@@ -20,6 +19,6 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true
+    open: '/blockchain-frontend/'
   }
 })

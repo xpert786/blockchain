@@ -9,7 +9,7 @@ import {
   BuildingOfficeIcon, 
   BellIcon, 
   CurrencyDollarIcon, 
-  BanknotesIcon 
+  BanknotesIcon, 
 } from "../../../components/Icons";
 
 // Import all settings pages
@@ -21,6 +21,7 @@ import JurisdictionalSettings from "./JurisdictionalSettings";
 import PortfolioOutreach from "./PortfolioOutreach";
 import NotificationsCommunication from "./NotificationsCommunication";
 import FeeRecipientSetup from "./FeeRecipientSetup";
+import AddFeeRecipient from "./AddFeeRecipient";
 import BankDetails from "./BankDetails";
 
 const SettingsLayout = () => {
@@ -55,16 +56,16 @@ const SettingsLayout = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-[#F4F6F5]">
+    <div className="min-h-screen bg-[#F4F6F5] overflow-x-hidden">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#01373D] mb-2">Settings</h1>
+        <h3 className="text-2xl font-bold text-[#01373D] mb-2">Settings</h3>
         <p className="text-lg text-gray-600">Manage your account settings and preferences.</p>
       </div>
 
       <div className="flex gap-6">
         {/* Left Sidebar */}
-        <div className="w-80 bg-white rounded-lg p-6 h-fit">
+        <div className="w-44 md:w-56 lg:w-64 xl:w-72 shrink-0 bg-white rounded-lg p-6 h-fit">
           <div className="space-y-2">
             {settingsTabs.map((tab) => {
               return (
@@ -85,7 +86,7 @@ const SettingsLayout = () => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 bg-white rounded-lg shadow-sm">
+        <div className="flex-1 min-w-0 bg-white rounded-lg shadow-sm">
           <Routes>
             <Route path="/" element={<GeneralInfo />} />
             <Route path="/general-info" element={<GeneralInfo />} />
@@ -96,6 +97,7 @@ const SettingsLayout = () => {
             <Route path="/portfolio-outreach" element={<PortfolioOutreach />} />
             <Route path="/notifications-communication" element={<NotificationsCommunication />} />
             <Route path="/fee-recipient-setup" element={<FeeRecipientSetup />} />
+            <Route path="/AddFeeRecipient" element={<AddFeeRecipient />} />
             <Route path="/bank-details" element={<BankDetails />} />
           </Routes>
         </div>

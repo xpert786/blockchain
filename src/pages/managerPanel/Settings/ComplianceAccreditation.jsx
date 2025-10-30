@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { DocumentCheckIcon, SaveIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } from "../../../components/Icons";
+import { DocIcon, SavesIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon,ComsIcon,PdfIcon  } from "../../../components/Icons";
 
 const ComplianceAccreditation = () => {
   const [uploadedFiles, setUploadedFiles] = useState([
-    { name: "Attest_123.pdf", progress: 40, status: "uploading" },
+    { name: "Attest.pdf", progress: 40, status: "uploading" },
     { name: "Tax.pdf", progress: 50, status: "uploading" }
   ]);
 
@@ -38,85 +38,93 @@ const ComplianceAccreditation = () => {
   };
 
   return (
-    <div className="p-8">
-      {/* Header */}
-      <div className="flex items-center space-x-3 mb-8">
-        <DocumentCheckIcon />
-        <div>
-          <h2 className="text-2xl font-bold text-[#01373D]">Compliance & Accreditation</h2>
-        </div>
-      </div>
-
-      {/* Upload Document File */}
-      <div className="mb-8">
-        <label className="block text-sm font-medium text-gray-700 mb-2 font-poppins-custom">Upload Document File</label>
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-          <div className="flex flex-col items-center">
-            <div className="w-16 h-16 bg-[#00F0C3] rounded-lg flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-            </div>
-            <p className="text-sm text-gray-600 font-poppins-custom">
-              Drag and Drop file here or{" "}
-              <button
-                onClick={() => document.getElementById('file-upload').click()}
-                className="font-medium text-[#00F0C3] hover:text-[#00D4A8]"
-              >
-                choose file
-              </button>
-            </p>
-            <p className="text-xs text-gray-500 mt-2 font-poppins-custom">
-              Supported file Type: .pdf, .docx, .jpg, .png
-            </p>
-            <p className="text-xs text-gray-500 font-poppins-custom">Maximum Size: 25MB</p>
+    <div className="p-4 overflow-x-hidden">
+      <div className="bg-white  p-6">
+        {/* Header */}
+        <div className="flex items-center space-x-3 mb-6">
+          <ComsIcon />
+          <div>
+            <h2 className="text-2xl font-bold text-[#01373D]">Compliance & Accreditation</h2>
           </div>
-          <input
-            id="file-upload"
-            type="file"
-            multiple
-            accept=".pdf,.docx,.jpg,.png"
-            onChange={handleFileUpload}
-            className="hidden"
-          />
         </div>
-      </div>
 
-      {/* Upload Progress */}
-      {uploadedFiles.length > 0 && (
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 font-poppins-custom">Upload Progress</h3>
-          <div className="space-y-3">
-            {uploadedFiles.map((file, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-6 h-6 bg-red-100 rounded flex items-center justify-center">
-                    <span className="text-xs font-bold text-red-600">PDF</span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-900 font-poppins-custom">{file.name}</span>
+        {/* Upload Area + Progress */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* Upload Document File */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2 font-poppins-custom">Upload Document File</label>
+            <div className="!border-1 border-dashed border-violet-200 bg-[#F9F8FF] rounded-lg p-8 text-center hover:border-violet-300 transition-colors">
+              <div className="flex flex-col items-center">
+                <div className="w-16 h-16  rounded-lg flex items-center justify-center mb-4">
+                <DocIcon/>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-32 bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-[#00F0C3] h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${file.progress}%` }}
-                    ></div>
-                  </div>
-                  <button className="text-gray-400 hover:text-gray-600">
-                    <XMarkIcon className="w-4 h-4" />
+                <p className="text-sm text-gray-600 font-poppins-custom">
+                  Drag and Drop file here or{" "}
+                  <button
+                    onClick={() => document.getElementById('file-upload').click()}
+                    className="font-medium text-gray-600 hover:text-[#00D4A8]"
+                  >
+                    choose file
                   </button>
+                </p>
+              </div>
+              <input
+                id="file-upload"
+                type="file"
+                multiple
+                accept=".pdf,.docx,.jpg,.png"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </div>
+            <div className="flex items-center justify-between mt-3 px-1">
+              <span className="text-xs text-gray-500 font-poppins-custom">Supported file Type : .pdf, .docx, .jpg, .png</span>
+              <span className="text-xs text-gray-500 font-poppins-custom">Maximum Size: 25MB</span>
+            </div>
+          </div>
+
+          {/* Upload Progress */}
+          <div>
+            {uploadedFiles.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 font-poppins-custom">Upload Progress</h3>
+                <div className="space-y-3">
+                  {uploadedFiles.map((file, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 p-3 bg-[#F9F8FF] rounded-lg border border-violet-100"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <PdfIcon />
+                        <span className="text-sm font-medium text-gray-900 font-poppins-custom truncate">
+                          {file.name}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-1">
+                        <div className="h-2 w-full bg-violet-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-2 bg-[#9889FF] rounded-full transition-all duration-300"
+                            style={{ width: `${file.progress}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-xs text-gray-500 w-10 text-right">{file.progress}%</span>
+                        <button className="text-gray-400 hover:text-gray-600 shrink-0">
+                          <XMarkIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            )}
           </div>
         </div>
-      )}
 
-      {/* Document List Table */}
-      <div className="mb-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 font-poppins-custom">Document List</h3>
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
+        {/* Document List Table */}
+        <div className="mb-8">
+         
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-poppins-custom">
@@ -140,7 +148,10 @@ const ComplianceAccreditation = () => {
               {documents.map((doc, index) => (
                 <tr key={index} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-poppins-custom">
-                    {doc.name}
+                    <div className="flex items-center gap-2">
+                      <PdfIcon />
+                      <span>{doc.name}</span>
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-poppins-custom">
                     {doc.type}
@@ -168,15 +179,16 @@ const ComplianceAccreditation = () => {
         </div>
       </div>
 
-      {/* Save Button */}
-      <div className="flex justify-end">
-        <button
-          onClick={handleSave}
-          className="flex items-center space-x-2 px-6 py-2 bg-[#00F0C3] text-black rounded-lg hover:bg-[#00D4A8] transition-colors font-poppins-custom font-medium"
-        >
-          <SaveIcon />
-          <span>Save changes</span>
-        </button>
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <button
+            onClick={handleSave}
+            className="flex items-center space-x-2 px-6 py-2 bg-[#00F0C3] text-black rounded-lg hover:bg-[#00D4A8] transition-colors font-poppins-custom font-medium"
+          >
+            <SavesIcon />
+            <span>Save changes</span>
+          </button>
+        </div>
       </div>
     </div>
   );

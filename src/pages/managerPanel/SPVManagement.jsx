@@ -173,7 +173,7 @@ const SPVManagement = () => {
     <div className="min-h-screen bg-[#F4F6F5]">
       {/* Header Section */}
       <div className="bg-white rounded-lg p-6 mb-6">
-        <h1 className="text-3xl font-medium text-gray-600 mb-2">SPV Management</h1>
+        <h3 className="text-2xl font-medium text-gray-600 mb-2">SPV Management</h3>
         <p className="text-gray-600">Create and manage your Special Purpose Vehicles</p>
         
         {/* Test Buttons */}
@@ -200,7 +200,7 @@ const SPVManagement = () => {
             
             {/* Bottom Row - Large Number and Change */}
             <div className="flex justify-between items-end">
-              <p className="text-4xl font-bold text-[#01373D]">{metric.value}</p>
+              <p className="text-xl font-bold text-[#01373D]">{metric.value}</p>
               <p className="text-sm text-[#34D399] font-medium">{metric.change}</p>
             </div>
           </div>

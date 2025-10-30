@@ -158,9 +158,9 @@ const TransferTemp = () => {
       {/* Header */}
       <div className="bg-white rounded-lg p-6 mb-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">
          <span className="text-[#9889FF]">Transfer</span> Management
-      </h1>
+      </h3>
         <p className="text-lg text-gray-600">Manage and monitor investment transfers</p>
       </div>
 
