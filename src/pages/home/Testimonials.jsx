@@ -1,33 +1,34 @@
 import React, { useRef } from "react";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import profileImage from "../../assets/img/profile.png";
 
 const testimonials = [
   {
     id: 1,
     name: "Sarah K.",
     role: "Hedge Fund Partner",
-    image: "/profile.png",
+    image: profileImage,
     text: "Creating SPVs and managing investors used to take weeks. With this platform, I launched a deal in just hours — fully tokenized, transparent, and compliant.",
   },
   {
     id: 2,
     name: "John D.",
     role: "Angel Investor",
-    image: "/profile.png",
+    image: profileImage,
     text: "This platform streamlined my investment process and gave me confidence with compliance handled seamlessly.",
   },
   {
     id: 3,
     name: "Emily R.",
     role: "VC Partner",
-    image: "/profile.png",
+    image: profileImage,
     text: "Super easy to onboard investors and manage funds. Love how quick everything is compared to traditional methods.",
   },
   {
     id: 4,
     name: "Michael B.",
     role: "Private Investor",
-    image: "/profile.png",
+    image: profileImage,
     text: "Finally, a platform that combines speed with compliance. I can close deals much faster now.",
   },
 ];

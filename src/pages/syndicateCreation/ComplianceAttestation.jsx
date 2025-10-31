@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { UpsyndicateIcon } from "../../components/Icons";
 
 const ComplianceAttestation = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ const ComplianceAttestation = () => {
     <div className="bg-white rounded-xl shadow-sm p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Step 3: Compliance & Attestation</h1>
+        <h1 className="text-2xl  text-[#001D21] mb-2">Step 3: Compliance & Attestation</h1>
         <p className="text-gray-600">Review regulatory requirements and provide necessary attestations.</p>
       </div>
 
@@ -51,7 +52,7 @@ const ComplianceAttestation = () => {
             <span className="font-medium text-gray-800">Risk & Regulatory Attestation</span>
           </label>
           
-          <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+          <div className="mt-4 p-4 bg-[#F9F8FF] rounded-lg">
             <p className="text-gray-700 mb-3">I acknowledge and understand that:</p>
             <ul className="text-gray-700 space-y-1 text-sm">
               <li>• Leading syndicates involves significant regulatory responsibilities.</li>
@@ -74,7 +75,7 @@ const ComplianceAttestation = () => {
           </div>
           <p className="text-gray-600 mb-4">Based on your home jurisdiction (United States), the following restrictions apply:</p>
           
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="p-4 bg-[#FDECEC] !border border-red-200 rounded-lg">
             <h3 className="font-semibold text-gray-800 mb-3">United States Requirements</h3>
             <ul className="text-gray-700 space-y-1 text-sm">
               <li>• Must comply with SEC regulations for private placements</li>
@@ -97,29 +98,23 @@ const ComplianceAttestation = () => {
 
         {/* Additional Policies (Optional) */}
         <div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Additional Policies (Optional)</h2>
+          <h2 className="text-xl font-medium  text-[#0A2A2E] text-gray-800 mb-2">Additional Policies (Optional)</h2>
           <p className="text-gray-600 mb-4">Upload any additional compliance policies, procedures, or documentation you'd like to include.</p>
           
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-purple-400 transition-colors">
-            <div className="mb-4">
-              <svg className="w-12 h-12 text-gray-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
+          <label htmlFor="additionalPolicies" className="cursor-pointer">
+            <div className="border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg p-8 text-center hover:bg-[#F0F2F1] transition-colors">
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx"
+                className="hidden"
+                id="additionalPolicies"
+              />
+              <div className="mb-4 flex justify-center">
+                <UpsyndicateIcon />
+              </div>
+              <p className="text-gray-500">Click to upload Files</p>
             </div>
-            <p className="text-gray-600 mb-4">Click to upload Files</p>
-            <input
-              type="file"
-              accept=".pdf,.doc,.docx"
-              className="hidden"
-              id="additionalPolicies"
-            />
-            <label
-              htmlFor="additionalPolicies"
-              className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg cursor-pointer transition-colors"
-            >
-              Choose File
-            </label>
-          </div>
+          </label>
         </div>
       </div>
 
@@ -127,7 +122,7 @@ const ComplianceAttestation = () => {
       <div className="flex justify-between pt-8 border-t border-gray-200 mt-8">
         <button
           onClick={handlePrevious}
-          className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+          className="bg-[#F4F6F5] hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 !border border-[#01373D]"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />

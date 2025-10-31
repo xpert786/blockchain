@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { DontIcon } from "../../components/Icons";
 
 const LeadInfo = () => {
   const navigate = useNavigate();
@@ -44,13 +45,13 @@ const LeadInfo = () => {
     <div className="bg-white rounded-xl shadow-sm p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Step 1: Lead Info</h1>
+        <h1 className="text-2xl  text-[#001D21] mb-2">Step 1: Lead Info</h1>
         <p className="text-gray-600">Personal and investment focus information.</p>
       </div>
 
       {/* Accreditation Section */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Accreditation</h2>
+        <h2 className="text-xl text-[#0A2A2E] mb-4">Accreditation</h2>
             <p className="text-gray-600 mb-4">
               To be a syndicate, you must be a <span className="text-purple-400 font-semibold">accredited Investor</span>
             </p>
@@ -96,8 +97,8 @@ const LeadInfo = () => {
 
       {/* Sector Focus Section */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Sector Focus</h2>
-        <div className="border border-gray-300 rounded-lg p-3 min-h-[50px] flex flex-wrap items-center gap-2">
+        <h2 className="text-xl text-xl text-[#0A2A2E] mb-4">Sector Focus</h2>
+        <div className="border border-[#0A2A2E] rounded-lg p-3 min-h-[50px] flex flex-wrap items-center gap-2 bg-[#F4F6F5]">
           {formData.sectorFocus.map((sector) => (
             <span
               key={sector}
@@ -120,8 +121,8 @@ const LeadInfo = () => {
 
       {/* Geography Focus Section */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Geography Focus</h2>
-        <div className="border border-gray-300 rounded-lg p-3 min-h-[50px] flex flex-wrap items-center gap-2">
+        <h2 className=" text-xl text-[#0A2A2E] mb-4">Geography Focus</h2>
+        <div className="border border-[#0A2A2E] rounded-lg p-3 min-h-[50px] flex flex-wrap items-center gap-2 bg-[#F4F6F5]">
           {formData.geographyFocus.map((geo) => (
             <span
               key={geo}
@@ -144,10 +145,10 @@ const LeadInfo = () => {
 
       {/* Existing LP Network Section */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Existing LP Network</h2>
+        <h2 className="text-xl text-[#0A2A2E] mb-4">Existing LP Network</h2>
         <p className="text-gray-600 mb-4">How many LPs do you have to invest in your deal?</p>
         
-        <div className="border border-gray-300 rounded-lg p-3 w-full max-w-xs">
+        <div className="border border-[#0A2A2E] rounded-lg p-3 w-full max-w-xs bg-[#F4F6F5]">
           <select
             value={formData.existingLpNetwork}
             onChange={(e) => handleInputChange("existingLpNetwork", e.target.value)}
@@ -170,7 +171,7 @@ const LeadInfo = () => {
                 type="number"
                 value={formData.lpBaseSize}
                 onChange={(e) => handleInputChange("lpBaseSize", parseInt(e.target.value))}
-                className="border border-gray-300 rounded-lg p-3 w-full max-w-xs"
+                className="border border-[#0A2A2E] rounded-lg p-3 w-full max-w-xs bg-[#F4F6F5]"
                 placeholder="Enter LP base size"
               />
             </div>
@@ -221,7 +222,8 @@ const LeadInfo = () => {
 
         {/* Info Box - Only show when "No" is selected */}
         {formData.existingLpNetwork === "No" && (
-          <div className="mt-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg">
+          <div className="mt-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg flex items-center gap-2">
+            <DontIcon />
             <p className="font-medium">Don't Worry, You Can Still Leverage Platform LPs To Raise Funds</p>
           </div>
         )}
@@ -230,16 +232,13 @@ const LeadInfo = () => {
       {/* Navigation Buttons */}
       <div className="flex justify-between pt-6 border-t border-gray-200">
         <button
-          className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+          className=" text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Previous
+         
         </button>
         <button
           onClick={handleNext}
-          className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+          className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 cursor-pointer"
         >
           Next
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
