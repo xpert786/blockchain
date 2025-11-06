@@ -51,6 +51,21 @@ import TransferTemp from "./pages/managerPanel/Transfer/TransferTemp";
 import RequestSystem from "./pages/managerPanel/Requests-System/RequestSystem";
 import RequestDetails from "./pages/managerPanel/Requests-System/RequestDetails";
 import SettingsLayout from "./pages/managerPanel/Settings/SettingsLayout";
+import InvestorLayout from "./pages/investerPanel/InvestorLayout";
+import Welcome from "./pages/investerPanel/Welcome";
+import Accreditation from "./pages/investerPanel/Accreditation";
+import InvestmentGoals from "./pages/investerPanel/InvestmentGoals";
+import PastExperience from "./pages/investerPanel/PastExperience";
+import ThankYou from "./pages/investerPanel/ThankYou";
+import InvestorDashboard from "./pages/investerPanel/dashbaord/Dashboard";
+import InvestorNotifications from "./pages/investerPanel/Notifications";
+import BasicInfo from "./pages/investerPanel/investerOnboarding/BasicInfo";
+import KYCVerification from "./pages/investerPanel/investerOnboarding/KYCVerification";
+import BankDetails from "./pages/investerPanel/investerOnboarding/BankDetails";
+import AccreditationOnboarding from "./pages/investerPanel/investerOnboarding/AccreditationOnboarding";
+import AcceptAgreements from "./pages/investerPanel/investerOnboarding/AcceptAgreements";
+import InvestorFinalReview from "./pages/investerPanel/investerOnboarding/FinalReview";
+import Confirmation from "./pages/investerPanel/investerOnboarding/Confirmation";
 
 const App = () => {
   return (
@@ -120,6 +135,31 @@ const App = () => {
                 <Route path="request-details" element={<RequestDetails />} />
                 <Route path="settings/*" element={<SettingsLayout />} />
       </Route>
+
+      {/* Investor Panel Routes (with Layout) */}
+      <Route path="/investor-panel" element={<InvestorLayout />}>
+        <Route index element={<Welcome />} />
+        <Route path="welcome" element={<Welcome />} />
+        <Route path="accreditation" element={<Accreditation />} />
+        <Route path="investment-goals" element={<InvestmentGoals />} />
+        <Route path="past-experience" element={<PastExperience />} />
+      </Route>
+
+      {/* Thank You Page (without sidebar layout) */}
+      <Route path="/investor-panel/thank-you" element={<ThankYou />} />
+
+      {/* Investor Dashboard (standalone, has own header and navigation) */}
+      <Route path="/investor-panel/dashboard" element={<InvestorDashboard />} />
+      <Route path="/investor-panel/notifications" element={<InvestorNotifications />} />
+
+      {/* Investor Onboarding Routes (without sidebar layout, has own header) */}
+      <Route path="/investor-onboarding/basic-info" element={<BasicInfo />} />
+      <Route path="/investor-onboarding/kyc-verification" element={<KYCVerification />} />
+      <Route path="/investor-onboarding/bank-details" element={<BankDetails />} />
+      <Route path="/investor-onboarding/accreditation" element={<AccreditationOnboarding />} />
+      <Route path="/investor-onboarding/agreements" element={<AcceptAgreements />} />
+      <Route path="/investor-onboarding/final-review" element={<InvestorFinalReview />} />
+      <Route path="/investor-onboarding/confirmation" element={<Confirmation />} />
 
     </Routes>
   );

@@ -1,8 +1,7 @@
-@import './fonts.css';
-@import "tailwindcss";
-
 /* Import Poppins from Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import './fonts.css';
+@import "tailwindcss";
 
 /* Custom Font Classes */
 .font-poppins-custom {
