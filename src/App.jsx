@@ -59,6 +59,11 @@ import PastExperience from "./pages/investerPanel/PastExperience";
 import ThankYou from "./pages/investerPanel/ThankYou";
 import InvestorDashboard from "./pages/investerPanel/dashbaord/Dashboard";
 import InvestorNotifications from "./pages/investerPanel/Notifications";
+import Invest from "./pages/investerPanel/dashbaord/Invest";
+import Invites from "./pages/investerPanel/dashbaord/Invites";
+import TopSyndicates from "./pages/investerPanel/dashbaord/TopSyndicates";
+import Wishlist from "./pages/investerPanel/dashbaord/wishlist";
+import Portfolio from "./pages/investerPanel/dashbaord/Portfolio";
 import BasicInfo from "./pages/investerPanel/investerOnboarding/BasicInfo";
 import KYCVerification from "./pages/investerPanel/investerOnboarding/KYCVerification";
 import BankDetails from "./pages/investerPanel/investerOnboarding/BankDetails";
@@ -151,6 +156,11 @@ const App = () => {
       {/* Investor Dashboard (standalone, has own header and navigation) */}
       <Route path="/investor-panel/dashboard" element={<InvestorDashboard />} />
       <Route path="/investor-panel/notifications" element={<InvestorNotifications />} />
+      <Route path="/investor-panel/invest" element={<Invest />} />
+      <Route path="/investor-panel/invites" element={<Invites />} />
+      <Route path="/investor-panel/top-syndicates" element={<TopSyndicates />} />
+      <Route path="/investor-panel/wishlist" element={<Wishlist />} />
+      <Route path="/investor-panel/portfolio" element={<Portfolio />} />
 
       {/* Investor Onboarding Routes (without sidebar layout, has own header) */}
       <Route path="/investor-onboarding/basic-info" element={<BasicInfo />} />

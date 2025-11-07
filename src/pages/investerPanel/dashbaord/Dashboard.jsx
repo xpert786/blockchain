@@ -1,12 +1,40 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import logoImage from "../../../assets/img/logo.png";
 import profileImage from "../../../assets/img/profile.png";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("discover-deals");
   const [activeNav, setActiveNav] = useState("overview");
+  const [showInvestDropdown, setShowInvestDropdown] = useState(false);
+  const investDropdownRef = useRef(null);
+
+  useEffect(() => {
+    // Update activeNav based on current route
+    if (location.pathname.includes("/invest")) {
+      setActiveNav("invest");
+    } else if (location.pathname.includes("/portfolio")) {
+      setActiveNav("portfolio");
+    } else {
+      setActiveNav("overview");
+    }
+  }, [location.pathname]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (investDropdownRef.current && !investDropdownRef.current.contains(event.target)) {
+        setShowInvestDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const investmentOpportunities = [
     {
@@ -209,26 +237,78 @@ const Dashboard = () => {
 
             Overview
           </button>
-          <button 
-            onClick={() => setActiveNav("invest")}
-            className={`px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${
-              activeNav === "invest" 
-                ? "bg-[#FFFFFF1A] text-white" 
-                : "text-gray-300 hover:text-white"
-            }`}
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1.6665 9.99739C1.6665 6.06906 1.6665 4.1049 2.8865 2.88406C4.10817 1.66406 6.0715 1.66406 9.99984 1.66406C13.9282 1.66406 15.8923 1.66406 17.1123 2.88406C18.3332 4.10573 18.3332 6.06906 18.3332 9.99739C18.3332 13.9257 18.3332 15.8899 17.1123 17.1099C15.8932 18.3307 13.9282 18.3307 9.99984 18.3307C6.0715 18.3307 4.10734 18.3307 2.8865 17.1099C1.6665 15.8907 1.6665 13.9257 1.6665 9.99739Z" stroke="white" stroke-width="1.2"/>
-                <path d="M5.83301 11.6615L7.74384 9.75062C7.90011 9.5944 8.11204 9.50664 8.33301 9.50664C8.55398 9.50664 8.7659 9.5944 8.92217 9.75062L10.2438 11.0723C10.4001 11.2285 10.612 11.3163 10.833 11.3163C11.054 11.3163 11.2659 11.2285 11.4222 11.0723L14.1663 8.32812M14.1663 8.32812V10.4115M14.1663 8.32812H12.083" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+          <div className="relative" ref={investDropdownRef}>
+            <button 
+              onClick={() => setShowInvestDropdown(!showInvestDropdown)}
+              className={`px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${
+                activeNav === "invest" 
+                  ? "bg-[#FFFFFF1A] text-white" 
+                  : "text-gray-300 hover:text-white"
+              }`}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1.6665 9.99739C1.6665 6.06906 1.6665 4.1049 2.8865 2.88406C4.10817 1.66406 6.0715 1.66406 9.99984 1.66406C13.9282 1.66406 15.8923 1.66406 17.1123 2.88406C18.3332 4.10573 18.3332 6.06906 18.3332 9.99739C18.3332 13.9257 18.3332 15.8899 17.1123 17.1099C15.8932 18.3307 13.9282 18.3307 9.99984 18.3307C6.0715 18.3307 4.10734 18.3307 2.8865 17.1099C1.6665 15.8907 1.6665 13.9257 1.6665 9.99739Z" stroke="white" strokeWidth="1.2"/>
+                  <path d="M5.83301 11.6615L7.74384 9.75062C7.90011 9.5944 8.11204 9.50664 8.33301 9.50664C8.55398 9.50664 8.7659 9.5944 8.92217 9.75062L10.2438 11.0723C10.4001 11.2285 10.612 11.3163 10.833 11.3163C11.054 11.3163 11.2659 11.2285 11.4222 11.0723L14.1663 8.32812M14.1663 8.32812V10.4115M14.1663 8.32812H12.083" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
 
-            Invest
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
+              Invest
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+
+            {/* Dropdown Menu */}
+            {showInvestDropdown && (
+              <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg z-10 min-w-[180px]" style={{border: "1px solid #000"}}>
+                <button
+                  onClick={() => {
+                    navigate("/investor-panel/invest");
+                    setShowInvestDropdown(false);
+                    setActiveNav("invest");
+                  }}
+                  className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] rounded-t-lg"
+                  style={{backgroundColor: "#00F0C3"}}
+                >
+                  Discover
+                </button>
+                <button
+                  onClick={() => {
+                    navigate("/investor-panel/invites");
+                    setShowInvestDropdown(false);
+                    setActiveNav("invest");
+                  }}
+                  className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] hover:bg-gray-50 transition-colors"
+                >
+                  Invites
+                </button>
+                <button
+                  onClick={() => {
+                    navigate("/investor-panel/top-syndicates");
+                    setShowInvestDropdown(false);
+                    setActiveNav("invest");
+                  }}
+                  className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] hover:bg-gray-50 transition-colors"
+                >
+                  Top Syndicates
+                </button>
+                <button
+                  onClick={() => {
+                    navigate("/investor-panel/wishlist");
+                    setShowInvestDropdown(false);
+                    setActiveNav("invest");
+                  }}
+                  className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] rounded-b-lg hover:bg-gray-50 transition-colors"
+                >
+                  Wishlist
+                </button>
+              </div>
+            )}
+          </div>
           <button 
-            onClick={() => setActiveNav("portfolio")}
+            onClick={() => {
+              navigate("/investor-panel/portfolio");
+              setActiveNav("portfolio");
+            }}
             className={`px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${
               activeNav === "portfolio" 
                 ? "bg-[#FFFFFF1A] text-white" 
