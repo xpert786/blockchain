@@ -25,17 +25,32 @@ const SignUp = () => {
     // Generate username from fullName
     const username = formData.fullName.toLowerCase().replace(/\s+/g, "");
     
+    // Map role to backend format
+    // "Investor" -> "investor", "Syndicate" -> "syndicate"
+    let role = "investor"; // default
+    if (formData.role === "Investor") {
+      role = "investor";
+    } else if (formData.role === "Syndicate") {
+      role = "syndicate";
+    } else if (!formData.role) {
+      setError("Please select a role.");
+      return;
+    }
+    
     // Save form data to localStorage (without API call)
     const tempUserData = {
       fullName: formData.fullName,
       email: formData.email,
       phoneNumber: formData.phoneNumber,
       username: username,
-      role: formData.role === "Investor" ? "investor" : "syndicate_manager",
+      role: role,
     };
 
     localStorage.setItem("tempUserData", JSON.stringify(tempUserData));
     
+    console.log("=== SignUp Debug ===");
+    console.log("Form role value:", formData.role);
+    console.log("Mapped role:", role);
     console.log("Form data saved to localStorage:", tempUserData);
     
     // Navigate to create password

@@ -32,22 +32,57 @@ const CreatePassword = () => {
       // Get temp user data from localStorage (saved during SignUp)
       const tempUserData = JSON.parse(localStorage.getItem("tempUserData") || "{}");
       
-      // Complete payload with SignUp data + Password
+      // Verify role is present and valid
+      if (!tempUserData.role) {
+        setError("Role is missing. Please go back and select a role.");
+        return;
+      }
+      
+      // Ensure role is in correct format (lowercase: "investor" or "syndicate")
+      const role = tempUserData.role.toLowerCase();
+      if (role !== "investor" && role !== "syndicate") {
+        setError(`Invalid role: ${tempUserData.role}. Role must be "investor" or "syndicate".`);
+        return;
+      }
+      
+      // Complete payload with SignUp data + Password - using correct endpoint format
       const payload = {
-        username: tempUserData.username,
         email: tempUserData.email,
         password: formData.password,
-        password2: formData.confirmPassword,
-        role: tempUserData.role,
+        confirm_password: formData.confirmPassword,
+        full_name: tempUserData.fullName,
+        phone_number: tempUserData.phoneNumber,
+        role: role,
       };
       
-      console.log("Creating account with role:", tempUserData.role);
+      console.log("=== Registration Debug ===");
+      console.log("Raw tempUserData:", tempUserData);
+      console.log("Role from localStorage:", tempUserData.role);
+      console.log("Normalized role:", role);
+      console.log("✅ ROLE IS INCLUDED IN PAYLOAD:", role);
       console.log("Full payload:", payload);
+      console.log("📤 PAYLOAD WITH ROLE:", JSON.stringify(payload, null, 2));
 
-      const API_URL = import.meta.env.VITE_API_URL;
-      const finalUrl = `${API_URL.replace(/\/$/, "")}/users/register/`;
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      // Match the curl command endpoint: /api/registration-flow/register/
+      const finalUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/register/`;
       
-      const response = await axios.post(finalUrl, payload);
+      console.log("🔗 Calling registration API:", finalUrl);
+      console.log("📦 Final payload being sent (includes role):", {
+        email: payload.email,
+        full_name: payload.full_name,
+        phone_number: payload.phone_number,
+        role: payload.role, // ✅ Role is here!
+        password: "***hidden***",
+        confirm_password: "***hidden***"
+      });
+      
+      const response = await axios.post(finalUrl, payload, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
 
       console.log("Account created successfully:", response.data);
 
@@ -59,18 +94,17 @@ const CreatePassword = () => {
         // Save complete user data
         localStorage.setItem("userData", JSON.stringify({
           user_id: response.data.user_id,
-          username: response.data.username,
           email: response.data.email,
+          phone_number: response.data.phone_number,
+          full_name: response.data.full_name,
           role: response.data.role,
-          is_active: response.data.is_active,
-          date_joined: response.data.date_joined,
         }));
       }
 
       // Clear temp data
       localStorage.removeItem("tempUserData");
 
-      // Navigate to next page
+      // Navigate to SecureAccount2FA after successful registration
       navigate("/secure-account-2fa");
     } catch (err) {
       console.error("Error creating account:", err);

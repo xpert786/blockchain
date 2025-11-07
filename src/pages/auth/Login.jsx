@@ -48,32 +48,63 @@ const Login = () => {
       });
 
       console.log("Login successful:", response.data);
+      console.log("Full response data:", JSON.stringify(response.data, null, 2));
+
+      // Extract user data - role is nested in response.data.user.role
+      const userInfo = response.data?.user || response.data;
+      const userRole = userInfo?.role;
+      const userId = userInfo?.id || userInfo?.user_id;
+      const username = userInfo?.username;
+      const email = userInfo?.email;
+      const isActive = userInfo?.is_active;
+      const dateJoined = userInfo?.date_joined;
+
+      console.log("=== Login Role Debug ===");
+      console.log("User info extracted:", userInfo);
+      console.log("Raw role from response:", userRole);
 
       // Save tokens if returned
-      if (response.data?.tokens) {
-        localStorage.setItem("accessToken", response.data.tokens.access);
-        localStorage.setItem("refreshToken", response.data.tokens.refresh);
+      if (response.data?.tokens || response.data?.access) {
+        const accessToken = response.data?.tokens?.access || response.data?.access;
+        const refreshToken = response.data?.tokens?.refresh || response.data?.refresh;
         
-        // Save user data
-        localStorage.setItem("userData", JSON.stringify({
-          user_id: response.data.user_id,
-          username: response.data.username,
-          email: response.data.email,
-          role: response.data.role,
-          is_active: response.data.is_active,
-          date_joined: response.data.date_joined,
-        }));
+        if (accessToken) {
+          localStorage.setItem("accessToken", accessToken);
+        }
+        if (refreshToken) {
+          localStorage.setItem("refreshToken", refreshToken);
+        }
       }
-
-      // Navigate based on user role
-      const userRole = response.data?.role || JSON.parse(localStorage.getItem("userData") || "{}").role;
-      console.log("User role:", userRole);
       
-      if (userRole === "syndicate_manager") {
-        navigate("/syndicate-creation");
-      } else if (userRole === "investor") {
-        navigate("/");
+      // Save user data
+      const userData = {
+        user_id: userId,
+        username: username,
+        email: email,
+        role: userRole,
+        is_active: isActive,
+        date_joined: dateJoined,
+      };
+      localStorage.setItem("userData", JSON.stringify(userData));
+      console.log("User data saved to localStorage:", userData);
+
+      // Navigate based on user role - normalize the role value
+      const normalizedRole = (userRole || "").toLowerCase().trim();
+      console.log("Normalized role (lowercase, trimmed):", normalizedRole);
+      console.log("Checking role match...");
+      
+      // Redirect syndicate users to LeadInfo page
+      // Check for various role formats: "syndicate", "syndicate_manager", etc.
+      if (normalizedRole === "syndicate" || normalizedRole === "syndicate_manager" || normalizedRole.includes("syndicate")) {
+        console.log("✅ Redirecting to syndicate creation (LeadInfo)");
+        navigate("/syndicate-creation/lead-info");
+      } else if (normalizedRole === "investor") {
+        console.log("✅ Redirecting to investor dashboard");
+        navigate("/investor-panel/dashboard");
       } else {
+        console.log("⚠️ Unknown role, defaulting to home page");
+        console.log("Role value was:", normalizedRole);
+        console.log("Available user data:", userInfo);
         // Default fallback
         navigate("/");
       }

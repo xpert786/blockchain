@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { DontIcon } from "../../components/Icons";
 
 const LeadInfo = () => {
@@ -7,14 +8,75 @@ const LeadInfo = () => {
   const [formData, setFormData] = useState({
     accreditation: "", // No default selection
     understandRequirements: false,
-    sectorFocus: ["Fintech", "Healthcare", "Technology"],
-    geographyFocus: ["Fintech", "Healthcare", "Technology"],
+    sectorFocus: [], // Array of sector IDs
+    geographyFocus: [], // Array of geography IDs
     existingLpNetwork: "No",
     lpBaseSize: 50,
     enablePlatformLpAccess: false
   });
 
+  const [sectors, setSectors] = useState([]);
+  const [geographies, setGeographies] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showSectorDropdown, setShowSectorDropdown] = useState(false);
+  const [showGeographyDropdown, setShowGeographyDropdown] = useState(false);
+  const sectorDropdownRef = useRef(null);
+  const geographyDropdownRef = useRef(null);
+
+  // Fetch sectors and geographies on component mount
+  useEffect(() => {
+    const fetchSectorsAndGeographies = async () => {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          setError("You must be logged in to continue.");
+          return;
+        }
+
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const finalUrl = `${API_URL.replace(/\/$/, "")}/syndicate/sectors-geographies/`;
+
+        const response = await axios.get(finalUrl, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+
+        console.log("Sectors and Geographies fetched:", response.data);
+        setSectors(response.data.sectors || []);
+        setGeographies(response.data.geographies || []);
+      } catch (err) {
+        console.error("Error fetching sectors and geographies:", err);
+        setError("Failed to load sectors and geographies. Please refresh the page.");
+      } finally {
+        setLoadingData(false);
+      }
+    };
+
+    fetchSectorsAndGeographies();
+  }, []);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sectorDropdownRef.current && !sectorDropdownRef.current.contains(event.target)) {
+        setShowSectorDropdown(false);
+      }
+      if (geographyDropdownRef.current && !geographyDropdownRef.current.contains(event.target)) {
+        setShowGeographyDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -23,22 +85,161 @@ const LeadInfo = () => {
     }));
   };
 
-  const handleSectorRemove = (sector) => {
+  const handleSectorAdd = (sectorId) => {
+    if (!formData.sectorFocus.includes(sectorId)) {
+      setFormData(prev => ({
+        ...prev,
+        sectorFocus: [...prev.sectorFocus, sectorId]
+      }));
+    }
+    setShowSectorDropdown(false);
+  };
+
+  const handleSectorRemove = (sectorId) => {
     setFormData(prev => ({
       ...prev,
-      sectorFocus: prev.sectorFocus.filter(s => s !== sector)
+      sectorFocus: prev.sectorFocus.filter(id => id !== sectorId)
     }));
   };
 
-  const handleGeographyRemove = (geo) => {
+  const handleGeographyAdd = (geographyId) => {
+    if (!formData.geographyFocus.includes(geographyId)) {
+      setFormData(prev => ({
+        ...prev,
+        geographyFocus: [...prev.geographyFocus, geographyId]
+      }));
+    }
+    setShowGeographyDropdown(false);
+  };
+
+  const handleGeographyRemove = (geographyId) => {
     setFormData(prev => ({
       ...prev,
-      geographyFocus: prev.geographyFocus.filter(g => g !== geo)
+      geographyFocus: prev.geographyFocus.filter(id => id !== geographyId)
     }));
   };
 
-  const handleNext = () => {
-    navigate("/syndicate-creation/entity-profile");
+  // Get sector name by ID
+  const getSectorName = (sectorId) => {
+    const sector = sectors.find(s => s.id === sectorId);
+    return sector ? sector.name : `Sector ${sectorId}`;
+  };
+
+  // Get geography name by ID
+  const getGeographyName = (geographyId) => {
+    const geography = geographies.find(g => g.id === geographyId);
+    return geography ? geography.name : `Geography ${geographyId}`;
+  };
+
+  // Map LP base size to API format (ranges)
+  const mapLpBaseSizeToRange = (size) => {
+    if (size <= 10) return "1-10";
+    if (size <= 25) return "11-25";
+    if (size <= 50) return "26-50";
+    if (size <= 100) return "51-100";
+    return "100+";
+  };
+
+  // Get available sectors (not already selected)
+  const getAvailableSectors = () => {
+    return sectors.filter(sector => !formData.sectorFocus.includes(sector.id));
+  };
+
+  // Get available geographies (not already selected)
+  const getAvailableGeographies = () => {
+    return geographies.filter(geography => !formData.geographyFocus.includes(geography.id));
+  };
+
+  const handleNext = async () => {
+    setError("");
+    
+    // Validation
+    if (!formData.accreditation) {
+      setError("Please select your accreditation status.");
+      return;
+    }
+    
+    if (!formData.understandRequirements) {
+      setError("You must acknowledge that you understand the regulatory requirements.");
+      return;
+    }
+
+    if (formData.sectorFocus.length === 0) {
+      setError("Please select at least one sector focus.");
+      return;
+    }
+
+    if (formData.geographyFocus.length === 0) {
+      setError("Please select at least one geography focus.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Get access token from localStorage
+      const accessToken = localStorage.getItem("accessToken");
+      
+      if (!accessToken) {
+        setError("You must be logged in to continue. Please log in again.");
+        navigate("/login");
+        return;
+      }
+
+      // Prepare API payload
+      const payload = {
+        is_accredited: formData.accreditation === "accredited" ? "yes" : "no",
+        understands_regulatory_requirements: formData.understandRequirements,
+        sector_ids: formData.sectorFocus, // Already IDs
+        geography_ids: formData.geographyFocus, // Already IDs
+        existing_lp_count: formData.existingLpNetwork === "Yes" 
+          ? mapLpBaseSizeToRange(formData.lpBaseSize) 
+          : "0",
+        enable_platform_lp_access: formData.existingLpNetwork === "Yes" 
+          ? formData.enablePlatformLpAccess 
+          : false,
+      };
+
+      console.log("=== LeadInfo API Call ===");
+      console.log("Payload:", payload);
+
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const finalUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step1/`;
+
+      console.log("Calling API:", finalUrl);
+
+      const response = await axios.post(finalUrl, payload, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+
+      console.log("LeadInfo submitted successfully:", response.data);
+
+      // Navigate to next step
+      navigate("/syndicate-creation/entity-profile");
+      
+    } catch (err) {
+      console.error("Error submitting LeadInfo:", err);
+      const backendData = err.response?.data;
+      if (backendData) {
+        if (typeof backendData === "object") {
+          // Handle specific field errors
+          const errorMessage = backendData.message || 
+            backendData.error || 
+            JSON.stringify(backendData);
+          setError(errorMessage);
+        } else {
+          setError(String(backendData));
+        }
+      } else {
+        setError(err.message || "Failed to submit lead information. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,6 +249,13 @@ const LeadInfo = () => {
         <h1 className="text-2xl  text-[#001D21] mb-2">Step 1: Lead Info</h1>
         <p className="text-gray-600">Personal and investment focus information.</p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+          {error}
+        </div>
+      )}
 
       {/* Accreditation Section */}
       <div className="mb-8">
@@ -98,48 +306,128 @@ const LeadInfo = () => {
       {/* Sector Focus Section */}
       <div className="mb-8">
         <h2 className="text-xl text-xl text-[#0A2A2E] mb-4">Sector Focus</h2>
-        <div className="border border-[#0A2A2E] rounded-lg p-3 min-h-[50px] flex flex-wrap items-center gap-2 bg-[#F4F6F5]">
-          {formData.sectorFocus.map((sector) => (
-            <span
-              key={sector}
-              className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+        <div className="relative" ref={sectorDropdownRef}>
+          <div 
+            className="border border-[#0A2A2E] rounded-lg p-3 min-h-[50px] flex flex-wrap items-center gap-2 bg-[#F4F6F5] cursor-pointer"
+            onClick={() => setShowSectorDropdown(!showSectorDropdown)}
+          >
+            {formData.sectorFocus.length > 0 ? (
+              formData.sectorFocus.map((sectorId) => (
+                <span
+                  key={sectorId}
+                  className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {getSectorName(sectorId)}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSectorRemove(sectorId);
+                    }}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))
+            ) : (
+              <span className="text-gray-400 text-sm">Select sectors...</span>
+            )}
+            <svg 
+              className={`w-5 h-5 text-gray-400 ml-auto transition-transform ${showSectorDropdown ? 'rotate-180' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
             >
-              {sector}
-              <button
-                onClick={() => handleSectorRemove(sector)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ×
-              </button>
-            </span>
-          ))}
-          <svg className="w-5 h-5 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          
+          {showSectorDropdown && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+              {loadingData ? (
+                <div className="p-4 text-center text-gray-500">Loading sectors...</div>
+              ) : getAvailableSectors().length > 0 ? (
+                getAvailableSectors().map((sector) => (
+                  <button
+                    key={sector.id}
+                    onClick={() => handleSectorAdd(sector.id)}
+                    className="w-full text-left px-4 py-2 text-sm text-[#0A2A2E] hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
+                  >
+                    <div className="font-medium">{sector.name}</div>
+                    {sector.description && (
+                      <div className="text-xs text-gray-500">{sector.description}</div>
+                    )}
+                  </button>
+                ))
+              ) : (
+                <div className="p-4 text-center text-gray-500">All sectors selected</div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Geography Focus Section */}
       <div className="mb-8">
         <h2 className=" text-xl text-[#0A2A2E] mb-4">Geography Focus</h2>
-        <div className="border border-[#0A2A2E] rounded-lg p-3 min-h-[50px] flex flex-wrap items-center gap-2 bg-[#F4F6F5]">
-          {formData.geographyFocus.map((geo) => (
-            <span
-              key={geo}
-              className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+        <div className="relative" ref={geographyDropdownRef}>
+          <div 
+            className="border border-[#0A2A2E] rounded-lg p-3 min-h-[50px] flex flex-wrap items-center gap-2 bg-[#F4F6F5] cursor-pointer"
+            onClick={() => setShowGeographyDropdown(!showGeographyDropdown)}
+          >
+            {formData.geographyFocus.length > 0 ? (
+              formData.geographyFocus.map((geographyId) => (
+                <span
+                  key={geographyId}
+                  className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {getGeographyName(geographyId)}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleGeographyRemove(geographyId);
+                    }}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))
+            ) : (
+              <span className="text-gray-400 text-sm">Select geographies...</span>
+            )}
+            <svg 
+              className={`w-5 h-5 text-gray-400 ml-auto transition-transform ${showGeographyDropdown ? 'rotate-180' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
             >
-              {geo}
-              <button
-                onClick={() => handleGeographyRemove(geo)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ×
-              </button>
-            </span>
-          ))}
-          <svg className="w-5 h-5 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          
+          {showGeographyDropdown && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+              {loadingData ? (
+                <div className="p-4 text-center text-gray-500">Loading geographies...</div>
+              ) : getAvailableGeographies().length > 0 ? (
+                getAvailableGeographies().map((geography) => (
+                  <button
+                    key={geography.id}
+                    onClick={() => handleGeographyAdd(geography.id)}
+                    className="w-full text-left px-4 py-2 text-sm text-[#0A2A2E] hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
+                  >
+                    <div className="font-medium">{geography.name}</div>
+                    <div className="text-xs text-gray-500">{geography.region}</div>
+                  </button>
+                ))
+              ) : (
+                <div className="p-4 text-center text-gray-500">All geographies selected</div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -238,9 +526,10 @@ const LeadInfo = () => {
         </button>
         <button
           onClick={handleNext}
-          className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 cursor-pointer"
+          disabled={loading}
+          className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Next
+          {loading ? "Submitting..." : "Next"}
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>

@@ -15,7 +15,7 @@ const SecureAccount2FA = () => {
     setError("");
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL;
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
       const finalUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/choose_verification_method/`;
       
       const payload = {
@@ -29,7 +29,9 @@ const SecureAccount2FA = () => {
         throw new Error("No access token found. Please login again.");
       }
 
-      console.log("Sending verification method:", payload);
+      console.log("Calling verification method API:", finalUrl);
+      console.log("Verification method payload:", payload);
+      
       const response = await axios.post(finalUrl, payload, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,

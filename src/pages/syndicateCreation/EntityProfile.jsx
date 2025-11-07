@@ -10,6 +10,7 @@ const EntityProfile = () => {
     description: "",
     logo: null
   });
+  const [logoPreview, setLogoPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showTeamModal, setShowTeamModal] = useState(false);
@@ -33,8 +34,98 @@ const EntityProfile = () => {
     }));
   };
 
-  const handleNext = () => {
-    navigate("/syndicate-creation/kyb-verification");
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        logo: file
+      }));
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleNext = async () => {
+    setError("");
+    
+    // Validation
+    if (!formData.firmName.trim()) {
+      setError("Firm / Syndicate Name is required.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Get access token from localStorage
+      const accessToken = localStorage.getItem("accessToken");
+      
+      if (!accessToken) {
+        setError("You must be logged in to continue. Please log in again.");
+        navigate("/login");
+        return;
+      }
+
+      // Prepare FormData for file upload
+      const formDataToSend = new FormData();
+      formDataToSend.append("firm_name", formData.firmName);
+      formDataToSend.append("description", formData.description || "");
+      
+      // Append logo file if selected
+      if (formData.logo) {
+        formDataToSend.append("logo", formData.logo);
+      } else {
+        formDataToSend.append("logo", ""); // Send empty string if no logo
+      }
+
+      console.log("=== EntityProfile API Call ===");
+      console.log("Firm Name:", formData.firmName);
+      console.log("Description:", formData.description);
+      console.log("Logo:", formData.logo ? formData.logo.name : "No logo");
+
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const finalUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step2/`;
+
+      console.log("Calling API:", finalUrl);
+
+      const response = await axios.post(finalUrl, formDataToSend, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'multipart/form-data',
+          'Accept': 'application/json'
+        }
+      });
+
+      console.log("EntityProfile submitted successfully:", response.data);
+
+      // Navigate to next step
+      navigate("/syndicate-creation/kyb-verification");
+      
+    } catch (err) {
+      console.error("Error submitting EntityProfile:", err);
+      const backendData = err.response?.data;
+      if (backendData) {
+        if (typeof backendData === "object") {
+          // Handle specific field errors
+          const errorMessage = backendData.message || 
+            backendData.error || 
+            JSON.stringify(backendData);
+          setError(errorMessage);
+        } else {
+          setError(String(backendData));
+        }
+      } else {
+        setError(err.message || "Failed to submit entity profile. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePrevious = () => {
@@ -85,6 +176,13 @@ const EntityProfile = () => {
         <p className="text-gray-600">Company information and structure</p>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+          {error}
+        </div>
+      )}
+
       {/* Form Fields */}
       <div className="space-y-8">
         {/* Firm / Syndicate Name */}
@@ -122,18 +220,53 @@ const EntityProfile = () => {
           </label>
           <div className="flex items-center gap-4">
             {/* Logo Preview */}
-            <div className="w-24 h-24 bg-[#F4F6F5] rounded-lg flex items-center justify-center">
-              <LeadIcon/>
+            <div className="w-24 h-24 bg-[#F4F6F5] rounded-lg flex items-center justify-center overflow-hidden">
+              {logoPreview ? (
+                <img 
+                  src={logoPreview} 
+                  alt="Logo preview" 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <LeadIcon/>
+              )}
             </div>
             
-            {/* Choose File Button */}
-            <button
-              type="button"
-              className="px-4 py-2 !border border-[#01373D] bg-[#F4F6F5] rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Choose File
-            </button>
+            {/* File Input */}
+            <div className="relative">
+              <input
+                type="file"
+                id="logo-upload"
+                accept="image/*"
+                onChange={handleLogoChange}
+                className="hidden"
+              />
+              <label
+                htmlFor="logo-upload"
+                className="px-4 py-2 !border border-[#01373D] bg-[#F4F6F5] rounded-lg text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer inline-block"
+              >
+                {formData.logo ? "Change File" : "Choose File"}
+              </label>
+              {formData.logo && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, logo: null }));
+                    setLogoPreview(null);
+                    // Reset file input
+                    const fileInput = document.getElementById("logo-upload");
+                    if (fileInput) fileInput.value = "";
+                  }}
+                  className="ml-2 px-3 py-2 text-sm text-red-600 hover:text-red-800"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
           </div>
+          {formData.logo && (
+            <p className="text-xs text-gray-500 mt-2">Selected: {formData.logo.name}</p>
+          )}
         </div>
 
         {/* Add Team Members Button */}
@@ -164,9 +297,10 @@ const EntityProfile = () => {
         </button>
         <button
           onClick={handleNext}
-          className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+          disabled={loading}
+          className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Next
+          {loading ? "Submitting..." : "Next"}
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>

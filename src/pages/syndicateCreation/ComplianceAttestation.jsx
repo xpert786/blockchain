@@ -1,9 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { UpsyndicateIcon } from "../../components/Icons";
 
 const ComplianceAttestation = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [additionalPolicies, setAdditionalPolicies] = useState(null);
   const [formData, setFormData] = useState({
     regulatoryCompliance: false,
     antiMoneyLaundering: false,
@@ -20,15 +24,87 @@ const ComplianceAttestation = () => {
     }));
   };
 
-  const handleNext = () => {
-    navigate("/syndicate-creation/final-review");
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAdditionalPolicies(file);
+    }
+  };
+
+  const handleNext = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      // Get access token from localStorage
+      const accessToken = localStorage.getItem("accessToken");
+
+      if (!accessToken) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      // Validate required fields
+      if (!formData.regulatoryCompliance) {
+        throw new Error("Please acknowledge the Risk & Regulatory Attestation.");
+      }
+
+      if (!formData.antiMoneyLaundering) {
+        throw new Error("Please acknowledge the jurisdictional compliance requirements.");
+      }
+
+      // Create FormData for file uploads
+      const formDataToSend = new FormData();
+
+      // Add required fields - convert boolean to string "true"/"false"
+      formDataToSend.append("risk_regulatory_attestation", formData.regulatoryCompliance ? "true" : "false");
+      formDataToSend.append("jurisdictional_compliance_acknowledged", formData.antiMoneyLaundering ? "true" : "false");
+
+      // Add optional file if provided
+      if (additionalPolicies) {
+        formDataToSend.append("additional_compliance_policies", additionalPolicies);
+      }
+
+      // Get API URL
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const finalUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step3/`;
+
+      console.log("Submitting compliance attestation data to:", finalUrl);
+
+      // Note: Don't set Content-Type for FormData - axios will set it automatically with proper boundary
+      const response = await axios.post(finalUrl, formDataToSend, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      console.log("Compliance attestation successful:", response.data);
+
+      // Navigate to next step on success
+      navigate("/syndicate-creation/final-review");
+
+    } catch (err) {
+      console.error("Compliance attestation error:", err);
+      const backendData = err.response?.data;
+      if (backendData) {
+        if (typeof backendData === "object") {
+          // Handle specific field errors
+          const errorMessages = Object.values(backendData).flat();
+          setError(errorMessages.join(", ") || "Failed to submit compliance attestation.");
+        } else {
+          setError(String(backendData));
+        }
+      } else {
+        setError(err.message || "Failed to submit compliance attestation. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePrevious = () => {
     navigate("/syndicate-creation/kyb-verification");
   };
-
-  const allChecked = Object.values(formData).every(value => value === true);
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-8">
@@ -37,6 +113,13 @@ const ComplianceAttestation = () => {
         <h1 className="text-2xl  text-[#001D21] mb-2">Step 3: Compliance & Attestation</h1>
         <p className="text-gray-600">Review regulatory requirements and provide necessary attestations.</p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-600 text-sm">{error}</p>
+        </div>
+      )}
 
       {/* Form Fields */}
       <div className="space-y-8">
@@ -105,7 +188,8 @@ const ComplianceAttestation = () => {
             <div className="border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg p-8 text-center hover:bg-[#F0F2F1] transition-colors">
               <input
                 type="file"
-                accept=".pdf,.doc,.docx"
+                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                onChange={handleFileUpload}
                 className="hidden"
                 id="additionalPolicies"
               />
@@ -113,6 +197,9 @@ const ComplianceAttestation = () => {
                 <UpsyndicateIcon />
               </div>
               <p className="text-gray-500">Click to upload Files</p>
+              {additionalPolicies && (
+                <p className="text-green-600 mt-2">✓ {additionalPolicies.name}</p>
+              )}
             </div>
           </label>
         </div>
@@ -131,12 +218,15 @@ const ComplianceAttestation = () => {
         </button>
         <button
           onClick={handleNext}
-          className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+          disabled={loading || !formData.regulatoryCompliance || !formData.antiMoneyLaundering}
+          className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Next
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+          {loading ? "Submitting..." : "Next"}
+          {!loading && (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          )}
         </button>
       </div>
     </div>
