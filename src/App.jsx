@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import HomeMain from "./pages/home/HomeMain";
 
@@ -113,6 +113,7 @@ const App = () => {
 
       {/* SPV Creation Routes (with Layout) */}
       <Route path="/syndicate-creation/spv-creation" element={<SPVLayout />}>
+        <Route index element={<Navigate to="step1" replace />} />
         <Route path="step1" element={<SPVStep1 />} />
         <Route path="step2" element={<SPVStep2 />} />
         <Route path="step3" element={<SPVStep3 />} />

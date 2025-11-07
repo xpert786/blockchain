@@ -202,7 +202,10 @@ const ManagerLayout = () => {
             {/* Right Side Actions */}
             <div className="flex items-center space-x-4">
               {/* Create New SPV Button */}
-              <button className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
+              <button 
+                onClick={() => navigate("/syndicate-creation/spv-creation/step1")}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+              >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
