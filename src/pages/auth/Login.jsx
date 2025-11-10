@@ -89,7 +89,12 @@ const Login = () => {
       console.log("User data saved to localStorage:", userData);
 
       // Navigate based on user role - normalize the role value
-      const normalizedRole = (userRole || "").toLowerCase().trim();
+      const rawRole = userRole ?? userInfo?.user_type ?? userInfo?.user_role;
+      const normalizedRole = (rawRole || "").toLowerCase().trim();
+      const inferredInvestor =
+        normalizedRole.includes("invest") ||
+        userInfo?.is_investor === true ||
+        userInfo?.investor_profile;
       console.log("Normalized role (lowercase, trimmed):", normalizedRole);
       console.log("Checking role match...");
       
@@ -98,7 +103,7 @@ const Login = () => {
       if (normalizedRole === "syndicate" || normalizedRole === "syndicate_manager" || normalizedRole.includes("syndicate")) {
         console.log("✅ Redirecting to syndicate creation (LeadInfo)");
         navigate("/syndicate-creation/lead-info");
-      } else if (normalizedRole === "investor") {
+      } else if (normalizedRole === "investor" || inferredInvestor) {
         console.log("✅ Redirecting to investor dashboard");
         navigate("/investor-panel/dashboard");
       } else {
