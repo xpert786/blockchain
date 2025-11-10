@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import logoImage from "../../../assets/img/logo.png";
 import profileImage from "../../../assets/img/profile.png";
-
+import { HomeIcon, InvitesIcon, PortfolioIcon, TaxesIcon, MessagesIcon, SettingsIcon, AlertsIcon } from "./icon.jsx"; 
 const Wishlist = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -96,10 +96,7 @@ const Wishlist = () => {
                 onClick={() => navigate("/investor-panel/notifications")}
                 className="bg-[#01373D] p-2 rounded-lg hover:bg-[#014a54] transition-colors"
               >
-                <svg width="25" height="25" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="30" height="30" rx="8" fill="#01373D"/>
-                  <path d="M14.0083 20.2474C14.106 20.425 14.2495 20.5731 14.424 20.6763C14.5984 20.7794 14.7973 20.8338 15 20.8338C15.2027 20.8338 15.4016 20.7794 15.576 20.6763C15.7505 20.5731 15.894 20.425 15.9917 20.2474M11.5 12.6641C11.5 11.7358 11.8687 10.8456 12.5251 10.1892C13.1815 9.53281 14.0717 9.16406 15 9.16406C15.9283 9.16406 16.8185 9.53281 17.4749 10.1892C18.1313 10.8456 18.5 11.7358 18.5 12.6641C18.5 16.7474 20.25 17.9141 20.25 17.9141H9.75C9.75 17.9141 11.5 16.7474 11.5 12.6641Z" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                <AlertsIcon />
                 <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#F2E0C9] rounded-full flex items-center justify-center">
                   <span className="text-[#01373D] text-xs font-bold">2</span>
                 </div>
@@ -195,7 +192,7 @@ const Wishlist = () => {
             )}
           </div>
           <button 
-            onClick={() => navigate("/investor-panel/dashboard")}
+            onClick={() => navigate("/investor-panel/tax-documents")}
             className="px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors text-gray-300 hover:text-white"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

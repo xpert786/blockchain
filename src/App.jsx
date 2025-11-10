@@ -64,6 +64,10 @@ import Invites from "./pages/investerPanel/dashbaord/Invites";
 import TopSyndicates from "./pages/investerPanel/dashbaord/TopSyndicates";
 import Wishlist from "./pages/investerPanel/dashbaord/wishlist";
 import Portfolio from "./pages/investerPanel/dashbaord/Portfolio";
+import TaxDocuments from "./pages/investerPanel/dashbaord/TaxDocuments";
+import TaxDocumentDetail from "./pages/investerPanel/dashbaord/TaxDocumentDetail";
+import Messages from "./pages/investerPanel/dashbaord/messages";
+import InvestorSettings from "./pages/investerPanel/dashbaord/InvestorSettings";
 import BasicInfo from "./pages/investerPanel/investerOnboarding/BasicInfo";
 import KYCVerification from "./pages/investerPanel/investerOnboarding/KYCVerification";
 import BankDetails from "./pages/investerPanel/investerOnboarding/BankDetails";
@@ -162,6 +166,10 @@ const App = () => {
       <Route path="/investor-panel/top-syndicates" element={<TopSyndicates />} />
       <Route path="/investor-panel/wishlist" element={<Wishlist />} />
       <Route path="/investor-panel/portfolio" element={<Portfolio />} />
+      <Route path="/investor-panel/tax-documents" element={<TaxDocuments />} />
+      <Route path="/investor-panel/tax-documents/:documentId" element={<TaxDocumentDetail />} />
+      <Route path="/investor-panel/messages" element={<Messages />} />
+      <Route path="/investor-panel/settings" element={<InvestorSettings />} />
 
       {/* Investor Onboarding Routes (without sidebar layout, has own header) */}
       <Route path="/investor-onboarding/basic-info" element={<BasicInfo />} />

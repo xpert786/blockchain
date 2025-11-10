@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import logoImage from "../../../assets/img/logo.png";
 import profileImage from "../../../assets/img/profile.png";
-import {HomeIcon,InvitesIcon,PortfolioIcon,TaxesIcon,MessagesIcon,SettingsIcon, GrowthIcon } from "./icon.jsx";
+import {HomeIcon,InvitesIcon,PortfolioIcon,TaxesIcon,MessagesIcon,SettingsIcon, GrowthIcon, AlertsIcon } from "./icon.jsx";
 import {
   AreaChart,
   Area,
@@ -16,6 +16,12 @@ import {
   ResponsiveContainer
 } from "recharts";
 
+
+const navButtonClasses = (isActive) =>
+  `px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${
+    isActive ? "bg-[#FFFFFF1A] text-white" : "text-gray-300 hover:text-white"
+  }`;
+
 const Portfolio = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -27,11 +33,24 @@ const Portfolio = () => {
   const chartDropdownRef = useRef(null);
 
   useEffect(() => {
-    // Update activeNav based on current route
-    if (location.pathname.includes("/invest")) {
+    const path = location.pathname;
+    if (
+      [
+        "/investor-panel/invest",
+        "/investor-panel/invites",
+        "/investor-panel/top-syndicates",
+        "/investor-panel/wishlist"
+      ].some((segment) => path.includes(segment))
+    ) {
       setActiveNav("invest");
-    } else if (location.pathname.includes("/portfolio")) {
+    } else if (path.includes("/investor-panel/portfolio")) {
       setActiveNav("portfolio");
+    } else if (path.includes("/investor-panel/tax-documents")) {
+      setActiveNav("taxes");
+    } else if (path.includes("/investor-panel/messages")) {
+      setActiveNav("messages");
+    } else if (path.includes("/investor-panel/settings")) {
+      setActiveNav("settings");
     } else {
       setActiveNav("overview");
     }
@@ -164,9 +183,7 @@ const Portfolio = () => {
                 onClick={() => navigate("/investor-panel/notifications")}
                 className="bg-[#01373D] p-2 rounded-lg hover:bg-[#014a54] transition-colors"
               >
-                <div className="w-6 h-6">
-                  {/* Notification icon placeholder */}
-                </div>
+                <AlertsIcon />
                 <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#F2E0C9] rounded-full flex items-center justify-center">
                   <span className="text-[#01373D] text-xs font-bold">2</span>
                 </div>
@@ -198,11 +215,7 @@ const Portfolio = () => {
               navigate("/investor-panel/dashboard");
               setActiveNav("overview");
             }}
-            className={`px-3 py-3 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${
-              activeNav === "overview" 
-                ? "bg-[#FFFFFF1A] text-white" 
-                : "text-gray-300 hover:text-white"
-            }`}
+            className={navButtonClasses(activeNav === "overview")}
           >
             <HomeIcon />
             Overview
@@ -210,11 +223,7 @@ const Portfolio = () => {
           <div className="relative" ref={investDropdownRef}>
             <button 
               onClick={() => setShowInvestDropdown(!showInvestDropdown)}
-              className={`px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${
-                activeNav === "invest" 
-                  ? "bg-[#FFFFFF1A] text-white" 
-                  : "text-gray-300 hover:text-white"
-              }`}
+              className={navButtonClasses(activeNav === "invest")}
             >
               <InvitesIcon />
               Invest
@@ -274,25 +283,17 @@ const Portfolio = () => {
               navigate("/investor-panel/portfolio");
               setActiveNav("portfolio");
             }}
-            className={`px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${
-              activeNav === "portfolio" 
-                ? "bg-[#FFFFFF1A] text-white" 
-                : "text-gray-300 hover:text-white"
-            }`}
+            className={navButtonClasses(activeNav === "portfolio")}
           >
             <PortfolioIcon />
             Your Portfolio
           </button>
           <button 
             onClick={() => {
-              navigate("/investor-panel/taxes");
+              navigate("/investor-panel/tax-documents");
               setActiveNav("taxes");
             }}
-            className={`px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${
-              activeNav === "taxes" 
-                ? "bg-[#FFFFFF1A] text-white" 
-                : "text-gray-300 hover:text-white"
-            }`}
+            className={navButtonClasses(activeNav === "taxes")}
           >
             <TaxesIcon />
             Taxes & Document
@@ -302,11 +303,7 @@ const Portfolio = () => {
               navigate("/investor-panel/messages");
               setActiveNav("messages");
             }}
-            className={`px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${
-              activeNav === "messages" 
-                ? "bg-[#FFFFFF1A] text-white" 
-                : "text-gray-300 hover:text-white"
-            }`}
+            className={navButtonClasses(activeNav === "messages")}
           >
             <MessagesIcon />
             Messages
@@ -316,11 +313,7 @@ const Portfolio = () => {
               navigate("/investor-panel/settings");
               setActiveNav("settings");
             }}
-            className={`px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${
-              activeNav === "settings" 
-                ? "bg-[#FFFFFF1A] text-white" 
-                : "text-gray-300 hover:text-white"
-            }`}
+            className={navButtonClasses(activeNav === "settings")}
           >
             <SettingsIcon />
             Investor Settings

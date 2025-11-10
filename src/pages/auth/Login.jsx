@@ -7,7 +7,7 @@ import loginLogo from "../../assets/img/loginlogo.png";
 const Login = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: "",
+    email: "",
     password: "",
     rememberMe: false,
   });
@@ -35,7 +35,7 @@ const Login = () => {
       console.log("Final URL:", finalUrl);
       
       const payload = {
-        username: formData.username,
+        email: formData.email,
         password: formData.password,
       };
       console.log("Payload:", payload);
@@ -172,15 +172,15 @@ const Login = () => {
               {/* Username */}
               <div>
                 <label htmlFor="username" className="block text-sm  text-[#0A2A2E] font-poppins-custom mb-2">
-                  Username
+                  Email
                 </label>
                 <input
                   type="text"
-                  id="username"
-                  name="username"
-                  value={formData.username}
+                  id="email"
+                  name="email"
+                  value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="Enter your username"
+                  placeholder="Enter your email"
                   className="w-full px-4 py-3 !border !border-0.5px border-[#0A2A2E] bg-[#F4F6F5] rounded-lg outline-none "
                   required
                   disabled={loading}
