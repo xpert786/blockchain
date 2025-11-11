@@ -73,27 +73,28 @@ const SecureAccount2FA = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
 
-      {/* Left Panel */}
-      <div className="flex w-full max-w-5xl h-[650px] bg-white rounded-3xl overflow-hidden">
+      <div className="flex flex-col md:flex-row w-full max-w-5xl h-auto md:h-[650px] bg-white rounded-3xl overflow-hidden">
         {/* Left Panel */}
-        <div className="w-1/2 flex items-center justify-center relative p-4">
+        <div className="w-full md:w-1/2 flex items-center justify-center relative p-6 md:p-4 h-64 md:h-full">
           {/* Purple background behind logo/image */}
-          <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col items-center justify-center relative">
-            <h2 className="absolute top-6 left-6 text-2xl font-bold text-[#01373D] font-poppins-custom">Logo</h2>
+          <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col items-center justify-center relative overflow-hidden">
+            <h2 className="absolute top-4 left-4 md:top-6 md:left-6 text-lg md:text-2xl font-bold text-[#01373D] font-poppins-custom">Logo</h2>
             <img
               src={loginLogo}
               alt="Profile"
-              className="w-60 h-[360px] object-cover rounded-xl"
+              className="w-40 h-40 md:w-60 md:h-[360px] object-cover rounded-xl"
             />
           </div>
         </div>
 
         {/* Right Panel */}
-        <div className="w-1/2 flex items-center justify-center p-6">
+        <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-8 md:p-6">
           <div className="w-full max-w-md">
-            <div className="mb-8">
+            <div className="mb-8 text-center md:text-left">
               <h1 className="text-3xl text-[#001D21] mb-4">Secure Your Account With 2FA</h1>
-              <p className="text-[#0A2A2E] font-poppins-custom">Two-Factor Authentication adds an extra security layer, protecting your account with a code and password.</p>
+              <p className="text-[#0A2A2E] font-poppins-custom">
+                Two-Factor Authentication adds an extra security layer, protecting your account with a code and password.
+              </p>
             </div>
             
             {error && <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg mb-4">{error}</div>}

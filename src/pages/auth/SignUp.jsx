@@ -67,24 +67,24 @@ const SignUp = () => {
         backgroundRepeat: "no-repeat",
       }}
     >
-      <div className="flex w-full max-w-5xl h-[650px] bg-white rounded-3xl overflow-hidden">
-        <div className="w-1/2 flex items-center justify-center relative p-4">
-          <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col items-center justify-center relative">
-            <h2 className="absolute top-6 left-6 text-2xl font-bold text-[#01373D]">
+      <div className="flex flex-col md:flex-row w-full max-w-5xl h-auto md:h-[650px] bg-white rounded-3xl overflow-hidden">
+        <div className="w-full md:w-1/2 flex items-center justify-center relative p-6 md:p-6 h-64 md:h-full">
+          <div className="bg-[#CEC6FF] w-full h-full md:h-full rounded-2xl flex flex-col items-center justify-center relative overflow-hidden">
+            <h2 className="absolute top-4 left-4 md:top-6 md:left-6 text-lg md:text-2xl font-bold text-[#01373D]">
               Logo
             </h2>
-            <img src={loginLogo} alt="Profile" className="w-60 h-[360px] object-cover rounded-xl" />
+            <img src={loginLogo} alt="Profile" className="w-40 h-40 md:w-60 md:h-[360px] object-cover rounded-xl transition-transform duration-300" />
           </div>
         </div>
 
-        <div className="w-1/2 flex items-center justify-center p-3">
-          <div className="w-full max-w-md">
-            <div className="mb-4">
+        <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-8 md:p-3">
+          <div className="w-full max-w-md mx-auto">
+            <div className="mb-4 text-center md:text-left">
               <h1 className="text-3xl text-[#001D21] mb-2">Create Account</h1>
               <p className="text-[#0A2A2E]">Join our investment platform</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               <div>
                 <label htmlFor="fullName" className="block text-sm text-[#0A2A2E] mb-2">
                   Full Name
@@ -151,7 +151,7 @@ const SignUp = () => {
               </button> */}
                <button
                 type="submit"
-                className="w-30 bg-[#00F0C3] text-[#0A2A2E] font-semibold py-3 px-4 rounded-lg hover:bg-[#00E6B0] transition-colors duration-200 disabled:opacity-50"
+                className="w-full md:w-30 bg-[#00F0C3] text-[#0A2A2E] font-semibold py-3 px-4 rounded-lg hover:bg-[#00E6B0] transition-colors duration-200 disabled:opacity-50"
               >
                 Continue
               </button>

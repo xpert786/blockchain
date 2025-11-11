@@ -78,11 +78,14 @@ const InvestmentDocumentsIcon = () => {
 
 const TaxDocumentsDownloadIcon = () => {
     return (
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M14 10V12.6667C14 13.0203 13.8595 13.3594 13.6095 13.6095C13.3594 13.8595 13.0203 14 12.6667 14H3.33333C2.97971 14 2.64057 13.8595 2.39052 13.6095C2.14048 13.3594 2 13.0203 2 12.6667V10" stroke="#001D21" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M11.3337 6.66667L8.00033 10L4.66699 6.66667" stroke="#001D21" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M8 10V2" stroke="#001D21" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="0.25" y="0.25" width="21.5" height="21.5" rx="5.75" fill="#F9F8FF"/>
+<rect x="0.25" y="0.25" width="21.5" height="21.5" rx="5.75" stroke="#748A91" stroke-width="0.5"/>
+<path d="M15.5 12.5V14.5C15.5 14.7652 15.3946 15.0196 15.2071 15.2071C15.0196 15.3946 14.7652 15.5 14.5 15.5H7.5C7.23478 15.5 6.98043 15.3946 6.79289 15.2071C6.60536 15.0196 6.5 14.7652 6.5 14.5V12.5" stroke="#001D21" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M8.5 10L11 12.5L13.5 10" stroke="#001D21" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M11 12.5V6.5" stroke="#001D21" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
+
 
         
     )
@@ -158,6 +161,16 @@ const AlertsIcon = () => {
     );
 };
 
+const EyeIcon = () => {
+    return (
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="0.25" y="0.25" width="21.5" height="21.5" rx="5.75" fill="#F9F8FF"/>
+<rect x="0.25" y="0.25" width="21.5" height="21.5" rx="5.75" stroke="#748A91" stroke-width="0.5"/>
+<path d="M6 11C6 11 7.5 7.5 11 7.5C14.5 7.5 16 11 16 11C16 11 14.5 14.5 11 14.5C7.5 14.5 6 11 6 11Z" stroke="#001D21" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M11 12.5C11.8284 12.5 12.5 11.8284 12.5 11C12.5 10.1716 11.8284 9.5 11 9.5C10.1716 9.5 9.5 10.1716 9.5 11C9.5 11.8284 10.1716 12.5 11 12.5Z" stroke="#001D21" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+    );
+};
 export {
     InvitesIcon,
     HomeIcon,
@@ -174,6 +187,7 @@ export {
     DocumentCardIcon,
     ShareIcon,
     SendIcon,
-    AlertsIcon
+    AlertsIcon,
+    EyeIcon
 
 };

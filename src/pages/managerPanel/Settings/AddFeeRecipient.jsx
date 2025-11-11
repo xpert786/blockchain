@@ -20,21 +20,23 @@ const AddFeeRecipient = () => {
     };
 
     return (
-        <div className="bg-[#F4F6F5] min-h-screen">
+        <div className="bg-[#F4F6F5] min-h-screen px-4 py-6 sm:px-6 lg:px-8 space-y-6">
             {/* Header Card */}
-            <div className="bg-white rounded-xl p-6 flex items-center gap-3 mb-8">
-                <FreeIcon />
+            <div className="bg-white rounded-xl p-6 flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-4">
+                <div className="flex items-center justify-center sm:justify-start">
+                    <FreeIcon />
+                </div>
                 <div>
-                    <h4 className="text-[18px] text-[#001D21] font-semibold">
+                    <h4 className="text-base sm:text-[18px] text-[#001D21] font-semibold">
                         Fee Recipient Setup
                     </h4>
                 </div>
             </div>
 
             {/* Main Form Card */}
-            <div className="bg-white rounded-xl p-8 w-full">
+            <div className="bg-white rounded-xl p-4 sm:p-6 lg:p-8 w-full space-y-8">
                 {/* Recipient Type */}
-                <div className="mb-6 flex flex-col items-start w-[40%]">
+                <div className="mb-6 flex flex-col items-start w-full md:w-2/5">
                     <label className="block text-sm text-[#001D21] font-medium mb-2">
                         Recipient Type
                     </label>
@@ -91,14 +93,14 @@ const AddFeeRecipient = () => {
                     </div>
                 </div>
                 {/* Jurisdiction - tight inline row */}
-                <div className="mb-6 mt-20 flex flex-col md:flex-row md:items-center gap-1">
+                <div className="mb-6 mt-10 flex flex-col md:flex-row md:items-center gap-2">
                     <label className="block text-sm text-[#001D21] font-medium mb-2 md:mb-0 md:mr-2 whitespace-nowrap">
                         Select Jurisdiction
                     </label>
                     <select
                         value={jurisdiction}
                         onChange={(e) => setJurisdiction(e.target.value)}
-                        className="!border border-[#E2E2FB] rounded-lg p-2 outline-none w-[40%] text-[#001D21]"
+                        className="!border border-[#E2E2FB] rounded-lg p-2 outline-none w-full md:w-2/5 text-[#001D21]"
                     >
                         <option value="">Jurisdiction</option>
                         <option value="delaware">Delaware</option>
@@ -108,11 +110,11 @@ const AddFeeRecipient = () => {
                 </div>
 
                 {/* Upload Section - fixed design */}
-                <div className="mb-6 mt-20">
+                <div className="mb-6 mt-10">
                     <label className="block text-sm text-[#001D21] font-medium mb-2">
                         Upload ID Or Incorporation Documents
                     </label>
-                    <div className="border border-dashed border-[#E2E2FB] rounded-lg p-8 bg-[#F8FAFE] w-[50%] mt-3">
+                    <div className="border border-dashed border-[#E2E2FB] rounded-lg p-6 sm:p-8 bg-[#F8FAFE] w-full md:w-1/2 mt-3">
                         <input
                             type="file"
                             accept=".pdf,.docx"
@@ -132,9 +134,9 @@ const AddFeeRecipient = () => {
                             <p className="text-sm text-gray-500 mt-2">{file.name}</p>
                         )}
                     </div>
-                    <div className="flex justify-between w-[50%] mt-2 text-xs text-gray-400">
+                    <div className="flex flex-col sm:flex-row sm:justify-between w-full md:w-1/2 mt-2 text-xs text-gray-400 gap-1 sm:gap-0">
                         <span>Supported file type: .pdf, .docx</span>
-                        <span>Maximum Size: 25MB</span>
+                        <span className="sm:text-right">Maximum Size: 25MB</span>
                     </div>
                 </div>
 
@@ -152,9 +154,8 @@ const AddFeeRecipient = () => {
                 </div>
 
               
-            </div>
-              {/* Note Section - fixed design */}
-              <div className="bg-[#FFFDD080] !border border-[#FFC65B] rounded-xl p-6 mb-8 w-[50%] mt-6">
+                {/* Note Section - fixed design */}
+                <div className="bg-[#FFFDD080] !border border-[#FFC65B] rounded-xl p-6 w-full md:w-1/2">
                     <div className="text-[13px] font-semibold text-[#FFC65B] mb-2">Note*</div>
                     <ul className="list-disc pl-5 m-0">
                         <li className="text-[13px] text-[#748A91]">IRA And Fund-Based Options Can Be Added In Future Phases.</li>
@@ -162,22 +163,23 @@ const AddFeeRecipient = () => {
                 </div>
 
                 {/* Buttons */}
-                <div className="flex justify-end gap-4">
+                <div className="flex flex-col sm:flex-row sm:justify-end gap-3">
                     <button
                         onClick={handleCancel}
-                        className="flex items-center px-6 py-2 bg-[#FDECEC] border border-[#FFCFCF] text-[#01373D] text-base rounded-lg font-semibold cursor-pointer mr-2"
+                        className="flex items-center justify-center gap-2 px-6 py-2 bg-[#FDECEC] border border-[#FFCFCF] text-[#01373D] text-base rounded-lg font-semibold cursor-pointer"
                     >
-                        <span className="mr-2"><CloseIcon /></span>
+                        <CloseIcon />
                         Cancel
                     </button>
                     <button
                         onClick={handleSave}
-                        className="flex items-center px-6 py-2 bg-[#00F0C3] text-black rounded-lg hover:bg-[#00D4A8] transition-colors font-medium cursor-pointer"
+                        className="flex items-center justify-center gap-2 px-6 py-2 bg-[#00F0C3] text-black rounded-lg hover:bg-[#00D4A8] transition-colors font-medium cursor-pointer"
                     >
-                        <span className="mr-2"><SavechangesIcon /></span>
+                        <SavechangesIcon />
                         Save & Continue
                     </button>
                 </div>
+            </div>
         </div>
     );
 };

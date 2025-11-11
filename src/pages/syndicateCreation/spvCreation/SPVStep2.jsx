@@ -29,10 +29,10 @@ const SPVStep2 = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8 space-y-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Terms</h1>
+      <div className="space-y-2 text-center sm:text-left">
+        <h1 className="text-3xl font-bold text-gray-800">Terms</h1>
         <p className="text-gray-600">Define the financial and legal terms for your SPV.</p>
       </div>
 
@@ -43,25 +43,25 @@ const SPVStep2 = () => {
           <h2 className="text-lg font-semibold text-gray-800 mb-2">Transaction Type</h2>
           <p className="text-sm text-gray-600 mb-4">This helps with regulatory and legal structuring of your deal</p>
           <div className="space-y-3">
-            <label className="flex items-center">
+            <label className="flex items-start sm:items-center gap-3">
               <input
                 type="radio"
                 name="transactionType"
                 value="primary"
                 checked={formData.transactionType === "primary"}
                 onChange={(e) => handleInputChange("transactionType", e.target.value)}
-                className="mr-3"
+                className="mt-1 sm:mt-0"
               />
               <span className="text-gray-700">Primary</span>
             </label>
-            <label className="flex items-center">
+            <label className="flex items-start sm:items-center gap-3">
               <input
                 type="radio"
                 name="transactionType"
                 value="secondary"
                 checked={formData.transactionType === "secondary"}
                 onChange={(e) => handleInputChange("transactionType", e.target.value)}
-                className="mr-3"
+                className="mt-1 sm:mt-0"
               />
               <span className="text-gray-700">Secondary</span>
             </label>
@@ -90,25 +90,25 @@ const SPVStep2 = () => {
           <h2 className="text-lg font-semibold text-gray-800 mb-2">Valuation</h2>
           <p className="text-sm text-gray-600 mb-4">This helps with regulatory and legal structuring of your deal</p>
           <div className="space-y-3">
-            <label className="flex items-center">
+            <label className="flex items-start sm:items-center gap-3">
               <input
                 type="radio"
                 name="valuation"
                 value="pre-money"
                 checked={formData.valuation === "pre-money"}
                 onChange={(e) => handleInputChange("valuation", e.target.value)}
-                className="mr-3"
+                className="mt-1 sm:mt-0"
               />
               <span className="text-gray-700">Pre money</span>
             </label>
-            <label className="flex items-center">
+            <label className="flex items-start sm:items-center gap-3">
               <input
                 type="radio"
                 name="valuation"
                 value="post-money"
                 checked={formData.valuation === "post-money"}
                 onChange={(e) => handleInputChange("valuation", e.target.value)}
-                className="mr-3"
+                className="mt-1 sm:mt-0"
               />
               <span className="text-gray-700">Post money</span>
             </label>
@@ -172,10 +172,10 @@ const SPVStep2 = () => {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between pt-8 border-t border-gray-200 mt-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-4 pt-8 border-t border-gray-200">
         <button
           onClick={handlePrevious}
-          className="bg-gray-200 hover:scale-102 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+          className="bg-gray-200 hover:scale-102 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -184,7 +184,7 @@ const SPVStep2 = () => {
         </button>
         <button
           onClick={handleNext}
-          className="bg-[#00F0C3] hover:scale-102 text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+          className="bg-[#00F0C3] hover:scale-102 text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
         >
           Next
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

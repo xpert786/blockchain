@@ -161,3 +161,74 @@ export const taxImportantDates = [
 
 export const taxCenterTabs = ["Tax Document", "Tax Summary", "Tax Planning"];
 
+export const documentCenterTabs = [
+  { id: "all", label: "All Documents" },
+  { id: "investment", label: "Investment" },
+  { id: "reports", label: "Reports" },
+  { id: "kyc", label: "KYC" }
+];
+
+export const documentCenterDocuments = [
+  {
+    id: "investment-agreement-tech-growth-fund-i",
+    title: "Investment Agreement - Tech Growth Fund I",
+    type: "PDF",
+  
+    size: "2.4 MB",
+    uploadedOn: "2024-01-15",
+    uploadedLabel: "Uploaded 1/15/2024",
+    category: "investment",
+    fund: "Tech Growth Fund I",
+    status: "Approved"
+  },
+  {
+    id: "quarterly-report-q4-2023",
+    title: "Quarterly Report Q4 2023",
+    type: "PDF",
+   
+    size: "1.8 MB",
+    uploadedOn: "2024-01-10",
+    uploadedLabel: "Uploaded 1/10/2024",
+    category: "reports",
+    fund: "Tech Growth Fund I",
+    status: "Approved"
+  },
+  {
+    id: "kyc-identity-verification",
+    title: "KYC Identity Verification",
+    type: "PDF",
+   
+    size: "0.9 MB",
+    uploadedOn: "2023-12-20",
+    uploadedLabel: "Uploaded 12/20/2023",
+    category: "kyc",
+    fund: "",
+    status: "Approved"
+  },
+  {
+    id: "proof-of-address-utility-bill",
+    title: "Proof Of Address - Utility Bill",
+    type: "PDF",
+   
+    size: "0.5 MB",
+    uploadedOn: "2023-12-20",
+    uploadedLabel: "Uploaded 12/20/2023",
+    category: "kyc",
+    fund: "",
+    status: "Approved"
+  },
+  {
+    id: "accreditation-certificate",
+    title: "Accreditation Certificate",
+    type: "PDF",
+  
+    
+    size: "1.2 MB",
+    uploadedOn: "2023-12-22",
+    uploadedLabel: "Uploaded 12/22/2023",
+    category: "investment",
+    fund: "",
+    status: "Pending"
+  }
+];
+

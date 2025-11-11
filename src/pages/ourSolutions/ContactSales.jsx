@@ -11,22 +11,22 @@ const ContactSales = () => {
   };
 
   return (
-    <section className="bg-[#001D21] text-white py-30 px-6 md:px-12 flex justify-center items-center">
-      <div className="max-w-7xl w-full flex flex-col md:flex-row items-start justify-between gap-16 mt-20">
+    <section className="bg-[#001D21] text-white px-6 py-20 sm:py-24 md:py-30 md:px-12 flex justify-center items-center">
+      <div className="max-w-7xl w-full flex flex-col md:flex-row items-start justify-between gap-12 md:gap-16 mt-12 sm:mt-16 md:mt-20">
 
         {/* ✅ Left Text Section */}
         <div className="flex-1 md:pr-10">
-          <h1 className="text-[45px] font-semibold mb-6 text-[#FFFFFF]">Contact Sales</h1>
-          <p className="text-[#FFFFFF] text-base leading-relaxed max-w-md">
-            Fill out the form below to connect with our <br/>sales team. We’ll reach
-            out to discuss how<br/> Unlocksley’s software solutions can support <br/>your
+          <h1 className="text-3xl sm:text-4xl md:text-[45px] font-semibold mb-6 text-[#FFFFFF]">Contact Sales</h1>
+          <p className="text-[#FFFFFF] text-sm sm:text-base leading-relaxed max-w-md">
+            Fill out the form below to connect with our sales team. We’ll reach
+            out to discuss how Unlocksley’s software solutions can support your
             firm’s goals and operations.
           </p>
         </div>
 
         {/* ✅ Right Form Section */}
         <div className="flex-1 w-full">
-          <div className="bg-white text-[#001D21] rounded-xl shadow-lg p-8 w-full max-w-md ml-auto">
+          <div className="bg-white text-[#001D21] rounded-xl p-6 sm:p-8 w-full max-w-lg md:max-w-md md:ml-auto">
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Name Fields */}
               <div className="flex flex-col md:flex-row gap-4">
@@ -107,7 +107,7 @@ const ContactSales = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-[130px] bg-[#00F0C3] text-[#0A2A2E] py-2 rounded-md font-semibold hover:bg-[#00ccb3] transition-all cursor-pointer"
+                className="w-full sm:w-[130px] bg-[#00F0C3] text-[#0A2A2E] py-2 rounded-md font-semibold hover:bg-[#00ccb3] transition-all cursor-pointer"
               >
                 Contact Sales
               </button>

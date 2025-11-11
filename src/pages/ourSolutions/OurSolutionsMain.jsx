@@ -18,7 +18,7 @@ const OurSolutionsMain = () => {
    
       {!showContactForm && (
         <main className="flex flex-col items-center w-full bg-white">
-          <div className="w-full max-w-7xl px-6 md:px-10 lg:px-16 mt-20">
+          <div className="w-full max-w-7xl  md:px-10 lg:px-16 mt-20">
             <SolutionsCards />
           </div>
         </main>

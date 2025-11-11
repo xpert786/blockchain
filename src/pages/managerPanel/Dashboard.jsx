@@ -175,11 +175,11 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-[#F4F6F5] px-4 py-6 sm:px-6 lg:px-0 lg:mt-10 space-y-6">
       {/* Business Verification Banner */}
-      <div className="bg-[#D7F8F0] border border-green-200 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+      <div className="bg-[#D7F8F0] border border-green-200 rounded-lg p-4 sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
           <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect width="42" height="42" rx="10" fill="#01373D"/>
             <g clip-path="url(#clip0_1485_395)">
@@ -197,11 +197,11 @@ const Dashboard = () => {
               <p className="text-[#748A91]">To Continue Creating SPVs And Managing Investors, Please Verify Your Business Details.</p>
             </div>
           </div>
-          <div className="flex space-x-3">
-            <button className="bg-[#00F0C3] hover:bg-[#00D4A3] text-black px-4 py-2 rounded-lg font-medium transition-colors">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <button className="bg-[#00F0C3] hover:bg-[#00D4A3] text-black px-4 py-2 rounded-lg font-medium transition-colors text-center">
               Complete Verification
             </button>
-            <button className="bg-white hover:bg-gray-300 text-black px-4 py-2 rounded-lg font-medium transition-colors"
+            <button className="bg-white hover:bg-gray-300 text-black px-4 py-2 rounded-lg font-medium transition-colors text-center"
                 style={{border: "0.5px solid #01373D"}}>
               Remind Later
             </button>
@@ -210,15 +210,15 @@ const Dashboard = () => {
       </div>
 
       {/* Dashboard Header */}
-    <div className="bg-white rounded-lg p-6">
+      <div className="bg-white rounded-lg p-4 sm:p-6">
     <div>
         <h1 className="text-3xl font-medium text-[#9889FF] mb-2">Syndicate Manager  <span className="text-black">Dashboard</span></h1>
         <p className="text-gray-600 mb-6">Manage your SPVs and investor relationships</p>
       </div>
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
         {metrics.map((metric, index) => (
-          <div key={index} className={`${metric.bgColor} rounded-lg p-6 h-32 flex flex-col justify-between`}>
+          <div key={index} className={`${metric.bgColor} rounded-lg p-4 sm:p-6 h-full flex flex-col justify-between`}>
             {/* Top Row - Title and Icon */}
             <div className="flex justify-between items-start">
               <p className="text-sm text-gray-600 font-medium">{metric.title}</p>
@@ -237,10 +237,10 @@ const Dashboard = () => {
       </div>
       </div> 
 
-      <div className="bg-white rounded-lg p-3 w-fit">
+      <div className="bg-white rounded-lg p-3 sm:p-4">
                        {/* Tab Navigation */}
-        <div className="flex items-center justify-between ">
-          <div className="flex space-x-1">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setActiveTab("my-spvs")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -280,14 +280,14 @@ const Dashboard = () => {
 
         {/* Search and Controls - Only show for My SPVs tab */}
         {activeTab === "my-spvs" && (
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             {/* Search and Filter */}
-            <div className="flex items-center space-x-4 items-start">
-              <div className="relative">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 gap-3">
+              <div className="relative w-full sm:w-80">
                 <input
                   type="text"
                   placeholder="Search SPVs by name, ID, or focus area..."
-                  className="w-80 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
                 <svg
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -307,7 +307,7 @@ const Dashboard = () => {
             </div>
 
             {/* View Toggle */}
-            <div className="flex items-center justify-between items-end text-end">
+            <div className="flex items-center justify-between gap-2">
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setViewMode("grid")}
@@ -348,8 +348,8 @@ const Dashboard = () => {
             {spvs.map((spv, index) => (
               <div key={index} className="bg-white border border-gray-200 rounded-lg p-4">
                 {/* Header Section */}
-                <div className="flex items-center justify-between mb-4">
-                  <div>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
+                  <div className="space-y-1">
                     <h3 className="text-lg font-semibold text-gray-800 mb-1">{spv.name}</h3>
                     <p className="text-sm text-gray-500">{spv.id} • Created {spv.created}</p>
                   </div>
@@ -373,7 +373,7 @@ const Dashboard = () => {
 
                 {/* Key Metrics Section */}
                 <div className="bg-[#F9F8FF] rounded-lg p-3 mb-4">
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 sm:grid-cols-3 gap-4">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">My SPVs</p>
                       <p className="text-lg font-semibold text-gray-800">{spv.current}</p>
@@ -406,14 +406,14 @@ const Dashboard = () => {
                 </div>
 
                 {/* Action Buttons Section */}
-                <div className="flex items-center space-x-2">
-                  <button className="flex items-center space-x-1 px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 gap-2">
+                  <button className="flex items-center justify-center space-x-1 px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                     </svg>
                     <span>Manage Investors</span>
                   </button>
-                  <button className="flex items-center space-x-1 px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm">
+                  <button className="flex items-center justify-center space-x-1 px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
@@ -464,7 +464,7 @@ const Dashboard = () => {
           )
         ) : activeTab === "pending-actions" ? (
           /* Pending Actions Content */
-          <div className="space-y-4 bg-white p-4 rounded-lg border border-gray-200">
+          <div className="space-y-4 bg-white p-4 sm:p-6 rounded-lg border border-gray-200">
             {/* Header */}
             <div className="mb-6">
               <h2 className="text-2xl font-medium text-gray-900 mb-2">Pending Actions</h2>
@@ -474,7 +474,7 @@ const Dashboard = () => {
             {/* Pending Actions List */}
             <div className="space-y-3">
               {pendingActions.map((action, index) => (
-                <div key={index} className="bg-[#F9F8FF] border border-gray-200 rounded-lg p-4 flex items-center justify-between">
+                <div key={index} className="bg-[#F9F8FF] border border-gray-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   {/* Left Side - Status and Details */}
                   <div className="flex items-center space-x-4">
                     <div className={`w-3 h-3 rounded-full ${action.statusDot}`}></div>
@@ -493,7 +493,7 @@ const Dashboard = () => {
                   </div>
 
                   {/* Right Side - Action Buttons */}
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 justify-end">
                     <button className="px-4 py-2 border bg-[#F4F6F5] border-[#01373D] text-black rounded-lg transition-colors">
                       View
                     </button>
@@ -509,10 +509,10 @@ const Dashboard = () => {
           /* Analytics Content */
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Performance Overview Card */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
               <h2 className="text-2xl font-medium text-gray-900 mb-6">Performance Overview</h2>
               
-              <div className="flex items-center space-x-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 gap-6">
                 {/* Circular Progress Chart */}
                 <div className="relative w-70 h-70">
                   <svg className="w-70 h-70 transform -rotate-90" viewBox="0 0 100 100">
@@ -545,7 +545,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Key Metrics List */}
-                <div className="flex-1 space-y-4">
+                <div className="flex-1 space-y-3">
                   <div className="flex items-center space-x-3 bg-[#F9F8FF] rounded-lg p-2 border border-[#E2E2FB]">
                     <div className="w-4 h-4 rounded-full bg-[#9FD2FF]"></div>
                     <span className="text-gray-900 font-medium">Total Funds Raised</span>
@@ -567,7 +567,7 @@ const Dashboard = () => {
             </div>
 
             {/* Pending Actions Card */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
               <h2 className="text-2xl font-medium text-gray-900 mb-2">Pending Actions</h2>
               <p className="text-gray-600 mb-6">Items requiring your review and approval</p>
               

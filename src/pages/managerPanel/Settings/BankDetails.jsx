@@ -80,24 +80,26 @@ const BankDetails = () => {
   };
 
   return (
-    <div className="bg-[#F4F6F5] min-h-screen ">
+    <div className="bg-[#F4F6F5] min-h-screen px-4 py-6 sm:px-6 lg:px-8 space-y-6">
       {/* Header - White Card */}
-      <div className="bg-white rounded-xl shadow-sm p-6 flex items-center space-x-3 mb-8 w-full">
-        <BankIcon />
+      <div className="bg-white rounded-xl p-6 flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-4 sm:space-y-0 w-full">
+        <div className="flex items-center justify-center sm:justify-start">
+          <BankIcon />
+        </div>
         <div>
-          <h4 className="text-[18px] text-[#001D21]">Bank Details</h4>
-          <p className="text-[13px] text-[#748A91] font-poppins-custom">Manage cards and bank accounts used for transactions and payouts.</p>
+          <h4 className="text-base sm:text-[18px] text-[#001D21]">Bank Details</h4>
+          <p className="text-sm text-[#748A91] font-poppins-custom">Manage cards and bank accounts used for transactions and payouts.</p>
         </div>
       </div>
 
       {/* Credit/Debit Cards - White Card */}
-      <div className="bg-white rounded-xl p-6 mb-8 w-full">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white rounded-xl p-4 sm:p-6 mb-8 w-full space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h3 className="text-lg  text-[#001D21]">Credit Or Debit Cards</h3>
         </div>
-        <div className="flex flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Card 1 */}
-          <div className="group relative overflow-hidden flex-1 min-w-0 rounded-xl p-4 bg-[#00F0C3] text-white shadow-sm flex flex-col justify-between min-h-[140px] transition">
+          <div className="group relative overflow-hidden flex-1 min-w-0 rounded-xl p-4 bg-[#00F0C3] text-white flex flex-col justify-between min-h-[140px] transition">
             <div className="text-xs opacity-90">XXXX-XXXX-XXXX-4155</div>
             <div className="flex items-center justify-between mt-6 text-xs">
               <div>
@@ -123,7 +125,7 @@ const BankDetails = () => {
             </div>
           </div>
           {/* Card 2 */}
-          <div className="group relative overflow-hidden flex-1 min-w-0 rounded-xl p-4 bg-[#7E7E7C] text-white shadow-sm flex flex-col justify-between min-h-[140px] transition">
+          <div className="group relative overflow-hidden flex-1 min-w-0 rounded-xl p-4 bg-[#7E7E7C] text-white   flex flex-col justify-between min-h-[140px] transition">
             <div className="text-xs opacity-90">XXXX-XXXX-XXXX-6296</div>
             <div className="mt-6 text-[10px]">
               <div className="uppercase tracking-wide opacity-80">VALID DATE</div>
@@ -154,11 +156,11 @@ const BankDetails = () => {
       </div>
 
       {/* Bank Accounts - White Card */}
-      <div className="bg-white rounded-xl p-6 mb-8 w-full">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white rounded-xl p-4 sm:p-6 mb-8 w-full space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h3 className="text-lg  text-[#001D21]">Bank Accounts</h3>
         </div>
-        <div className="flex flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Bank Account 1 */}
           <div className="group relative overflow-hidden flex-1 min-w-0 rounded-xl p-4  text-white flex flex-col justify-between min-h-[120px] bg-[#00F0C3] transition">
             {/* Bank name row with icon */}
@@ -255,7 +257,7 @@ const BankDetails = () => {
       {showAddCard && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-[#01373DB2]/80" onClick={() => setShowAddCard(false)} />
-          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-xl mx-4 p-6">
+          <div className="relative bg-white rounded-xl  w-full max-w-xl mx-4 p-6 space-y-4">
             <div className="flex items-center justify-between mb-4">
               <div className="text-[16px] font-medium text-[#001D21]">Add New Card</div>
               <button onClick={() => setShowAddCard(false)} className="w-7 h-7 rounded-full flex items-center justify-center border border-[#E2E2FB] text-[#748A91]"><ClosIcon /></button>
@@ -291,9 +293,9 @@ const BankDetails = () => {
               </div>
             </div>
             {/* Actions */}
-            <div className="flex items-center justify-end gap-3 mt-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 mt-6">
               <button onClick={() => setShowAddCard(false)} className="px-4 py-2 bg-[#F7F7F8] text-[#2F595C] rounded-lg border border-[#01373D]">Cancel</button>
-              <button onClick={handleAddCardSubmit} className="px-4 py-2 bg-[#00F0C3] text-black rounded-lg">Add card</button>
+              <button onClick={handleAddCardSubmit} className="px-4 py-2 bg-[#00F0C3] textblack rounded-lg">Add card</button>
             </div>
           </div>
         </div>
@@ -303,7 +305,7 @@ const BankDetails = () => {
       {showEditCard && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-[#01373DB2]/80" onClick={() => setShowEditCard(false)} />
-          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-xl mx-4 p-6">
+          <div className="relative bg-white rounded-xl  w-full max-w-xl mx-4 p-6 space-y-4">
             <div className="flex items-center justify-between mb-4">
               <div className="text-[16px] font-medium text-[#001D21] flex items-center gap-2">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -334,9 +336,9 @@ const BankDetails = () => {
                 <input name="holder" value={editForm.holder} onChange={handleEditChange} className="w-full !border-[0.5px] border-[#0A2A2E] rounded-lg p-2 outline-none bg-[#F4F6F5] text-[#748A91] font-poppins-custom" placeholder="Card Holder Name" />
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 mt-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 mt-6">
               <button onClick={() => setShowEditCard(false)} className="px-4 py-2 bg-[#F7F7F8] text-[#2F595C] rounded-lg border border-[#01373D]">Cancel</button>
-              <button onClick={handleUpdateCardSubmit} className="px-4 py-2 bg-[#00F0C3] text-black rounded-lg">Update Card</button>
+              <button onClick={handleUpdateCardSubmit} className="px-4 py-2 bg-[#00F0C3] text-black rounded-lg">Save changes</button>
             </div>
           </div>
         </div>
@@ -346,7 +348,7 @@ const BankDetails = () => {
       {showBankDetails && selectedBank && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-[#01373DB2]/80" onClick={() => setShowBankDetails(false)} />
-          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-xl mx-4 p-6">
+          <div className="relative bg-white rounded-xl  w-full max-w-xl mx-4 p-6 space-y-4">
             <div className="flex items-center justify-between mb-4">
               <div className="text-[16px] font-medium text-[#001D21]">Bank Account Details</div>
               <button onClick={() => setShowBankDetails(false)} className="w-7 h-7 rounded-full flex items-center justify-center border border-[#E2E2FB] text-[#748A91]"><ClosIcon /></button>
@@ -379,9 +381,8 @@ const BankDetails = () => {
                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 mt-6">
-              <button onClick={() => setShowBankDetails(false)} className="px-4 py-2 bg-[#F7F7F8] text-[#2F595C] rounded-lg border border-[#01373D]">Cancel</button>
-              <button className="px-4 py-2 bg-[#E74C3C] text-white rounded-lg">Delete Account</button>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 mt-6">
+              <button onClick={() => setShowBankDetails(false)} className="px-4 py-2 bg-[#F7F7F8] text-[#2F595C] rounded-lg border border-[#01373D]">Close</button>
             </div>
           </div>
         </div>
@@ -391,7 +392,7 @@ const BankDetails = () => {
       {showAddBank && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-[#01373DB2]/80" onClick={() => setShowAddBank(false)} />
-          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-xl mx-4 p-6">
+          <div className="relative bg-white rounded-xl  w-full max-w-xl mx-4 p-6 space-y-4">
             <div className="flex items-center justify-between mb-4">
               <div className="text-[16px] font-medium text-[#001D21]">Add New Bank</div>
               <button onClick={() => setShowAddBank(false)} className="w-7 h-7 rounded-full flex items-center justify-center border border-[#E2E2FB] text-[#748A91]"><ClosIcon /></button>
@@ -428,9 +429,9 @@ const BankDetails = () => {
                 </select>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 mt-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 mt-6">
               <button onClick={() => setShowAddBank(false)} className="px-4 py-2 bg-[#F7F7F8] text-[#2F595C] rounded-lg border border-[#01373D]">Cancel</button>
-              <button onClick={handleAddBankSubmit} className="px-4 py-2 bg-[#00F0C3] text-black rounded-lg">Add Bank</button>
+              <button onClick={handleAddBankSubmit} className="px-4 py-2 bg-[#00F0C3] text-black rounded-lg">Add bank</button>
             </div>
           </div>
         </div>

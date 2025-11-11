@@ -22,29 +22,31 @@ const GeneralInfo = () => {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8">
       {/* Header */}
-      <div className="flex items-center space-x-3 mb-8">
-      <UpdateContactIcon />
+      <div className="flex flex-row gap-2 items-center sm:flex-row sm:items-center sm:space-x-3 space-y-4 sm:space-y-0">
+        <div className="flex sm:justify-start">
+          <UpdateContactIcon />
+        </div>
         <div>
-          <h2 className="text-2xl font-bold text-[#01373D]">General Information</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#01373D]">General Information</h2>
         </div>
       </div>
 
       {/* Logo Upload Section */}
-      <div className="mb-8">
-        <div className="!border-1 border-dashed border-[#E2E2E2] rounded-lg p-8 bg-white">
-          <div className="flex items-center space-x-8">
-            <div className="w-32 h-32 rounded-full flex items-center justify-center bg-[#F4F6F5]">
+      <div>
+        <div className="!border-1 border-dashed border-[#E2E2E2] rounded-lg p-6 sm:p-8 bg-white">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full flex items-center justify-center bg-[#F4F6F5] mx-auto sm:mx-0">
               <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
             <div>
-              <button className="px-3 py-2 mt-3 !border border-[#01373D] rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-poppins-custom text-base">
+              <button className="px-3 py-2 !border border-[#01373D] rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-poppins-custom text-base">
                 Update Logo
               </button>
-              <p className="text-base text-gray-500 mt-3 font-poppins-custom">JPG, GIF or PNG. 1MB max.</p>
+              <p className="text-sm sm:text-base text-gray-500 mt-3 font-poppins-custom">JPG, GIF or PNG. 1MB max.</p>
             </div>
           </div>
         </div>
@@ -53,7 +55,7 @@ const GeneralInfo = () => {
       {/* Form Fields */}
       <div className="space-y-6">
         {/* First Name and Last Name Row */}
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* First Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2 font-poppins-custom">First Name</label>
@@ -119,10 +121,10 @@ const GeneralInfo = () => {
       </div>
 
       {/* Save Button */}
-      <div className="flex justify-end mt-8">
+      <div className="flex flex-col sm:flex-row sm:justify-end gap-3">
         <button
           onClick={handleSave}
-          className="flex items-center space-x-2 px-6 py-2 bg-[#00F0C3] text-black rounded-lg hover:bg-[#00D4A8] transition-colors font-poppins-custom font-medium"
+          className="flex items-center justify-center gap-2 px-6 py-2 bg-[#00F0C3] text-black rounded-lg hover:bg-[#00D4A8] transition-colors font-poppins-custom font-medium"
         >
           <SavechangesIcon />
           <span>Save changes</span>

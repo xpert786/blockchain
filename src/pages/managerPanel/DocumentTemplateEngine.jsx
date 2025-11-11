@@ -63,19 +63,18 @@ const DocumentTemplateEngine = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F6F5]">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Document Template Engine</h1>
-        <p className="text-lg text-gray-600">Generate and manage legal documents from templates</p>
+    <div className="min-h-screen bg-[#F4F6F5] px-4 py-6 sm:px-6 lg:px-0 lg:mt-10 space-y-6">
+      <div className="bg-white rounded-lg p-4 sm:p-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 text-center sm:text-left">Document Template Engine</h1>
+        <p className="text-sm sm:text-base text-gray-600 text-center sm:text-left">Generate and manage legal documents from templates</p>
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-lg p-2 mb-6 max-w-fit">
-        <div className="flex space-x-4">
+      <div className="bg-white rounded-lg p-3 sm:p-4">
+        <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
           <button
             onClick={() => handleTabClick("generate")}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === "generate"
                 ? "bg-[#00F0C3] text-black"
                 : "bg-[#F4F6F5] text-gray-700 hover:bg-gray-300"
@@ -85,7 +84,7 @@ const DocumentTemplateEngine = () => {
           </button>
           <button
             onClick={() => handleTabClick("manage")}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === "manage"
                 ? "bg-[#00F0C3] text-black"
                 : "bg-[#F4F6F5] text-gray-700 hover:bg-gray-300"
@@ -95,7 +94,7 @@ const DocumentTemplateEngine = () => {
           </button>
           <button
             onClick={() => handleTabClick("generated")}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === "generated"
                 ? "bg-[#00F0C3] text-black"
                 : "bg-[#F4F6F5] text-gray-700 hover:bg-gray-300"
@@ -108,13 +107,15 @@ const DocumentTemplateEngine = () => {
 
       {/* Tab Content */}
       {activeTab === "generate" && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
           {/* Left Panel - Select Template */}
-          <div className="bg-white rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Select Template</h2>
-            <p className="text-gray-600 mb-6">Choose a document template to generate</p>
+          <div className="bg-white rounded-lg p-4 sm:p-6 space-y-4">
+            <div>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Select Template</h2>
+              <p className="text-sm sm:text-base text-gray-600">Choose a document template to generate</p>
+            </div>
             
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {templates.map((template) => (
                 <div
                   key={template.id}
@@ -125,14 +126,14 @@ const DocumentTemplateEngine = () => {
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <div className="flex items-start space-x-4">
-                    <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center flex-shrink-0 mt-2">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="w-10 h-10 bg-green-100 rounded flex items-center justify-center flex-shrink-0">
                       <FilesaddIcon />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-medium text-gray-900">{template.name}</h3>
-                      <p className="text-sm text-gray-600 mb-3">{template.description}</p>
-                      <div className="flex items-center space-x-2">
+                      <h3 className="text-base sm:text-lg font-medium text-gray-900">{template.name}</h3>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-3">{template.description}</p>
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className={`px-3 py-1 rounded-full !border border-[#01373D] text-xs font-medium ${
                           selectedTemplate?.id === template.id
                             ? "bg-[#FFFFFF] text-[#01373D]"
@@ -158,9 +159,11 @@ const DocumentTemplateEngine = () => {
           </div>
 
           {/* Right Panel - Document Data */}
-          <div className="bg-white rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Document Data</h2>
-            <p className="text-gray-600 mb-6">Select a template to see required fields</p>
+          <div className="bg-white rounded-lg p-4 sm:p-6 space-y-4">
+            <div>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Document Data</h2>
+              <p className="text-sm sm:text-base text-gray-600">Select a template to see required fields</p>
+            </div>
             
             {selectedTemplate ? (
               <div className="space-y-6">
@@ -230,26 +233,34 @@ const DocumentTemplateEngine = () => {
                 
                 <button
                   onClick={handleGenerateDocument}
-                  className="w-full bg-[#00F0C3] hover:bg-[#00D4A3] text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+                  className="w-full bg-[#00F0C3] hover:bg-[#00D4A3] text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   <BlackfileIcon />
                   <span>Generate Document</span>
                 </button>
               </div>
             ) : (
-              <div className="bg-[#F9F8FF] rounded-lg p-6 flex flex-col items-center justify-center h-[500px]">
-                <div className="w-16 h-16 text-[#00F0C3] flex items-center justify-center">
+              <div className="bg-[#F9F8FF] rounded-lg p-6 flex flex-col items-center justify-center h-64 sm:h-[500px]">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 text-[#00F0C3] flex items-center justify-center">
                   <FilesaddIcon />
                 </div>
-                <p className="text-lg font-medium text-gray-600 mt-4">Select A Template To Begin</p>
+                <p className="text-sm sm:text-lg font-medium text-gray-600 mt-4 text-center">Select A Template To Begin</p>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {activeTab === "manage" && <ManageTemplates />}
-      {activeTab === "generated" && <GeneratedDocuments />}
+      {activeTab === "manage" && (
+        <div className="bg-white rounded-lg p-4 sm:p-6">
+          <ManageTemplates />
+        </div>
+      )}
+      {activeTab === "generated" && (
+        <div className="bg-white rounded-lg p-4 sm:p-6">
+          <GeneratedDocuments />
+        </div>
+      )}
     </div>
   );
 };

@@ -79,19 +79,19 @@ const RequestSystem = () => {
   }, [openDropdown]);
 
   return (
-    <div className="min-h-screen bg-[#F4F6F5]">
+    <div className="min-h-screen bg-[#F4F6F5] px-4 py-6 sm:px-6 lg:px-0 lg:mt-10 space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg p-6 mb-8">
-      <div className="mb-8">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">
+      <div className="bg-white rounded-lg p-4 sm:p-6">
+      <div className="mb-6">
+        <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 text-center sm:text-left">
           <span className="text-[#9889FF]">Request</span> & Approval System
         </h3>
-        <p className="text-lg text-gray-600">Manage approval workflows and requests</p>
+        <p className="text-sm sm:text-base text-gray-600 text-center sm:text-left">Manage approval workflows and requests</p>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-[#CAE6FF] rounded-2xl p-8 h-32">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="bg-[#CAE6FF] rounded-2xl p-5 sm:p-6">
           <div className="flex items-center justify-between h-full">
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
@@ -106,7 +106,7 @@ const RequestSystem = () => {
           </div>
         </div>
 
-        <div className="bg-[#D7F8F0] rounded-2xl p-8 h-32">
+        <div className="bg-[#D7F8F0] rounded-2xl p-5 sm:p-6">
           <div className="flex items-center justify-between h-full">
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
@@ -121,7 +121,7 @@ const RequestSystem = () => {
           </div>
         </div>
 
-        <div className="bg-[#E2E2FB] rounded-2xl p-8 h-32">
+        <div className="bg-[#E2E2FB] rounded-2xl p-5 sm:p-6">
           <div className="flex items-center justify-between h-full">
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
@@ -136,7 +136,7 @@ const RequestSystem = () => {
           </div>
         </div>
 
-        <div className="bg-[#FFEFE8] rounded-2xl p-8 h-32">
+        <div className="bg-[#FFEFE8] rounded-2xl p-5 sm:p-6">
           <div className="flex items-center justify-between h-full">
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
@@ -154,13 +154,13 @@ const RequestSystem = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="bg-white rounded-lg p-2 mb-6 max-w-fit">
-        <div className="flex space-x-4">
+      <div className="bg-white rounded-lg p-3 sm:p-4">
+        <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 activeTab === tab.id
                   ? "bg-[#00F0C3] text-black"
                   : "bg-[#F4F6F5] text-gray-700 hover:bg-gray-300"
@@ -173,8 +173,8 @@ const RequestSystem = () => {
       </div>
 
     {/* Search Bar and Icons */}
-    <div className="flex items-center justify-between mb-6">
-        <div className="relative flex-1 max-w-md">
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div className="relative w-full md:max-w-md">
           <input
             type="text"
             placeholder="Search SPVs by name, ID, or focus area..."
@@ -189,7 +189,7 @@ const RequestSystem = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center justify-between md:justify-start gap-2">
           {/* View1Icon - Inactive */}
           <button className="p-2 text-gray-600 hover:text-gray-800 transition-colors">
             <View1Icon />
@@ -201,7 +201,7 @@ const RequestSystem = () => {
           </button>
           
           {/* View3Icon - Active */}
-          <button className="p-2 text-white hover:text-gray-200 transition-colors ">
+          <button className="p-2 bg-[#01373D] text-white rounded-lg">
             <View3Icon />
           </button>
         </div>
@@ -210,8 +210,8 @@ const RequestSystem = () => {
       {/* Request Cards */}
       <div className="space-y-4">
         {requests.map((request) => (
-          <div key={request.id} className="bg-white rounded-lg p-6 border border-gray-200">
-            <div className="flex items-start space-x-4">
+          <div key={request.id} className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
+            <div className="flex items-start gap-3 sm:gap-4">
               {/* Avatar */}
               <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">AI</span>
@@ -219,23 +219,23 @@ const RequestSystem = () => {
 
               {/* Content */}
               <div className="flex-1">
-                <div className="flex items-center space-x-2 mb-1">
+                <div className="flex items-center gap-2 mb-1">
                   {request.title === "Update SPV Investment Terms" && <UpdateSpvIcon />}
                   {request.title === "Update Contact Information" && <UpdateContactIcon />}
-                  <h3 className="text-lg font-semibold text-gray-900">{request.title}</h3>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900">{request.title}</h3>
                 </div>
-                <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
-                  <div className="flex items-center space-x-1">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600 mb-2">
+                  <div className="flex items-center gap-1">
                     <Users2Icon />
                     <span>{request.requester}</span>
                   </div>
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center gap-1">
                     <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <span>{request.date}</span>
                   </div>
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center gap-1">
                     <Spv2Icon />
                     <span>{request.spvId}</span>
                   </div>
@@ -243,12 +243,12 @@ const RequestSystem = () => {
                 <p className="text-gray-700 mb-4">{request.description}</p>
 
                 {/* Action Buttons and Status Tags */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                     {request.actions.includes("approve") && (
                       <button
                         onClick={() => handleApprove(request)}
-                        className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                       >
                         <RighIcon />
                         <span>Approve Request</span>
@@ -257,7 +257,7 @@ const RequestSystem = () => {
                     {request.actions.includes("reject") && (
                       <button
                         onClick={() => handleReject(request)}
-                        className="flex items-center space-x-2 bg-[#F4F6F5] !border border-[#01373D] hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        className="flex items-center justify-center gap-2 bg-[#F4F6F5] !border border-[#01373D] hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                       >
                         <div className="w-5 h-5 !border border-[#01373D] rounded-full flex items-center justify-center">
                           <svg className="w-3 h-3 text-[#01373D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,7 +270,7 @@ const RequestSystem = () => {
                     {request.actions.includes("review") && (
                       <button
                         onClick={() => handleReview(request)}
-                        className="flex items-center space-x-2 bg-[#F4F6F5] !border border-[#01373D] hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        className="flex items-center justify-center gap-2 bg-[#F4F6F5] !border border-[#01373D] hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                       >
                         <EyessIcon />
                         <span>Review Details</span>
@@ -279,7 +279,7 @@ const RequestSystem = () => {
                   </div>
 
                   {/* Status Tags */}
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center justify-end gap-2">
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${request.statusColor}`}>
                       {request.status}
                     </span>
@@ -342,7 +342,7 @@ const RequestSystem = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 p-6 border-t border-gray-200">
               <button
                 onClick={() => setShowRejectModal(false)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -354,7 +354,7 @@ const RequestSystem = () => {
                   setShowRejectModal(false);
                   console.log("Request rejected:", selectedRequest);
                 }}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
               >
                 <div className="w-5 h-5 border border-white rounded-full flex items-center justify-center">
                   <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

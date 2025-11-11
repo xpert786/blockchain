@@ -5,6 +5,7 @@ import logoImage from "../../../assets/img/logo.png";
 const BasicInfo = () => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState("Basic Information");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -44,6 +45,7 @@ const BasicInfo = () => {
     };
     if (stepRoutes[step]) {
       navigate(stepRoutes[step]);
+      setIsMobileMenuOpen(false);
     }
   };
 
@@ -58,64 +60,69 @@ const BasicInfo = () => {
   ];
 
   return (
-    <div className="min-h-screen p-6" style={{ backgroundColor: '#F4F6F5'  }}>
+    <div className="min-h-screen px-4 sm:px-6 py-6" style={{ backgroundColor: '#F4F6F5'  }}>
       {/* Header */}
-           {/* Header */}
       <header className="bg-white rounded-xl mb-6">
         <div className="px-5 py-5">
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             {/* Left Side - Logo and Brand Name */}
-            <div className="flex items-center gap-3 flex-1">
+            <div className="flex items-center justify-center md:justify-start gap-3 flex-1">
               <img
                 src={logoImage}
                 alt="Unlocksley Logo"
-                className="h-20 w-auto object-contain"
+                className="h-16 sm:h-20 w-auto object-contain"
               />
-            
             </div>
             {/* Right Side - Application Title and Information */}
-            <div className="flex items-center gap-4 flex-1 justify-end">
-              <div className="flex flex-col items-end">
-                <h1 className="text-2xl font-semibold mb-1">
+            <div className="flex items-center justify-center md:justify-end gap-4 flex-1">
+              <div className="flex flex-col items-center md:items-end text-center md:text-right">
+                <h1 className="text-xl sm:text-2xl font-semibold mb-1">
                   <span className="text-[#9889FF]">Investor</span>{" "}
                   <span className="text-[#001D21]">Onboarding</span>
                 </h1>
-              
               </div>
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-lg border border-[#01373D] text-[#01373D]"
+                aria-label="Open onboarding menu"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="flex min-h-[calc(100vh-200px)] px-6 pb-6">
+      <div className="flex flex-col lg:flex-row items-start gap-6 min-h-[calc(100vh-200px)]">
         {/* Left Sidebar */}
-        <div className=" bg-[#CEC6FF] rounded-xl p-4 m-4 h-fit">
-          <div className="space-y-4">
+        <div className="hidden lg:block w-72 shrink-0 bg-[#CEC6FF] rounded-xl p-6 ml-0 lg:ml-4">
+          <div className="space-y-2">
             {steps.map((step) => (
-              <div
+              <button
                 key={step}
-                className={`${
-                  activeStep === step ? "bg-[#FFFFFF]" : ""
-                } rounded-lg px-4 py-3 cursor-pointer transition-colors`}
                 onClick={() => handleStepClick(step)}
+                className={`w-full text-left rounded-lg px-4 py-3 transition-colors font-poppins-custom ${
+                  activeStep === step ? "bg-white text-[#001D21]" : "text-[#001D21] hover:bg-[#ffffff]/60"
+                }`}
               >
-                <span className={`${activeStep === step ? "text-[#001D21]" : "text-[#001D21]"} font-medium font-poppins-custom`}>
-                  {step}
-                </span>
-              </div>
+                {step}
+              </button>
             ))}
           </div>
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 bg-white rounded-xl p-6 m-4">
-          <div className="px-10 mx-auto">
+        <div className="flex-1 bg-white rounded-xl p-5 sm:p-6 lg:p-8 lg:mr-4">
+          <div className="mx-auto w-full max-w-3xl">
             {/* Title */}
             <h1 className="text-3xl text-[#0A2A2E] mb-2 font-poppins-custom">Step 1: Basic Info</h1>
             
             {/* Subtitle */}
-            <p className="text-sm text-[#748A91] mb-8 font-poppins-custom">
+            <p className="text-sm sm:text-base text-[#748A91] mb-8 font-poppins-custom text-center sm:text-left">
               Tell us a bit about yourself to get started with your investment journey.
             </p>
 
@@ -156,9 +163,9 @@ const BasicInfo = () => {
                 <label className="block text-base font-medium text-[#0A2A2E] mb-2 font-poppins-custom">
                   Phone Number <span className="text-red-500">*</span>
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   {/* Country Code Dropdown */}
-                  <div className="w-32">
+                  <div className="sm:w-32">
                     <div className="bg-[#F4F6F5] rounded-lg px-4 py-2 flex items-center gap-2 cursor-pointer focus-within:ring-2 focus-within:ring-[#9889FF] focus-within:border-transparent" style={{ border: "0.5px solid #0A2A2E" }}>
                       <span className="text-2xl">🇺🇸</span>
                       <select
@@ -209,17 +216,17 @@ const BasicInfo = () => {
             </div>
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between mt-12">
+            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-6 mt-12">
               <button
                 onClick={handlePrevious}
-                className="px-6 py-3 bg-[#F4F6F5] text-[#001D21] rounded-xl hover:bg-gray-300 transition-colors font-medium font-poppins-custom flex items-center gap-2"
+                className="w-full sm:w-auto px-6 py-3 bg-[#F4F6F5] text-[#001D21] rounded-xl hover:bg-gray-300 transition-colors font-medium font-poppins-custom flex items-center justify-center gap-2"
                 style={{ border: "1px solid #0A2A2E" }}
               >
                 <span>←</span> Previous
               </button>
               <button
                 onClick={handleContinue}
-                className="px-6 py-3 bg-[#00F0C3] text-black rounded-xl hover:bg-[#00C4B3] transition-colors font-medium font-poppins-custom flex items-center gap-2"
+                className="w-full sm:w-auto px-6 py-3 bg-[#00F0C3] text-black rounded-xl hover:bg-[#00C4B3] transition-colors font-medium font-poppins-custom flex items-center justify-center gap-2"
               >
                 Continue <span>→</span>
               </button>
@@ -227,6 +234,47 @@ const BasicInfo = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Sidebar Drawer */}
+      <div
+        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-full transform bg-white transition-transform duration-300 ease-in-out lg:hidden ${
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
+          <h4 className="text-lg font-semibold text-[#01373D]">Onboarding Steps</h4>
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-[#01373D] text-[#01373D]"
+            aria-label="Close onboarding menu"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="p-4 space-y-2 overflow-y-auto">
+          {steps.map((step) => (
+            <button
+              key={step}
+              onClick={() => handleStepClick(step)}
+              className={`w-full text-left rounded-lg px-4 py-3 transition-colors font-poppins-custom ${
+                activeStep === step ? "bg-[#00F0C3]/20 text-[#001D21]" : "text-[#001D21] hover:bg-[#F4F6F5]"
+              }`}
+            >
+              {step}
+            </button>
+          ))}
+        </div>
+      </div>
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/60 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden="true"
+        ></div>
+      )}
     </div>
   );
 };

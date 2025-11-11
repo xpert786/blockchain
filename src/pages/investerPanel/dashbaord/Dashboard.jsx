@@ -15,6 +15,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("discover-deals");
   const [activeNav, setActiveNav] = useState("overview");
   const [showInvestDropdown, setShowInvestDropdown] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const investDropdownRef = useRef(null);
 
   useEffect(() => {
@@ -170,74 +171,146 @@ const Dashboard = () => {
     }
   ];
 
+  const investLinks = [
+    { label: "Discover", path: "/investor-panel/invest" },
+    { label: "Invites", path: "/investor-panel/invites" },
+    { label: "Top Syndicates", path: "/investor-panel/top-syndicates" },
+    { label: "Wishlist", path: "/investor-panel/wishlist" }
+  ];
+
+  const handleNavigate = (path, nav) => {
+    navigate(path);
+    if (nav) {
+      setActiveNav(nav);
+    }
+    setShowInvestDropdown(false);
+    setIsMobileNavOpen(false);
+  };
+
   return (
-    <div className="min-h-screen bg-[#F4F6F5]">
-         {/* Top Header */}
-         <header className="bg-white px-6 py-4 border-b border-gray-200">
-        <div className="flex items-center justify-between w-full">
-          {/* Logo on Left */}
-          <div className="flex items-center">
-            <img
-              src={logoImage}
-              alt="Unlocksley Logo"
-              className="h-12 w-auto object-contain"
-            />
-          </div>
-
-          {/* Right Side: Search, Notifications, Profile */}
-          <div className="flex items-center gap-4">
-            {/* Search Bar */}
-            <div className="max-w-md">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search SPVs, investors, documents..."
-                  className="w-full bg-[#F4F6F5] border border-gray-300 rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-                />
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4">
-                  {/* Search icon placeholder */}
-                </div>
-              </div>
+    <div className="min-h-screen bg-[#F4F6F5] overflow-x-hidden">
+      {/* Top Header */}
+      <header className="bg-white px-4 sm:px-6 py-4 border-b border-gray-200">
+        <div className="flex flex-col gap-4">
+          {/* Mobile Header */}
+          <div className="flex items-center justify-between w-full md:hidden">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsMobileNavOpen(true)}
+                className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-[#01373D] text-[#01373D]"
+                aria-label="Open primary navigation"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              <img
+                src={logoImage}
+                alt="Unlocksley Logo"
+                className="h-10 w-auto object-contain"
+              />
             </div>
-
-            {/* Notifications */}
-            <div className="relative">
+            <div className="flex items-center gap-3">
               <button 
                 onClick={() => navigate("/investor-panel/notifications")}
-                className="bg-[#01373D] p-2 rounded-lg hover:bg-[#014a54] transition-colors"
+                className="relative bg-[#01373D] p-2 rounded-lg hover:bg-[#014a54] transition-colors"
+                aria-label="View notifications"
               >
                 <AlertsIcon />
                 <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#F2E0C9] rounded-full flex items-center justify-center">
                   <span className="text-[#01373D] text-xs font-bold">2</span>
                 </div>
               </button>
+              <div className="flex items-center gap-1">
+                <img
+                  src={profileImage}
+                  alt="Profile"
+                  className="h-9 w-9 rounded-full object-cover"
+                />
+                <button className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-[#01373D] text-[#01373D]" aria-label="Open profile menu">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 6L8 10L12 6" stroke="#0A2A2E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              </div>
             </div>
+          </div>
 
-            {/* Profile with Dropdown */}
-            <div className="flex items-center gap-2">
+          {/* Desktop Header */}
+          <div className="hidden md:flex items-center w-full gap-4">
+            <div className="flex items-center gap-3 flex-shrink-0">
               <img
-                src={profileImage}
-                alt="Profile"
-                className="h-10 w-10 rounded-full object-cover"
+                src={logoImage}
+                alt="Unlocksley Logo"
+                className="h-12 w-auto object-contain"
               />
-              <button>
+            </div>
+            <div className="flex items-center gap-4 ml-auto">
+              <div className="relative w-full max-w-2xl">
+                <input
+                  type="text"
+                  placeholder="Search SPVs, investors, documents..."
+                  className="w-full bg-[#F4F6F5] border border-gray-300 rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                />
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#748A91]">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.6667 11.6667L14 14M12.6667 7.33333C12.6667 10.2789 10.2789 12.6667 7.33333 12.6667C4.38781 12.6667 2 10.2789 2 7.33333C2 4.38781 4.38781 2 7.33333 2C10.2789 2 12.6667 4.38781 12.6667 7.33333Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 flex-shrink-0">
+                <div className="relative">
+                  <button 
+                    onClick={() => navigate("/investor-panel/notifications")}
+                    className="bg-[#01373D] p-2 rounded-lg hover:bg-[#014a54] transition-colors"
+                    aria-label="View notifications"
+                  >
+                    <AlertsIcon />
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#F2E0C9] rounded-full flex items-center justify-center">
+                      <span className="text-[#01373D] text-xs font-bold">2</span>
+                    </div>
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <img
+                    src={profileImage}
+                    alt="Profile"
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
+                  <button className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-[#01373D] text-[#01373D]" aria-label="Open profile menu">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M4 6L8 10L12 6" stroke="#0A2A2E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Search */}
+          <div className="md:hidden">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search SPVs, investors, documents..."
+                className="w-full bg-[#F4F6F5] border border-gray-300 rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#748A91]">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4 6L8 10L12 6" stroke="#0A2A2E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M11.6667 11.6667L14 14M12.6667 7.33333C12.6667 10.2789 10.2789 12.6667 7.33333 12.6667C4.38781 12.6667 2 10.2789 2 7.33333C2 4.38781 4.38781 2 7.33333 2C10.2789 2 12.6667 4.38781 12.6667 7.33333Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-              </button>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Navigation Bar (Dark Teal) */}
-      <nav className="bg-[#001D21] px-6">
-        <div className="flex items-center gap-2 w-full">
+      <nav className="hidden lg:block bg-[#001D21] px-6">
+        <div className="flex items-center gap-2 w-full overflow-x-auto py-2">
           <button 
-            onClick={() => {
-              navigate("/investor-panel/dashboard");
-              setActiveNav("overview");
-            }}
+            onClick={() => handleNavigate("/investor-panel/dashboard", "overview")}
             className={navButtonClasses(activeNav === "overview")}
           >
             <HomeIcon />
@@ -258,84 +331,41 @@ const Dashboard = () => {
             {/* Dropdown Menu */}
             {showInvestDropdown && (
               <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg z-10 min-w-[180px]" style={{border: "1px solid #000"}}>
-                <button
-                  onClick={() => {
-                    navigate("/investor-panel/invest");
-                    setShowInvestDropdown(false);
-                    setActiveNav("invest");
-                  }}
-                  className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] rounded-t-lg hover:bg-gray-50 transition-colors"
-                >
-                  Discover
-                </button>
-                <button
-                  onClick={() => {
-                    navigate("/investor-panel/invites");
-                    setShowInvestDropdown(false);
-                    setActiveNav("invest");
-                  }}
-                  className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] hover:bg-gray-50 transition-colors"
-                >
-                  Invites
-                </button>
-                <button
-                  onClick={() => {
-                    navigate("/investor-panel/top-syndicates");
-                    setShowInvestDropdown(false);
-                    setActiveNav("invest");
-                  }}
-                  className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] hover:bg-gray-50 transition-colors"
-                >
-                  Top Syndicates
-                </button>
-                <button
-                  onClick={() => {
-                    navigate("/investor-panel/wishlist");
-                    setShowInvestDropdown(false);
-                    setActiveNav("invest");
-                  }}
-                  className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] rounded-b-lg hover:bg-gray-50 transition-colors"
-                >
-                  Wishlist
-                </button>
+                {investLinks.map((link, index) => (
+                  <button
+                    key={link.path}
+                    onClick={() => handleNavigate(link.path, "invest")}
+                    className={`w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] hover:bg-gray-50 transition-colors ${index === 0 ? "rounded-t-lg" : ""} ${index === investLinks.length - 1 ? "rounded-b-lg" : ""}`}
+                  >
+                    {link.label}
+                  </button>
+                ))}
               </div>
             )}
           </div>
           <button 
-            onClick={() => {
-              navigate("/investor-panel/portfolio");
-              setActiveNav("portfolio");
-            }}
+            onClick={() => handleNavigate("/investor-panel/portfolio", "portfolio")}
             className={navButtonClasses(activeNav === "portfolio")}
           >
             <PortfolioIcon />
             Your Portfolio
           </button>
           <button 
-            onClick={() => {
-              navigate("/investor-panel/tax-documents");
-              setActiveNav("taxes");
-            }}
+            onClick={() => handleNavigate("/investor-panel/tax-documents", "taxes")}
             className={navButtonClasses(activeNav === "taxes")}
           >
             <TaxesIcon />
             Taxes & Document
           </button>
           <button 
-            onClick={() => {
-              navigate("/investor-panel/messages");
-              setActiveNav("messages");
-            }}
+            onClick={() => handleNavigate("/investor-panel/messages", "messages")}
             className={navButtonClasses(activeNav === "messages")}
           >
             <MessagesIcon />
             Messages
           </button>
           <button 
-            onClick={() => {
-              navigate("/investor-panel/settings");
-              setActiveNav("settings");
-            }}
+            onClick={() => handleNavigate("/investor-panel/settings", "settings")}
             className={navButtonClasses(activeNav === "settings")}
           >
             <SettingsIcon />
@@ -344,10 +374,92 @@ const Dashboard = () => {
         </div>
       </nav>
 
+      {/* Mobile Navigation Drawer */}
+      <div
+        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-full transform bg-white transition-transform duration-300 ease-in-out shadow-lg lg:hidden ${
+          isMobileNavOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
+          <h4 className="text-lg font-semibold text-[#01373D]">Navigation</h4>
+          <button
+            type="button"
+            onClick={() => setIsMobileNavOpen(false)}
+            className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-[#01373D] text-[#01373D]"
+            aria-label="Close navigation"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 18L18 6M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        <div className="p-4 space-y-3 overflow-y-auto">
+          <button
+            onClick={() => handleNavigate("/investor-panel/dashboard", "overview")}
+            className={`w-full text-left px-4 py-3 rounded-lg border transition-colors font-poppins-custom ${
+              activeNav === "overview" ? "bg-[#00F0C3]/20 border-[#00F0C3] text-[#001D21]" : "border-transparent text-[#001D21] hover:bg-[#F4F6F5]"
+            }`}
+          >
+            Overview
+          </button>
+          <div className="space-y-2 rounded-lg border border-[#E2E2FB] p-4">
+            <p className="text-sm font-semibold text-[#01373D] font-poppins-custom">Invest</p>
+            {investLinks.map((link) => (
+              <button
+                key={link.path}
+                onClick={() => handleNavigate(link.path, "invest")}
+                className="w-full text-left px-3 py-2 rounded-md text-sm text-[#001D21] hover:bg-[#F4F6F5] transition-colors font-poppins-custom"
+              >
+                {link.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => handleNavigate("/investor-panel/portfolio", "portfolio")}
+            className={`w-full text-left px-4 py-3 rounded-lg border transition-colors font-poppins-custom ${
+              activeNav === "portfolio" ? "bg-[#00F0C3]/20 border-[#00F0C3] text-[#001D21]" : "border-transparent text-[#001D21] hover:bg-[#F4F6F5]"
+            }`}
+          >
+            Your Portfolio
+          </button>
+          <button
+            onClick={() => handleNavigate("/investor-panel/tax-documents", "taxes")}
+            className={`w-full text-left px-4 py-3 rounded-lg border transition-colors font-poppins-custom ${
+              activeNav === "taxes" ? "bg-[#00F0C3]/20 border-[#00F0C3] text-[#001D21]" : "border-transparent text-[#001D21] hover:bg-[#F4F6F5]"
+            }`}
+          >
+            Taxes & Document
+          </button>
+          <button
+            onClick={() => handleNavigate("/investor-panel/messages", "messages")}
+            className={`w-full text-left px-4 py-3 rounded-lg border transition-colors font-poppins-custom ${
+              activeNav === "messages" ? "bg-[#00F0C3]/20 border-[#00F0C3] text-[#001D21]" : "border-transparent text-[#001D21] hover:bg-[#F4F6F5]"
+            }`}
+          >
+            Messages
+          </button>
+          <button
+            onClick={() => handleNavigate("/investor-panel/settings", "settings")}
+            className={`w-full text-left px-4 py-3 rounded-lg border transition-colors font-poppins-custom ${
+              activeNav === "settings" ? "bg-[#00F0C3]/20 border-[#00F0C3] text-[#001D21]" : "border-transparent text-[#001D21] hover:bg-[#F4F6F5]"
+            }`}
+          >
+            Investor Settings
+          </button>
+        </div>
+      </div>
+      {isMobileNavOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/60 lg:hidden"
+          onClick={() => setIsMobileNavOpen(false)}
+          aria-hidden="true"
+        ></div>
+      )}
+
       {/* Main Content */}
-      <main className="w-full px-6 py-8">
+      <main className="w-full px-4 sm:px-6 py-8">
         {/* Dashboard Overview Cards */}
-        <div className="grid grid-cols-4 gap-4 mb-8 bg-white p-4 rounded-xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8 bg-white p-4 rounded-xl">
           {/* KYC Status Card */}
           <div className="bg-[#CAE6FF] rounded-xl p-6 relative">
             <div className="flex items-center justify-between mb-4">
@@ -416,17 +528,17 @@ const Dashboard = () => {
 
 
           <div className="bg-white p-4 my-4 rounded-xl ">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <h2 className="text-3xl  text-[#0A2A2E] font-poppins-custom">
               New <span className="text-[#9889FF]">Investment</span>
             </h2>
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-4 mb-6">
+          <div className="flex flex-wrap gap-2 sm:gap-4 mb-6">
             <button
               onClick={() => setActiveTab("discover-deals")}
-              className={`px-4 py-2 rounded-lg font-medium font-poppins-custom transition-colors ${
+              className={`px-3 py-2 text-sm rounded-lg font-medium font-poppins-custom transition-colors ${
                 activeTab === "discover-deals"
                   ? "bg-[#00F0C3] text-[#001D21]"
                   : "bg-white text-[#748A91] hover:bg-gray-50"
@@ -436,7 +548,7 @@ const Dashboard = () => {
             </button>
             <button
               onClick={() => setActiveTab("top-syndicates")}
-              className={`px-4 py-2 rounded-lg font-medium font-poppins-custom transition-colors ${
+              className={`px-3 py-2 text-sm rounded-lg font-medium font-poppins-custom transition-colors ${
                 activeTab === "top-syndicates"
                   ? "bg-[#00F0C3] text-[#001D21]"
                   : "bg-white text-[#748A91] hover:bg-gray-50"
@@ -446,7 +558,7 @@ const Dashboard = () => {
             </button>
             <button
               onClick={() => setActiveTab("invites")}
-              className={`px-4 py-2 rounded-lg font-medium font-poppins-custom transition-colors ${
+              className={`px-3 py-2 text-sm rounded-lg font-medium font-poppins-custom transition-colors ${
                 activeTab === "invites"
                   ? "bg-[#00F0C3] text-[#001D21]"
                   : "bg-white text-[#748A91] hover:bg-gray-50"
@@ -463,55 +575,59 @@ const Dashboard = () => {
             if (activeTab === "top-syndicates") {
               return (
                 <div className="bg-white rounded-lg p-6 mb-6" style={{border: "0.5px solid #E2E2FB"}}>
-              {/* Table Header */}
-              <div className="grid grid-cols-[2fr_1fr_0.8fr_1fr_1fr_1.2fr_1.2fr_1.5fr_0.8fr] gap-4 pb-4 border-b border-gray-200 mb-4">
-                <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Syndicate Name</div>
-                <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Sector</div>
-                <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Allocated</div>
-                <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Raised</div>
-                <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Target</div>
-                <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Min. Investment</div>
-                <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Track Record</div>
-                <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Status</div>
-                <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Actions</div>
-              </div>
+              <div className="overflow-x-auto">
+                <div className="min-w-[900px]">
+                  {/* Table Header */}
+                  <div className="grid grid-cols-[2fr_1fr_0.8fr_1fr_1fr_1.2fr_1.2fr_1.5fr_0.8fr] gap-4 pb-4 border-b border-gray-200 mb-4">
+                    <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Syndicate Name</div>
+                    <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Sector</div>
+                    <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Allocated</div>
+                    <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Raised</div>
+                    <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Target</div>
+                    <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Min. Investment</div>
+                    <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Track Record</div>
+                    <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Status</div>
+                    <div className="text-sm font-medium text-[#748A91] font-poppins-custom">Actions</div>
+                  </div>
 
-              {/* Table Rows */}
-              <div className="space-y-3 mb-6">
-                {topSyndicates.map((syndicate, index) => (
-                  <div key={index} className="bg-white rounded-lg p-4 border border-gray-200 ">
-                    <div className="grid grid-cols-[2fr_1fr_0.8fr_1fr_1fr_1.2fr_1.2fr_1.5fr_0.8fr] gap-4 items-center">
-                      <div className="text-sm font-semibold text-[#0A2A2E] font-poppins-custom">{syndicate.name}</div>
-                      <div className="text-sm text-[#0A2A2E] font-poppins-custom">{syndicate.sector}</div>
-                      <div className="text-sm text-[#0A2A2E] font-poppins-custom">{syndicate.allocated}</div>
-                      <div className="text-sm text-[#0A2A2E] font-poppins-custom">{syndicate.raised}</div>
-                      <div className="text-sm text-[#0A2A2E] font-poppins-custom">{syndicate.target}</div>
-                      <div className="text-sm text-[#0A2A2E] font-poppins-custom">{syndicate.minInvestment}</div>
-                      <div className="text-sm text-[#0A2A2E] font-poppins-custom">{syndicate.trackRecord}</div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                          <div className="h-full flex">
-                            <div className="bg-[#22C55E] h-full" style={{width: `${syndicate.status}%`}}></div>
-                            <div className="bg-[#CEC6FF] h-full" style={{width: `${100 - syndicate.status}%`}}></div>
+                  {/* Table Rows */}
+                  <div className="space-y-3 mb-6">
+                    {topSyndicates.map((syndicate, index) => (
+                      <div key={index} className="bg-white rounded-lg p-4 border border-gray-200 ">
+                        <div className="grid grid-cols-[2fr_1fr_0.8fr_1fr_1fr_1.2fr_1.2fr_1.5fr_0.8fr] gap-4 items-center">
+                          <div className="text-sm font-semibold text-[#0A2A2E] font-poppins-custom">{syndicate.name}</div>
+                          <div className="text-sm text-[#0A2A2E] font-poppins-custom">{syndicate.sector}</div>
+                          <div className="text-sm text-[#0A2A2E] font-poppins-custom">{syndicate.allocated}</div>
+                          <div className="text-sm text-[#0A2A2E] font-poppins-custom">{syndicate.raised}</div>
+                          <div className="text-sm text-[#0A2A2E] font-poppins-custom">{syndicate.target}</div>
+                          <div className="text-sm text-[#0A2A2E] font-poppins-custom">{syndicate.minInvestment}</div>
+                          <div className="text-sm text-[#0A2A2E] font-poppins-custom">{syndicate.trackRecord}</div>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                              <div className="h-full flex">
+                                <div className="bg-[#22C55E] h-full" style={{width: `${syndicate.status}%`}}></div>
+                                <div className="bg-[#CEC6FF] h-full" style={{width: `${100 - syndicate.status}%`}}></div>
+                              </div>
+                            </div>
+                            <span className="text-sm text-[#0A2A2E] font-poppins-custom whitespace-nowrap">{syndicate.status}%</span>
+                          </div>
+                          <div className="flex justify-center">
+                            <button className="w-8 h-8 bg-white   rounded-lg flex items-center justify-center hover:bg-gray-50 transition-colors">
+                            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="0.25" y="0.25" width="25.5" height="25.5" rx="5.75" fill="#F4F6F5"/>
+                            <rect x="0.25" y="0.25" width="25.5" height="25.5" rx="5.75" stroke="#E8EAED" stroke-width="0.5"/>
+                            <path d="M12.4163 13.0013C12.4163 13.3235 12.6775 13.5846 12.9997 13.5846C13.3218 13.5846 13.583 13.3235 13.583 13.0013C13.583 12.6791 13.3218 12.418 12.9997 12.418C12.6775 12.418 12.4163 12.6791 12.4163 13.0013Z" fill="#01373D" stroke="#01373D" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12.4163 17.0833C12.4163 17.4055 12.6775 17.6667 12.9997 17.6667C13.3218 17.6667 13.583 17.4055 13.583 17.0833C13.583 16.7612 13.3218 16.5 12.9997 16.5C12.6775 16.5 12.4163 16.7612 12.4163 17.0833Z" fill="#01373D" stroke="#01373D" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12.4163 8.91536C12.4163 9.23753 12.6775 9.4987 12.9997 9.4987C13.3218 9.4987 13.583 9.23753 13.583 8.91536C13.583 8.5932 13.3218 8.33203 12.9997 8.33203C12.6775 8.33203 12.4163 8.5932 12.4163 8.91536Z" fill="#01373D" stroke="#01373D" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+
+                            </button>
                           </div>
                         </div>
-                        <span className="text-sm text-[#0A2A2E] font-poppins-custom whitespace-nowrap">{syndicate.status}%</span>
                       </div>
-                      <div className="flex justify-center">
-                        <button className="w-8 h-8 bg-white   rounded-lg flex items-center justify-center hover:bg-gray-50 transition-colors">
-                        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="0.25" y="0.25" width="25.5" height="25.5" rx="5.75" fill="#F4F6F5"/>
-                        <rect x="0.25" y="0.25" width="25.5" height="25.5" rx="5.75" stroke="#E8EAED" stroke-width="0.5"/>
-                        <path d="M12.4163 13.0013C12.4163 13.3235 12.6775 13.5846 12.9997 13.5846C13.3218 13.5846 13.583 13.3235 13.583 13.0013C13.583 12.6791 13.3218 12.418 12.9997 12.418C12.6775 12.418 12.4163 12.6791 12.4163 13.0013Z" fill="#01373D" stroke="#01373D" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M12.4163 17.0833C12.4163 17.4055 12.6775 17.6667 12.9997 17.6667C13.3218 17.6667 13.583 17.4055 13.583 17.0833C13.583 16.7612 13.3218 16.5 12.9997 16.5C12.6775 16.5 12.4163 16.7612 12.4163 17.0833Z" fill="#01373D" stroke="#01373D" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M12.4163 8.91536C12.4163 9.23753 12.6775 9.4987 12.9997 9.4987C13.3218 9.4987 13.583 9.23753 13.583 8.91536C13.583 8.5932 13.3218 8.33203 12.9997 8.33203C12.6775 8.33203 12.4163 8.5932 12.4163 8.91536Z" fill="#01373D" stroke="#01373D" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-
-                        </button>
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
 
               {/* View More Button */}
@@ -537,7 +653,7 @@ const Dashboard = () => {
               style={{border: "0.5px solid #E2E2FB"}}
               >
                 {/* Header Section: Title/Date on Left, Tags on Right */}
-                <div className="flex items-start justify-between mb-5">
+                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-5">
                   {/* Left: Title and Date */}
                   <div className="flex-1">
                     <h3 className="text-2xl font-semibold text-[#0A2A2E] font-poppins-custom mb-2">
@@ -570,7 +686,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Metrics Section: Four boxes with light gray backgrounds */}
-                <div className="grid grid-cols-4 gap-4 mb-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
                   <div className="bg-[#F9F8FF] rounded-lg p-4 flex flex-row justify-between items-center"
                   style={{border: "0.5px solid #E2E2FB"}}
                   >
@@ -598,7 +714,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Footer Section: Buttons on Left, Timer on Right */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                   {/* Left: Action Buttons */}
                   <div className="flex items-center gap-3">
                     <button className="px-5 py-2.5 bg-[#00F0C3] text-[#001D21] rounded-lg hover:bg-[#00C4B3] transition-colors font-medium font-poppins-custom flex items-center gap-2">
@@ -668,7 +784,7 @@ const Dashboard = () => {
               style={{border: "0.5px solid #E2E2FB"}}
               >
                 {/* Header Section: Title/Date on Left, Tags on Right */}
-                <div className="flex items-start justify-between mb-5">
+                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-5">
                   {/* Left: Title and Date */}
                   <div className="flex-1">
                     <h3 className="text-2xl font-semibold text-[#0A2A2E] font-poppins-custom mb-2">
@@ -701,7 +817,7 @@ const Dashboard = () => {
                     </div>
 
                 {/* Metrics Section: Four boxes with light gray backgrounds */}
-                <div className="grid grid-cols-4 gap-4 mb-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
                   <div className="bg-[#F9F8FF] rounded-lg p-4 flex flex-row justify-between items-center"
                   style={{border: "0.5px solid #E2E2FB"}}
                   >
@@ -729,7 +845,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Footer Section: Buttons on Left, Timer on Right */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                   {/* Left: Action Buttons */}
                   <div className="flex items-center gap-3">
                     <button className="px-5 py-2.5 bg-[#00F0C3] text-[#001D21] rounded-lg hover:bg-[#00C4B3] transition-colors font-medium font-poppins-custom flex items-center gap-2">
@@ -776,9 +892,7 @@ const Dashboard = () => {
         <div className="bg-white rounded-lg p-6"
         style={{border: "0.5px solid #E2E2FB"}}
         >
-          <div className="mb-6 flex items-start justify-between"
-   
-          >
+          <div className="mb-6 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
         <div>
               <h2 className="text-3xl  text-[#0A2A2E] font-poppins-custom mb-2">
               My Portfolio Snapshot
@@ -792,7 +906,7 @@ const Dashboard = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Total Invested Card */}
             <div className="bg-[#F9F8FF] rounded-lg p-6 "
             style={{border: "0.5px solid #E2E2FB"}}

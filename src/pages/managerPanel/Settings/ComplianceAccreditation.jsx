@@ -38,13 +38,13 @@ const ComplianceAccreditation = () => {
   };
 
   return (
-    <div className="p-4 overflow-x-hidden">
-      <div className="bg-white  p-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 overflow-x-hidden">
+      <div className="bg-white rounded-lg p-4 sm:p-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center space-x-3 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-4 sm:space-y-0">
           <ComsIcon />
           <div>
-            <h2 className="text-2xl font-bold text-[#01373D]">Compliance & Accreditation</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-[#01373D]">Compliance & Accreditation</h2>
           </div>
         </div>
 
@@ -122,8 +122,8 @@ const ComplianceAccreditation = () => {
 
         {/* Document List Table */}
         <div className="mb-8">
-         
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="rounded-lg border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -176,14 +176,15 @@ const ComplianceAccreditation = () => {
               ))}
             </tbody>
           </table>
+            </div>
+          </div>
         </div>
-      </div>
 
         {/* Save Button */}
-        <div className="flex justify-end">
+        <div className="flex flex-col sm:flex-row sm:justify-end gap-3">
           <button
             onClick={handleSave}
-            className="flex items-center space-x-2 px-6 py-2 bg-[#00F0C3] text-black rounded-lg hover:bg-[#00D4A8] transition-colors font-poppins-custom font-medium"
+            className="flex items-center justify-center gap-2 px-6 py-2 bg-[#00F0C3] text-black rounded-lg hover:bg-[#00D4A8] transition-colors font-poppins-custom font-medium"
           >
             <SavesIcon />
             <span>Save changes</span>

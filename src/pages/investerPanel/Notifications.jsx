@@ -139,23 +139,23 @@ const Notifications = () => {
   const actionRequiredCount = notifications.filter(n => n.actionRequired).length;
 
   return (
-    <div className="min-h-screen bg-[#F4F6F5]">
+    <div className="min-h-screen bg-[#F4F6F5] px-4 sm:px-6">
       {/* Top Header */}
-      <header className="bg-white px-6 py-4 border-b border-gray-200">
-        <div className="flex items-center justify-between w-full">
+      <header className="bg-white px-4 sm:px-6 py-4 border-b border-gray-200">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 w-full">
           {/* Logo on Left */}
-          <div className="flex items-center">
+          <div className="flex items-center justify-center lg:justify-start">
             <img
               src={logoImage}
               alt="Unlocksley Logo"
-              className="h-12 w-auto object-contain"
+              className="h-10 sm:h-12 w-auto object-contain"
             />
           </div>
 
           {/* Right Side: Search, Notifications, Profile */}
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-3 lg:gap-4 w-full lg:w-auto">
             {/* Search Bar */}
-            <div className="max-w-md">
+            <div className="w-full md:max-w-md">
               <div className="relative">
                 <input
                   type="text"
@@ -173,92 +173,94 @@ const Notifications = () => {
               </div>
             </div>
 
-            {/* Notifications */}
-            <div className="relative">
-              <button 
-                onClick={() => navigate("/investor-panel/dashboard")}
-                className="bg-[#01373D] p-2 rounded-lg hover:bg-[#014a54] transition-colors"
-              >
-                <svg width="25" height="25" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="30" height="30" rx="8" fill="#01373D"/>
-                  <path d="M14.0083 20.2474C14.106 20.425 14.2495 20.5731 14.424 20.6763C14.5984 20.7794 14.7973 20.8338 15 20.8338C15.2027 20.8338 15.4016 20.7794 15.576 20.6763C15.7505 20.5731 15.894 20.425 15.9917 20.2474M11.5 12.6641C11.5 11.7358 11.8687 10.8456 12.5251 10.1892C13.1815 9.53281 14.0717 9.16406 15 9.16406C15.9283 9.16406 16.8185 9.53281 17.4749 10.1892C18.1313 10.8456 18.5 11.7358 18.5 12.6641C18.5 16.7474 20.25 17.9141 20.25 17.9141H9.75C9.75 17.9141 11.5 16.7474 11.5 12.6641Z" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#F2E0C9] rounded-full flex items-center justify-center">
-                  <span className="text-[#01373D] text-xs font-bold">2</span>
-                </div>
-              </button>
-            </div>
+            <div className="flex items-center justify-between md:justify-end gap-3">
+              {/* Notifications */}
+              <div className="relative">
+                <button 
+                  onClick={() => navigate("/investor-panel/dashboard")}
+                  className="bg-[#01373D] p-2 rounded-lg hover:bg-[#014a54] transition-colors"
+                >
+                  <svg width="25" height="25" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="30" height="30" rx="8" fill="#01373D"/>
+                    <path d="M14.0083 20.2474C14.106 20.425 14.2495 20.5731 14.424 20.6763C14.5984 20.7794 14.7973 20.8338 15 20.8338C15.2027 20.8338 15.4016 20.7794 15.576 20.6763C15.7505 20.5731 15.894 20.425 15.9917 20.2474M11.5 12.6641C11.5 11.7358 11.8687 10.8456 12.5251 10.1892C13.1815 9.53281 14.0717 9.16406 15 9.16406C15.9283 9.16406 16.8185 9.53281 17.4749 10.1892C18.1313 10.8456 18.5 11.7358 18.5 12.6641C18.5 16.7474 20.25 17.9141 20.25 17.9141H9.75C9.75 17.9141 11.5 16.7474 11.5 12.6641Z" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#F2E0C9] rounded-full flex items-center justify-center">
+                    <span className="text-[#01373D] text-xs font-bold">2</span>
+                  </div>
+                </button>
+              </div>
 
-            {/* Profile with Dropdown */}
-            <div className="flex items-center gap-2">
-              <img
-                src={profileImage}
-                alt="Profile"
-                className="h-10 w-10 rounded-full object-cover"
-              />
-              <button>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4 6L8 10L12 6" stroke="#0A2A2E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
+              {/* Profile with Dropdown */}
+              <div className="flex items-center gap-2">
+                <img
+                  src={profileImage}
+                  alt="Profile"
+                  className="h-9 sm:h-10 w-9 sm:w-10 rounded-full object-cover"
+                />
+                <button>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 6L8 10L12 6" stroke="#0A2A2E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="w-full px-6 py-8">
+      <main className="w-full py-8">
         {/* Title and Subtitle */}
-        <div className="mb-6">
-          <h1 className="text-4xl font-bold text-[#0A2A2E] font-poppins-custom mb-2">
+        <div className="mb-6 text-center sm:text-left">
+          <h1 className="text-3xl sm:text-4xl font-bold text-[#0A2A2E] font-poppins-custom mb-2">
             Notifications
           </h1>
-          <p className="text-base text-[#748A91] font-poppins-custom">
+          <p className="text-sm sm:text-base text-[#748A91] font-poppins-custom">
             Stay updated with your investment activities and platform updates
           </p>
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           {/* Total Notifications Card */}
-          <div className="bg-[#CAE6FF] rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-[#CAE6FF] rounded-xl p-5 sm:p-6 text-center sm:text-left">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <p className="text-sm text-[#748A91] font-poppins-custom">Total Notifications</p>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#01373D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="#01373D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            <p className="text-3xl  text-[#0A2A2E] font-poppins-custom">{totalNotifications}</p>
+            <p className="text-2xl sm:text-3xl text-[#0A2A2E] font-poppins-custom">{totalNotifications}</p>
           </div>
 
           {/* Unread Card */}
-          <div className="bg-[#D7F8F0] rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-[#D7F8F0] rounded-xl p-5 sm:p-6 text-center sm:text-left">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <p className="text-sm text-[#748A91] font-poppins-custom">Unread</p>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="12" cy="12" r="10" stroke="#01373D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M12 16V12M12 8H12.01" stroke="#01373D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            <p className="text-3xl  text-[#0A2A2E] font-poppins-custom">{unreadCount}</p>
+            <p className="text-2xl sm:text-3xl text-[#0A2A2E] font-poppins-custom">{unreadCount}</p>
           </div>
 
           {/* Action Required Card */}
-          <div className="bg-[#FFEFE8] rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-[#FFEFE8] rounded-xl p-5 sm:p-6 text-center sm:text-left">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <p className="text-sm text-[#748A91] font-poppins-custom">Action Required</p>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="12" cy="12" r="10" stroke="#01373D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M9 12L11 14L15 10" stroke="#01373D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            <p className="text-3xl  text-[#0A2A2E] font-poppins-custom">{actionRequiredCount}</p>
+            <p className="text-2xl sm:text-3xl text-[#0A2A2E] font-poppins-custom">{actionRequiredCount}</p>
           </div>
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex gap-2 mb-6 bg-white p-2 rounded-xl w-fit">
+        <div className="flex flex-wrap gap-2 mb-6 bg-white p-2 rounded-xl w-full sm:w-fit justify-center sm:justify-start">
           <button
             onClick={() => setActiveFilter("all")}
             className={`px-4 py-2 rounded-lg font-medium font-poppins-custom transition-colors ${
@@ -312,24 +314,21 @@ const Notifications = () => {
         </div>
 
         {/* Notifications List */}
-        <div className="space-y-4 w-full bg-white rounded-lg p-6 "
-        style={{border: "1px solid #D1D5DB80"}}
-        >
+        <div className="space-y-4 w-full bg-white rounded-lg p-5 sm:p-6 border border-gray-200">
           {filteredNotifications.map((notification) => (
             
             <div
               key={notification.id}
-              className="bg-[#F9F8FF] rounded-lg p-6 "
-              style={{border: "1px solid #D1D5DB80"}}
+              className="bg-[#F9F8FF] rounded-lg p-5 sm:p-6 border border-gray-200"
             >
-              <div className="flex items-start gap-4">
+              <div className="flex flex-col md:flex-row md:items-start gap-4">
                 {/* Icons */}
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 flex justify-center md:justify-start">
                   {getNotificationIcon(notification.type)}
                 </div>
 
                 {/* Content */}
-                <div className="flex-1">
+                <div className="flex-1 text-center md:text-left">
                   <h3 className="text-lg font-semibold text-[#0A2A2E] font-poppins-custom mb-2">
                     {notification.title}
                   </h3>
@@ -350,7 +349,7 @@ const Notifications = () => {
                 </div>
 
                 {/* Right Side: Date and Action Elements */}
-                <div className="flex flex-col items-end gap-3 flex-shrink-0">
+                <div className="flex flex-col items-center md:items-end gap-3 flex-shrink-0 mt-4 md:mt-0">
                  
                   
                   {/* Action Required Label and Button - Right Side */}
@@ -359,7 +358,7 @@ const Notifications = () => {
                       <span className="px-2 py-1 bg-red-100 text-red-600 text-xs font-medium rounded">
                         Action Required
                       </span>
-                      <button className="px-4 py-2 bg-[#001D21] text-white rounded-lg hover:bg-[#01373D] transition-colors text-sm font-medium font-poppins-custom">
+                      <button className="px-4 py-2 bg-[#001D21] text-white rounded-lg hover:bg-[#01373D] transition-colors text-sm font-medium font-poppins-custom w-full">
                         Take Action
                       </button>
                     </>

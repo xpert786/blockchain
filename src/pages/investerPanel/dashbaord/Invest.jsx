@@ -9,6 +9,7 @@ const Invest = () => {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showInvestDropdown, setShowInvestDropdown] = useState(false);
   const [viewMode, setViewMode] = useState("list"); // "list" or "grid"
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const filterDropdownRef = useRef(null);
   const investDropdownRef = useRef(null);
 
@@ -71,31 +72,73 @@ const Invest = () => {
   const filterOptions = ["All", "Technology", "AI/ML", "Robotics", "Healthcare", "Energy", "Finance"];
 
   return (
-    <div className="min-h-screen bg-[#F4F6F5]">
+    <div className="min-h-screen bg-[#F4F6F5] overflow-x-hidden">
       {/* Top Header */}
-      <header className="bg-white px-6 py-4 border-b border-gray-200">
-        <div className="flex items-center justify-between w-full">
-          {/* Logo on Left */}
-          <div className="flex items-center">
-            <img
-              src={logoImage}
-              alt="Unlocksley Logo"
-              className="h-12 w-auto object-contain"
-            />
+      <header className="bg-white px-4 sm:px-6 py-4 border-b border-gray-200">
+        <div className="flex flex-col gap-4">
+          {/* Mobile Header */}
+          <div className="flex items-center justify-between w-full md:hidden">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsMobileNavOpen(true)}
+                className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-[#01373D] text-[#01373D]"
+                aria-label="Open primary navigation"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              <img
+                src={logoImage}
+                alt="Unlocksley Logo"
+                className="h-10 w-auto object-contain"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => navigate("/investor-panel/notifications")}
+                className="relative bg-[#01373D] p-2 rounded-lg hover:bg-[#014a54] transition-colors"
+                aria-label="View notifications"
+              >
+                <AlertsIcon />
+                <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#F2E0C9] rounded-full flex items-center justify-center">
+                  <span className="text-[#01373D] text-xs font-bold">2</span>
+                </div>
+              </button>
+              <div className="flex items-center gap-1">
+                <img
+                  src={profileImage}
+                  alt="Profile"
+                  className="h-9 w-9 rounded-full object-cover"
+                />
+                <button className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-[#01373D] text-[#01373D]" aria-label="Open profile menu">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 6L8 10L12 6" stroke="#0A2A2E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Right Side: Search, Notifications, Profile */}
-          <div className="flex items-center gap-4">
-            {/* Search Bar */}
-            <div className="max-w-md">
-              <div className="relative">
+          {/* Desktop Header */}
+          <div className="hidden md:flex items-center w-full gap-4">
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <img
+                src={logoImage}
+                alt="Unlocksley Logo"
+                className="h-12 w-auto object-contain"
+              />
+            </div>
+            <div className="flex items-center gap-4 ml-auto">
+              <div className="relative w-full max-w-2xl">
                 <input
                   type="text"
                   placeholder="Search SPVs, investors, documents..."
                   className="w-full bg-[#F4F6F5] border border-gray-300 rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                 />
                 <svg
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -103,41 +146,59 @@ const Invest = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-            </div>
-
-            {/* Notifications */}
-            <div className="relative">
-              <button 
-                onClick={() => navigate("/investor-panel/notifications")}
-                className="bg-[#01373D] p-2 rounded-lg hover:bg-[#014a54] transition-colors"
-              >
-                <AlertsIcon />
-                <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#F2E0C9] rounded-full flex items-center justify-center">
-                  <span className="text-[#01373D] text-xs font-bold">2</span>
+              <div className="flex items-center gap-4 flex-shrink-0">
+                <div className="relative">
+                  <button 
+                    onClick={() => navigate("/investor-panel/notifications")}
+                    className="bg-[#01373D] p-2 rounded-lg hover:bg-[#014a54] transition-colors"
+                    aria-label="View notifications"
+                  >
+                    <AlertsIcon />
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#F2E0C9] rounded-full flex items-center justify-center">
+                      <span className="text-[#01373D] text-xs font-bold">2</span>
+                    </div>
+                  </button>
                 </div>
-              </button>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <img
+                    src={profileImage}
+                    alt="Profile"
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
+                  <button className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-[#01373D] text-[#01373D]" aria-label="Open profile menu">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M4 6L8 10L12 6" stroke="#0A2A2E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
             </div>
+          </div>
 
-            {/* Profile with Dropdown */}
-            <div className="flex items-center gap-2">
-              <img
-                src={profileImage}
-                alt="Profile"
-                className="h-10 w-10 rounded-full object-cover"
+          {/* Mobile Search */}
+          <div className="md:hidden">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search SPVs, investors, documents..."
+                className="w-full bg-[#F4F6F5] border border-gray-300 rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
               />
-              <button>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4 6L8 10L12 6" stroke="#0A2A2E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Navigation Bar (Dark Teal) */}
-      <nav className="bg-[#001D21] px-6">
-        <div className="flex items-center gap-2 w-full">
+      <nav className="hidden lg:block bg-[#001D21] px-6">
+        <div className="flex items-center gap-2 w-full overflow-x-auto py-2">
           <button 
             onClick={() => navigate("/investor-panel/dashboard")}
             className="px-3 py-3 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors text-gray-300 hover:text-white"
@@ -159,7 +220,7 @@ const Invest = () => {
 
             {/* Dropdown Menu */}
             {showInvestDropdown && (
-              <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg z-10 min-w-[180px]" style={{border: "1px solid #000"}}>
+              <div className="absolute top-full left-0 mt-2 bg.white rounded-lg shadow-lg z-10 min-w-[180px]" style={{border: "1px solid #000"}}>
                 <button
                   onClick={() => {
                     navigate("/investor-panel/invest");
@@ -205,7 +266,6 @@ const Invest = () => {
             className="px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors text-gray-300 hover:text-white"
           >
             <PortfolioIcon />
-
             Your Portfolio
           </button>
           <button 
@@ -232,8 +292,89 @@ const Invest = () => {
         </div>
       </nav>
 
+      {/* Mobile Navigation Drawer */}
+      <div
+        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-full transform bg-white transition-transform duration-300 ease-in-out shadow-lg lg:hidden ${
+          isMobileNavOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
+          <h4 className="text-lg font-semibold text-[#01373D]">Navigation</h4>
+          <button
+            type="button"
+            onClick={() => setIsMobileNavOpen(false)}
+            className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-[#01373D] text-[#01373D]"
+            aria-label="Close navigation"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 18L18 6M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        <div className="p-4 space-y-3 overflow-y-auto">
+          <button
+            onClick={() => navigate("/investor-panel/dashboard")}
+            className="w-full text-left px-4 py-3 rounded-lg border transition-colors font-poppins-custom text-[#001D21] hover:bg-[#F4F6F5]"
+          >
+            Overview
+          </button>
+          <div className="space-y-2 rounded-lg border border-[#E2E2FB] p-4">
+            <p className="text-sm font-semibold text-[#01373D] font-poppins-custom">Invest</p>
+            <button
+              onClick={() => navigate("/investor-panel/invest")}
+              className="w-full text-left px-3 py-2 rounded-md text-sm text-[#001D21] hover:bg-[#F4F6F5] transition-colors font-poppins-custom"
+            >
+              Discover
+            </button>
+            <button
+              onClick={() => navigate("/investor-panel/invites")}
+              className="w-full text-left px-3 py-2 rounded-md text-sm text-[#001D21] hover:bg-[#F4F6F5] transition-colors font-poppins-custom"
+            >
+              Invites
+            </button>
+            <button
+              onClick={() => navigate("/investor-panel/top-syndicates")}
+              className="w-full text-left px-3 py-2 rounded-md text-sm text-[#001D21] hover:bg-[#F4F6F5] transition-colors font-poppins-custom"
+            >
+              Top Syndicates
+            </button>
+            <button
+              onClick={() => navigate("/investor-panel/wishlist")}
+              className="w-full text-left px-3 py-2 rounded-md text-sm text-[#001D21] hover:bg-[#F4F6F5] transition-colors font-poppins-custom"
+            >
+              Wishlist
+            </button>
+          </div>
+          <button
+            onClick={() => navigate("/investor-panel/tax-documents")}
+            className="w-full text-left px-4 py-3 rounded-lg border transition-colors font-poppins-custom text-[#001D21] hover:bg-[#F4F6F5]"
+          >
+            Taxes & Document
+          </button>
+          <button
+            onClick={() => navigate("/investor-panel/messages")}
+            className="w-full text-left px-4 py-3 rounded-lg border transition-colors font-poppins-custom text-[#001D21] hover:bg-[#F4F6F5]"
+          >
+            Messages
+          </button>
+          <button
+            onClick={() => navigate("/investor-panel/dashboard")}
+            className="w-full text-left px-4 py-3 rounded-lg border transition-colors font-poppins-custom text-[#001D21] hover:bg-[#F4F6F5]"
+          >
+            Investor Settings
+          </button>
+        </div>
+      </div>
+      {isMobileNavOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/60 lg:hidden"
+          onClick={() => setIsMobileNavOpen(false)}
+          aria-hidden="true"
+        ></div>
+      )}
+
       {/* Main Content */}
-      <main className="w-full px-6 py-8">
+      <main className="w-full px-4 sm:px-6 py-8">
         {/* Header Section */}
         <div className="mb-6 bg-white rounded-lg p-6">
           <h1 className="text-3xl  text-[#0A2A2E] font-poppins-custom mb-2">
@@ -244,70 +385,63 @@ const Invest = () => {
           </p>
 
           {/* Search, Filter, and View Toggle */}
-          <div className="flex justify-between gap-4 mb-6">
-            {/* Search Bar */}
-            <div className="flex-1 max-w-md">
-                <div className="flex flex-row  gap-6">
-                <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search Companies, funds, leads."
-                  className="w-fit bg-white border border-gray-300 rounded-lg px-4 py-2.5 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-                />
-                <svg
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-6 mb-6">
+            <div className="w-full">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="relative w-full sm:max-w-xs">
+                  <input
+                    type="text"
+                    placeholder="Search Companies, funds, leads."
+                    className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  />
+                  <svg
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <div className="relative w-full sm:w-auto" ref={filterDropdownRef}>
+                  <button
+                    onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                    className="w-full sm:w-auto px-4 py-2.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center sm:justify-start gap-2 text-sm font-medium font-poppins-custom text-[#0A2A2E]"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M2 4H14M4 8H12M6 12H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                    Filter
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {showFilterDropdown && (
+                    <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[150px]">
+                      {filterOptions.map((option, index) => (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            setActiveFilter(option);
+                            setShowFilterDropdown(false);
+                          }}
+                          className={`w-full text-left px-4 py-2 text-sm font-poppins-custom hover:bg-gray-50 transition-colors ${
+                            activeFilter === option ? "bg-[#00F0C3] text-[#001D21]" : "text-[#0A2A2E]"
+                          } ${index === 0 ? "rounded-t-lg" : ""} ${index === filterOptions.length - 1 ? "rounded-b-lg" : ""}`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-               {/* Filter Dropdown */}
-            <div className="relative" ref={filterDropdownRef}>
-              <button
-                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                className="px-4 py-2.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm font-medium font-poppins-custom text-[#0A2A2E]"
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M2 4H14M4 8H12M6 12H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-                Filter
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-
-              {/* Dropdown Menu */}
-              {showFilterDropdown && (
-                <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[150px]">
-                  {filterOptions.map((option, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        setActiveFilter(option);
-                        setShowFilterDropdown(false);
-                      }}
-                      className={`w-full text-left px-4 py-2 text-sm font-poppins-custom hover:bg-gray-50 transition-colors ${
-                        activeFilter === option ? "bg-[#00F0C3] text-[#001D21]" : "text-[#0A2A2E]"
-                      } ${index === 0 ? "rounded-t-lg" : ""} ${index === filterOptions.length - 1 ? "rounded-b-lg" : ""}`}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
-
-
-                </div>
-              
-            </div>
-
-           
 
             {/* View Toggle */}
-            <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg p-1">
+            <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg p-1 self-start">
               <button
                 onClick={() => setViewMode("list")}
                 className={`p-2 rounded transition-colors ${
@@ -353,7 +487,7 @@ const Invest = () => {
                     <span>{syndicate.date}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {syndicate.tags.map((tag, tagIndex) => (
                     <span
                       key={tagIndex}
@@ -376,7 +510,7 @@ const Invest = () => {
               </p>
 
               {/* Metrics Row */}
-              <div className="grid grid-cols-5 gap-4 mb-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-5">
                 <div className="bg-[#F9F8FF] rounded-lg p-2 flex flex-row items-center justify-between"
                 style={{border: "0.5px solid #E2E2FB"}}
                 >
@@ -410,9 +544,9 @@ const Invest = () => {
               </div>
 
               {/* Progress Bar and Actions */}
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
                 {/* Progress Bar */}
-                <div className="flex items-center gap-3 flex-1">
+                <div className="flex items-center gap-3 flex-1 w-full">
                   <div className="flex-1 h-2.5 bg-gray-200 rounded-full overflow-hidden">
                     <div className="h-full flex">
                       <div className="bg-[#22C55E] h-full" style={{width: `${syndicate.status}%`}}></div>
@@ -424,7 +558,7 @@ const Invest = () => {
               </div>
 
                {/* Action Buttons */}
-               <div className="flex items-center justify-start gap-3 ">
+               <div className="flex flex-wrap items-center justify-start gap-3 ">
                   <button className="px-4 py-2 bg-[#00F0C3] text-black rounded-xl hover:bg-[#16a34a] transition-colors font-medium font-poppins-custom flex items-center gap-2 text-sm">
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M16.5 5.25L10.125 11.625L6.375 7.875L1.5 12.75M16.5 5.25H12M16.5 5.25V9.75" stroke="#001D21" stroke-linecap="round" stroke-linejoin="round"/>

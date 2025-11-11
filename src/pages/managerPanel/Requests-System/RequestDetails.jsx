@@ -33,25 +33,25 @@ const RequestDetails = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F6F5]">
+    <div className="min-h-screen bg-[#F4F6F5] px-4 py-6 sm:px-6 lg:px-0 lg:mt-10 space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg p-6 mb-8">
-        <div className="flex items-center justify-between">
+      <div className="bg-white rounded-lg p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
               <span className="text-gray-900">New</span> <span className="text-[#9889FF]">Request</span>
             </h3>
-            <p className="text-lg text-gray-600">Submit a new request for approval</p>
+            <p className="text-sm sm:text-base text-gray-600">Submit a new request for approval</p>
           </div>
          
         </div>
       </div>
 
       {/* Request Details Form - Centered */}
-      <div className="flex items-center justify-center p-4">
-        <div className="bg-white !rounded-[12px] p-8 shadow-sm w-full max-w-4xl">
+      <div className="flex items-center justify-center">
+        <div className="bg-white !rounded-[12px] p-4 sm:p-8 shadow-sm w-full max-w-4xl">
         <div className="mb-6 text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Request Details</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Request Details</h2>
           <p className="text-sm text-gray-600 font-poppins-custom">Provide detailed information about your request</p>
         </div>
 
@@ -158,7 +158,7 @@ const RequestDetails = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end space-x-3 pt-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 pt-6">
             <button
               type="button"
               onClick={handleCancel}
@@ -168,7 +168,7 @@ const RequestDetails = () => {
             </button>
             <button
               type="submit"
-              className="flex items-center space-x-2 px-6 py-2 text-sm font-medium text-black bg-[#00F0C3] rounded-lg hover:bg-[#00D4A8] transition-colors cursor-pointer font-poppins-custom"
+              className="flex items-center justify-center gap-2 px-6 py-2 text-sm font-medium text-black bg-[#00F0C3] rounded-lg hover:bg-[#00D4A8] transition-colors cursor-pointer font-poppins-custom"
             >
               <SubmitsIcon />
               <span>Submit</span>

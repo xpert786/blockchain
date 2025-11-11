@@ -27,25 +27,24 @@ const ForgotPassword = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
 
-      {/* Left Panel */}
-      <div className="flex w-full max-w-5xl h-[600px] bg-white rounded-3xl overflow-hidden">
+      <div className="flex flex-col md:flex-row w-full max-w-5xl h-auto md:h-[600px] bg-white rounded-3xl overflow-hidden">
         {/* Left Panel */}
-        <div className="w-1/2 flex items-center justify-center relative p-4">
+        <div className="w-full md:w-1/2 flex items-center justify-center relative p-6 md:p-4 h-64 md:h-full">
           {/* Purple background behind logo/image */}
-          <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col items-center justify-center relative">
-            <h2 className="absolute top-6 left-6 text-2xl font-bold text-[#01373D] font-poppins-custom">Logo</h2>
+          <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col items-center justify-center relative overflow-hidden">
+            <h2 className="absolute top-4 left-4 md:top-6 md:left-6 text-lg md:text-2xl font-bold text-[#01373D] font-poppins-custom">Logo</h2>
             <img
               src={loginLogo}
               alt="Profile"
-              className="w-60 h-[360px] object-cover rounded-xl"
+              className="w-40 h-40 md:w-60 md:h-[360px] object-cover rounded-xl"
             />
           </div>
         </div>
 
         {/* Right Panel */}
-        <div className="w-1/2 flex items-center justify-center p-6">
+        <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-8 md:p-6">
           <div className="w-full max-w-md">
-            <div className="mb-8">
+            <div className="mb-8 text-center md:text-left">
               <h1 className="text-3xl text-[#001D21] mb-2">Forgot Password ?</h1>
               <p className="text-[#0A2A2E] font-poppins-custom">Please enter your valid email account to send the verification code to reset your password.</p>
             </div>
@@ -70,7 +69,7 @@ const ForgotPassword = () => {
               <button
                 type="submit"
                 
-                className="w-30 bg-[#00F0C3] text-[#0A2A2E] font-semibold py-3 px-4 rounded-lg hover:bg-[#00E6B0] transition-colors duration-200 cursor-pointer"
+                className="w-full md:w-30 bg-[#00F0C3] text-[#0A2A2E] font-semibold py-3 px-4 rounded-lg hover:bg-[#00E6B0] transition-colors duration-200 cursor-pointer"
               >
                 Send Code
               </button>
@@ -78,7 +77,7 @@ const ForgotPassword = () => {
             </form>
 
             {/* Resend Code Link */}
-            <div className="mt-6 text-start">
+            <div className="mt-6 text-center md:text-start">
               <p className="text-[#0A2A2E]">
                 Didn't receive the code?{" "}
                 <Link to="/otp-verification" className="text-[#CEC6FF] hover:text-[#B8A8E8] font-semibold underline">

@@ -20,19 +20,19 @@ const TeamManagement = () => {
   };
 
   return (
-    <div className="p-6 overflow-x-hidden">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 overflow-x-hidden">
       {/* Header */}
-      <div className="flex items-center space-x-3 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-4 sm:space-y-0">
         <ThreeUsersIcon />
         <div>
-          <h2 className="text-xl font-bold text-[#001D21]">Team Management</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-[#001D21]">Team Management</h2>
         </div>
       </div>
 
-    
+      
       {/* Action Bar */}
-      <div className="flex items-center justify-between mb-6 gap-4">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="relative w-full lg:max-w-md">
           <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 transform">
             <SearchIcon />
           </span>
@@ -44,7 +44,7 @@ const TeamManagement = () => {
         </div>
         <button
           onClick={handleAddMembers}
-          className="flex items-center space-x-2 px-4 py-2 bg-[#00F0C3] text-black rounded-lg hover:bg-[#00D4A8] transition-colors font-poppins-custom font-medium whitespace-nowrap cursor-pointer"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-[#00F0C3] text-black rounded-lg hover:bg-[#00D4A8] transition-colors font-poppins-custom font-medium whitespace-nowrap cursor-pointer"
         >
           <PlusIcon />
           <span>Add New Members</span>
@@ -52,7 +52,7 @@ const TeamManagement = () => {
       </div>
 
       {/* Team Members Table */}
-      <div className="overflow-hidden max-w-full">
+      <div className="overflow-x-auto rounded-lg border border-gray-100 bg-white">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -120,32 +120,30 @@ const TeamManagement = () => {
       </div>
 
       {/* Pagination + Save (right aligned, stacked) */}
-      <div className="mt-6 flex justify-end w-full overflow-x-hidden">
-        <div className="flex flex-col items-end gap-3">
-          <div className="flex items-center gap-3">
-            <button className="p-2 text-[#01373D] hover:text-gray-700 transition-colors cursor-pointer">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center justify-center sm:justify-start gap-2">
+          <button className="p-2 text-[#01373D] hover:text-gray-700 transition-colors cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <button className="px-3 py-1 rounded-lg bg-gray-100 text-[#01373D] font-poppins-custom cursor-pointer">1</button>
-            <button className="px-3 py-1 text-[#01373D] hover:text-black font-poppins-custom cursor-pointer">2</button>
-            <button className="px-3 py-1 text-[#01373D] hover:text-black font-poppins-custom cursor-pointer">3</button>
-            <button className="px-3 py-1 text-[#01373D] hover:text-black font-poppins-custom cursor-pointer">4</button>
-            <button className="p-2 text-[#01373D] hover:text-gray-700 transition-colors cursor-pointer">
+          <button className="px-3 py-1 rounded-lg bg-gray-100 text-[#01373D] font-poppins-custom cursor-pointer">1</button>
+          <button className="px-3 py-1 text-[#01373D] hover:text-black font-poppins-custom cursor-pointer">2</button>
+          <button className="px-3 py-1 text-[#01373D] hover:text-black font-poppins-custom cursor-pointer">3</button>
+          <button className="px-3 py-1 text-[#01373D] hover:text-black font-poppins-custom cursor-pointer">4</button>
+          <button className="p-2 text-[#01373D] hover:text-gray-700 transition-colors cursor-pointer">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
-          <button
-            onClick={handleSave}
-            className="flex items-center space-x-2 px-6 py-2 bg-[#00F0C3] text-black rounded-lg hover:bg-[#00D4A8] transition-colors font-poppins-custom font-medium cursor-pointer"
-          >
-            <SaveIcon />
-            <span>Save changes</span>
-          </button>
-        </div>
+        <button
+          onClick={handleSave}
+          className="flex items-center justify-center gap-2 px-6 py-2 bg-[#00F0C3] text-black rounded-lg hover:bg-[#00D4A8] transition-colors font-poppins-custom font-medium cursor-pointer"
+        >
+          <SaveIcon />
+          <span>Save changes</span>
+        </button>
       </div>
       </div>
  

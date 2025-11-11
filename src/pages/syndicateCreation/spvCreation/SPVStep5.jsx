@@ -28,26 +28,26 @@ const SPVStep5 = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8 space-y-8">
       {/* Header */}
-      <div className="mb-8 flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Invite LPs</h1>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="space-y-2 text-center sm:text-left">
+          <h1 className="text-3xl font-bold text-gray-800">Invite LPs</h1>
           <p className="text-gray-600">
             Configure how your SPV will appear to investors and control access settings.
           </p>
         </div>
         <button
           onClick={handleSkip}
-          className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors border border-[#01373D]"
+          className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors border border-[#01373D] w-full sm:w-auto"
         >
           Skip
         </button>
       </div>
 
       {/* Search Bar */}
-      <div className="mb-6 flex items-center space-x-3">
-        <div className="relative flex-1">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 gap-3">
+        <div className="relative flex-1 w-full">
           <input
             type="text"
             placeholder="Search ..."
@@ -71,7 +71,7 @@ const SPVStep5 = () => {
         </div>
         <button
           onClick={handleInviteLPs}
-          className="bg-[#00F0C3] hover:scale-102 text-black px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+          className="bg-[#00F0C3] hover:scale-102 text-black px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2 w-full sm:w-auto"
         >
           <span>Invite LPs</span>
           <svg
@@ -91,13 +91,13 @@ const SPVStep5 = () => {
       </div>
 
       {/* Team Members Table */}
-      <div className="mb-8">
-        <div className="grid grid-cols-3 gap-4 py-3 px-4 text-sm font-medium text-gray-500 border-b border-gray-200 flex items-right text-center justify-between">
+      <div className="space-y-3">
+        <div className="grid grid-cols-3 gap-4 py-3 px-4 text-sm font-medium text-gray-500 border-b border-gray-200">
           <div className="text-left">Team member</div>
-          <div>Email address</div>
+          <div className="text-center">Email address</div>
           <div className="text-right">Access</div>
         </div>
-        <div className="mt-2 bg-gray-50 rounded-lg p-4 flex items-left text-center justify-between">
+        <div className="bg-gray-50 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
               <svg
@@ -114,16 +114,16 @@ const SPVStep5 = () => {
             </div>
             <span className="text-gray-900 font-medium">John Doe</span>
           </div>
-          <div className="text-gray-700">johndoe81@gmail.com</div>
-          <div className=" font-medium">Active</div>
+          <div className="text-gray-700 text-center sm:text-left">johndoe81@gmail.com</div>
+          <div className="font-medium text-right sm:text-left">Active</div>
         </div>
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between mt-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-4 pt-6 border-t border-gray-200">
         <button
           onClick={handlePrevious}
-          className="flex items-center space-x-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors border border-[#01373D]"
+          className="flex items-center justify-center space-x-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors border border-[#01373D] w-full sm:w-auto"
         >
           <svg
             className="w-4 h-4"
@@ -142,7 +142,7 @@ const SPVStep5 = () => {
         </button>
         <button
           onClick={handleNext}
-          className="flex items-center space-x-2 bg-[#00F0C3] hover:scale-102 text-black px-4 py-2 rounded-lg font-medium transition-colors"
+          className="flex items-center justify-center space-x-2 bg-[#00F0C3] hover:scale-102 text-black px-4 py-2 rounded-lg font-medium transition-colors w-full sm:w-auto"
         >
           <span>Next</span>
           <svg

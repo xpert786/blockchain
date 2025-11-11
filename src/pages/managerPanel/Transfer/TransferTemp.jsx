@@ -153,20 +153,20 @@ const TransferTemp = () => {
   }, [openDropdown]);
 
   return (
-    <div className="min-h-screen bg-[#F4F6F5]">
+    <div className="min-h-screen bg-[#F4F6F5] px-4 py-6 sm:px-6 lg:px-0 lg:mt-10 space-y-6">
       
       {/* Header */}
-      <div className="bg-white rounded-lg p-6 mb-8">
-      <div className="mb-8">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">
+      <div className="bg-white rounded-lg p-4 sm:p-6">
+        <div className="mb-6">
+        <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 text-center sm:text-left">
          <span className="text-[#9889FF]">Transfer</span> Management
       </h3>
-        <p className="text-lg text-gray-600">Manage and monitor investment transfers</p>
+        <p className="text-sm sm:text-base text-gray-600 text-center sm:text-left">Manage and monitor investment transfers</p>
       </div>
 
       {/* Summary Cards */}
-  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-    <div className="bg-[#CAE6FF] rounded-2xl p-8 h-32">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="bg-[#CAE6FF] rounded-2xl p-5 sm:p-6">
       <div className="flex items-center justify-between h-full">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
@@ -181,7 +181,7 @@ const TransferTemp = () => {
       </div>
     </div>
 
-    <div className="bg-[#D7F8F0] rounded-2xl p-8 h-32">
+    <div className="bg-[#D7F8F0] rounded-2xl p-5 sm:p-6">
       <div className="flex items-center justify-between h-full">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
@@ -196,7 +196,7 @@ const TransferTemp = () => {
       </div>
     </div>
 
-    <div className="bg-[#E2E2FB] rounded-2xl p-8 h-32">
+    <div className="bg-[#E2E2FB] rounded-2xl p-5 sm:p-6">
       <div className="flex items-center justify-between h-full">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
@@ -211,7 +211,7 @@ const TransferTemp = () => {
       </div>
     </div>
 
-    <div className="bg-[#FFEFE8] rounded-2xl p-8 h-32">
+    <div className="bg-[#FFEFE8] rounded-2xl p-5 sm:p-6">
       <div className="flex items-center justify-between h-full">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
@@ -229,13 +229,13 @@ const TransferTemp = () => {
   </div>
 
       {/* Filter Tabs */}
-      <div className="bg-white rounded-lg p-2 mb-6 max-w-fit mt-6">
-        <div className="flex space-x-4">
+      <div className="bg-white rounded-lg p-3 sm:p-4">
+        <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 activeTab === tab.id
                   ? "bg-[#00F0C3] text-black"
                   : "bg-[#F4F6F5] text-gray-700 hover:bg-gray-300"
@@ -248,8 +248,8 @@ const TransferTemp = () => {
       </div>
 
      {/* Search Bar and Icons */}
-     <div className="flex items-center justify-between mb-6">
-        <div className="relative flex-1 max-w-md">
+     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div className="relative w-full md:max-w-md">
           <input
             type="text"
             placeholder="Search SPVs by name, ID, or focus area..."
@@ -264,7 +264,7 @@ const TransferTemp = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center justify-between md:justify-start gap-2">
           {/* View1Icon - Inactive */}
           <button className="p-2 text-gray-600 hover:text-gray-800 transition-colors">
             <View1Icon />
@@ -276,7 +276,7 @@ const TransferTemp = () => {
           </button>
           
           {/* View3Icon - Active */}
-          <button className="p-2 text-white hover:text-gray-200 transition-colors ">
+          <button className="p-2 bg-[#01373D] text-white rounded-lg">
             <View3Icon />
           </button>
         </div>
@@ -285,25 +285,25 @@ const TransferTemp = () => {
       {/* Transfer Cards */}
       <div className="space-y-4">
         {transfers.map((transfer) => (
-          <div key={transfer.id} className="bg-white rounded-lg p-6 border border-gray-200">
+          <div key={transfer.id} className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
             {/* Card Header */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">Transfer {transfer.txnId}</h3>
-                <div className="flex items-center space-x-4 text-sm text-gray-600">
-                  <div className="flex items-center space-x-1">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">Transfer {transfer.txnId}</h3>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-1">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
                     </svg>
                     <span>{transfer.spv}</span>
                   </div>
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center gap-1">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <span>Requested {transfer.requestedDate}</span>
                   </div>
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center gap-1">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                     </svg>
@@ -311,8 +311,8 @@ const TransferTemp = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center space-x-3">
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${transfer.statusColor}`}>
+              <div className="flex items-center gap-3">
+                <span className={`px-3 py-1 rounded-full text-sm font-medium text-center ${transfer.statusColor}`}>
                   {transfer.status}
                 </span>
                 <button
@@ -329,9 +329,9 @@ const TransferTemp = () => {
 
             {/* Participants and Transfer Details */}
             <div className="bg-[#F9F8FF] rounded-lg p-4 mb-4">
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Sender */}
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                     <span className="text-sm font-semibold text-green-600">{transfer.sender.initials}</span>
                   </div>
@@ -343,7 +343,7 @@ const TransferTemp = () => {
 
                 {/* Transfer Amount */}
                 <div className="flex items-center justify-center">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center gap-2">
                     <RightLeftErrorIcon />
                     <div className="text-center">
                       <div className="text-sm font-medium text-gray-900">{transfer.shares} Shares</div>
@@ -353,7 +353,7 @@ const TransferTemp = () => {
                 </div>
 
                 {/* Receiver */}
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
                     <span className="text-sm font-semibold text-purple-600">{transfer.receiver.initials}</span>
                   </div>
@@ -367,7 +367,7 @@ const TransferTemp = () => {
 
             {/* Financial Summary */}
             <div className="mb-4">
-              <div className="grid grid-cols-4 gap-4 text-sm">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                 <div className="text-center">
                   <p className="text-gray-500 mb-1">SPV</p>
                   <p className="font-medium text-gray-900">{transfer.spvId}</p>
@@ -390,11 +390,11 @@ const TransferTemp = () => {
 
             {/* Action Buttons or Status Banner */}
             {transfer.actions.length > 0 ? (
-              <div className="flex items-center space-x-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 {transfer.actions.includes("approve") && (
                   <button
                     onClick={() => handleApprove(transfer)}
-                    className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors"
+                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors"
                   >
                     <RighIcon />
                     <span>Approve Transfer</span>
@@ -403,7 +403,7 @@ const TransferTemp = () => {
                 {transfer.actions.includes("reject") && (
                   <button
                     onClick={() => handleReject(transfer)}
-                    className="flex items-center space-x-2 bg-white border border-[#01373D] hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors"
+                    className="flex items-center justify-center gap-2 bg-white border border-[#01373D] hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors"
                   >
                     <div className="w-5 h-5 bg-[#F4F6F5] border border-[#01373D] rounded-full flex items-center justify-center">
                       <svg className="w-3 h-3 text-[#01373D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -416,7 +416,7 @@ const TransferTemp = () => {
                 {transfer.actions.includes("review") && (
                   <button
                     onClick={() => handleReview(transfer)}
-                    className="flex items-center space-x-2 bg-white border border-[#01373D] hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors"
+                    className="flex items-center justify-center gap-2 bg-white border border-[#01373D] hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors"
                   >
                     <EyessIcon />
                     <span>Review Details</span>
@@ -432,8 +432,8 @@ const TransferTemp = () => {
                   : "bg-gray-50 text-gray-800"
               }`}>
                 {transfer.status === "Completed" && (
-                  <div className="flex flex-col">
-                    <div className="flex items-center space-x-2">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
                       <GreenIcon />
                       <span className="font-medium">Transfer Completed</span>
                     </div>
@@ -441,8 +441,8 @@ const TransferTemp = () => {
                   </div>
                 )}
                 {transfer.status === "Rejected" && transfer.rejectionReason && (
-                  <div className="flex flex-col">
-                    <div className="flex items-center space-x-2">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
                       <RedIcon />
                       <span className="font-medium">Rejection Reason:</span>
                     </div>
@@ -477,9 +477,9 @@ const TransferTemp = () => {
             <div className="p-6 space-y-6">
               {/* Participants */}
               <div className="bg-gray-50 rounded-lg p-4">
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {/* Sender */}
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                       <span className="text-sm font-semibold text-green-600">{selectedTransfer.sender.initials}</span>
                     </div>
@@ -490,10 +490,10 @@ const TransferTemp = () => {
                   </div>
 
                   {/* Transfer Amount */}
-                  <div className="flex items-center justify-center">
-                    <div className="flex items-center space-x-2">
+                  <div className="flex  lg:justify-start">
+                    <div className="flex items-center justify-center ml-4">
                       <RightLeftErrorIcon />
-                      <div className="text-center">
+                      <div className="text-center ml-5">
                         <div className="text-sm font-medium text-gray-900">{selectedTransfer.shares} Shares</div>
                         <div className="text-sm text-gray-600">{selectedTransfer.amount}</div>
                       </div>
@@ -501,7 +501,7 @@ const TransferTemp = () => {
                   </div>
 
                   {/* Receiver */}
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
                       <span className="text-sm font-semibold text-purple-600">{selectedTransfer.receiver.initials}</span>
                     </div>
@@ -514,7 +514,7 @@ const TransferTemp = () => {
               </div>
 
               {/* Transfer Information */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Investor</label>
                   <p className="text-sm text-gray-900">{selectedTransfer.sender.name}</p>
@@ -565,13 +565,13 @@ const TransferTemp = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 p-6 border-t border-gray-200">
               <button
                 onClick={() => {
                   setShowTransferDetails(false);
                   handleReject(selectedTransfer);
                 }}
-                className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-[#01373D] rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-[#01373D] rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <div className="w-5 h-5 border border-[#01373D] rounded-full flex items-center justify-center">
                   <svg className="w-3 h-3 text-[#01373D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -585,7 +585,7 @@ const TransferTemp = () => {
                   setShowTransferDetails(false);
                   handleApprove(selectedTransfer);
                 }}
-                className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
               >
                 <RighIcon />
                 <span>Approve Transfer</span>
@@ -643,7 +643,7 @@ const TransferTemp = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 p-6 border-t border-gray-200">
               <button
                 onClick={() => setShowRejectModal(false)}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -655,7 +655,7 @@ const TransferTemp = () => {
                   setShowRejectModal(false);
                   console.log("Transfer rejected:", selectedTransfer);
                 }}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
               >
                 <div className="w-5 h-5 border border-white rounded-full flex items-center justify-center">
                   <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

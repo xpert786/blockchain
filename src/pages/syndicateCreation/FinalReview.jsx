@@ -61,11 +61,13 @@ const FinalReview = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-8">
+    <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 lg:p-8 space-y-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl  text-[#001D21] mb-2">Step 4: Final Review & Submit</h1>
-        <p className="text-gray-600">Please review all information before submitting your syndicate application for platform compliance review.</p>
+      <div className="space-y-2 text-center sm:text-left">
+        <h1 className="text-2xl text-[#001D21]">Step 4: Final Review & Submit</h1>
+        <p className="text-gray-600">
+          Please review all information before submitting your syndicate application for platform compliance review.
+        </p>
       </div>
 
       {/* Review Sections */}
@@ -74,7 +76,7 @@ const FinalReview = () => {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <RightsIcon />
-            <h2 className="text-xl font-medium  text-[#0A2A2E] ">Lead Information</h2>
+            <h2 className="text-xl font-medium text-[#0A2A2E]">Lead Information</h2>
           </div>
           <div className="bg-[#F9F8FF] border border-[#E2E2FB] rounded-lg p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -102,7 +104,7 @@ const FinalReview = () => {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <RightsIcon />
-            <h2 className="text-xl font-medium  text-[#0A2A2E] ">Team & Roles</h2>
+            <h2 className="text-xl font-medium text-[#0A2A2E]">Team & Roles</h2>
           </div>
           <div className="bg-[#F9F8FF] border border-[#E2E2FB] rounded-lg p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -147,7 +149,7 @@ const FinalReview = () => {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <RightsIcon />
-            <h2 className="text-xl font-medium  text-[#0A2A2E] ">Investment Strategy</h2>
+            <h2 className="text-xl font-medium text-[#0A2A2E]">Investment Strategy</h2>
           </div>
           <div className="bg-[#F9F8FF] border border-[#E2E2FB] rounded-lg p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -179,7 +181,7 @@ const FinalReview = () => {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <RightsIcon />
-            <h2 className="text-xl font-medium  text-[#0A2A2E] ">Compliance & Attestation</h2>
+            <h2 className="text-xl font-medium text-[#0A2A2E]">Compliance & Attestation</h2>
           </div>
           <div className="bg-[#F9F8FF] border border-[#E2E2FB] rounded-lg p-4">
             <div className="space-y-3 text-sm">
@@ -201,10 +203,10 @@ const FinalReview = () => {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between pt-8 border-t border-gray-200 mt-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-4 pt-8 border-t border-gray-200">
         <button
           onClick={handlePrevious}
-          className="bg-[#F4F6F5] !border border-[#01373D] hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+          className="bg-[#F4F6F5] !border border-[#01373D] hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -214,7 +216,7 @@ const FinalReview = () => {
         <button
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className={`px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+          className={`px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 w-full sm:w-auto ${
             isSubmitting
               ? "bg-gray-400 text-gray-600 cursor-not-allowed"
               : "bg-teal-500 hover:bg-teal-600 text-white"

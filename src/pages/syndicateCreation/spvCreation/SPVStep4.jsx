@@ -32,10 +32,10 @@ const SPVStep4 = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8 space-y-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Fundraising & Jurisdiction Selection</h1>
+      <div className="space-y-2 text-center sm:text-left">
+        <h1 className="text-3xl font-bold text-gray-800">Fundraising & Jurisdiction Selection</h1>
         <p className="text-gray-600">Select the jurisdiction for your SPV and review the legal structure.</p>
       </div>
 
@@ -189,7 +189,7 @@ const SPVStep4 = () => {
         {/* Access Mode */}
         <div>
           <label className="block text-lg font-semibold text-gray-800 mb-4">Access Mode</label>
-          <div className="flex space-x-4">
+          <div className="flex flex-col sm:flex-row sm:space-x-4 gap-4">
             <div
               className={`flex-1 border rounded-lg p-4 cursor-pointer ${
                 formData.accessMode === "private"
@@ -255,10 +255,10 @@ const SPVStep4 = () => {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between pt-8 border-t border-gray-200 mt-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-4 pt-8 border-t border-gray-200">
         <button
           onClick={handlePrevious}
-          className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+          className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -267,7 +267,7 @@ const SPVStep4 = () => {
         </button>
         <button
           onClick={handleNext}
-          className="bg-[#00F0C3] hover:scale-102 text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+          className="bg-[#00F0C3] hover:scale-102 text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
         >
           Next
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

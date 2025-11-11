@@ -96,110 +96,100 @@ const ManageDocuments = () => {
   }, [openDropdown]);
 
   return (
-    <div className="min-h-screen bg-[#F4F6F5]">
+    <div className="min-h-screen bg-[#F4F6F5] px-4 py-6 sm:px-6 lg:px-0 lg:mt-10 space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg p-6 mb-8">
-  {/* Header Section */}
-  <div className="flex items-center justify-between mb-6">
-    <div>
-      <h3 className="text-2xl font-bold text-gray-900 mb-2">
-        Manage <span className="text-[#9889FF]">Documents</span>
-      </h3>
-      <p className="text-lg text-gray-600">
-        Manage investment documents and agreements
-      </p>
-    </div>
-    <button className="bg-[#00F0C3] hover:bg-[#00D4A3] text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2">
-      <svg
-        className="w-5 h-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-        />
-      </svg>
-      <span>Create Document</span>
-    </button>
-  </div>
-
-  {/* Summary Cards */}
-  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-    <div className="bg-[#CAE6FF] rounded-2xl p-8 h-32">
-      <div className="flex items-center justify-between h-full">
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-gray-600">Total Documents</p>
-            <Files2Icon />
+      <div className="bg-white rounded-lg p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+              Manage <span className="text-[#9889FF]">Documents</span>
+            </h3>
+            <p className="text-sm sm:text-base text-gray-600">
+              Manage investment documents and agreements
+            </p>
           </div>
-          <div className="flex items-center justify-between">
-            <p className="text-2xl font-bold text-gray-900">5</p>
-            <p className="text-xs text-green-600">+8 this month</p>
+          <button className="bg-[#00F0C3] hover:bg-[#00D4A3] text-black px-4 py-3 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+              />
+            </svg>
+            <span>Create Document</span>
+          </button>
+        </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-[#CAE6FF] rounded-2xl p-5 sm:p-6">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-600">Total Documents</p>
+                <Files2Icon />
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-2xl font-bold text-gray-900">5</p>
+                <p className="text-xs text-green-600">+8 this month</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#D7F8F0] rounded-2xl p-5 sm:p-6">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-600">Pending Signatures</p>
+                <WatchsIcon />
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-2xl font-bold text-gray-900">1</p>
+                <p className="text-xs text-green-600">2 urgent</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#E2E2FB] rounded-2xl p-5 sm:p-6">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-600">Signed Documents</p>
+                <SecondFilesIcon />
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-2xl font-bold text-gray-900">1</p>
+                <p className="text-xs text-green-600">+5 this week</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#FFEFE8] rounded-2xl p-5 sm:p-6">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-600">Finalized</p>
+                <RightssIcon />
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-2xl font-bold text-gray-900">10</p>
+                <p className="text-xs text-green-600">+5 this week</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <div className="bg-[#D7F8F0] rounded-2xl p-8 h-32">
-      <div className="flex items-center justify-between h-full">
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-gray-600">Pending Signatures</p>
-            <WatchsIcon />
-          </div>
-          <div className="flex items-center justify-between">
-            <p className="text-2xl font-bold text-gray-900">1</p>
-            <p className="text-xs text-green-600">2 urgent</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div className="bg-[#E2E2FB] rounded-2xl p-8 h-32">
-      <div className="flex items-center justify-between h-full">
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-gray-600">Signed Documents</p>
-            <SecondFilesIcon />
-          </div>
-          <div className="flex items-center justify-between">
-            <p className="text-2xl font-bold text-gray-900">1</p>
-            <p className="text-xs text-green-600">+5 this week</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div className="bg-[#FFEFE8] rounded-2xl p-8 h-32">
-      <div className="flex items-center justify-between h-full">
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-gray-600">Finalized</p>
-            <RightssIcon />
-          </div>
-          <div className="flex items-center justify-between">
-            <p className="text-2xl font-bold text-gray-900">10</p>
-            <p className="text-xs text-green-600">+5 this week</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 
       {/* Tabs */}
-      <div className="bg-white rounded-lg p-3 w-fit mb-6">
-        <div className="flex space-x-1">
+      <div className="bg-white rounded-lg p-3 sm:p-4">
+        <div className="flex flex-wrap gap-2">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-3 rounded-[10px] font-medium transition-colors ${
+              className={`px-4 py-2 rounded-[10px] font-medium transition-colors ${
                 activeTab === tab.id
                   ? "bg-[#00F0C3] text-black"
                   : "bg-[#F4F6F5] text-gray-700 hover:bg-gray-300"
@@ -212,12 +202,12 @@ const ManageDocuments = () => {
       </div>
 
       {/* Search Bar and Icons */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="relative w-full md:max-w-md">
           <input
             type="text"
             placeholder="Search SPVs by name, ID, or focus area..."
-            className="w-full pl-10 pr-4 py-2 !border border-gray-300 rounded-lg focus:outline-none  bg-[#FFFFFF]"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none"
           />
           <svg
             className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -228,19 +218,14 @@ const ManageDocuments = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
-        <div className="flex items-center space-x-2">
-          {/* View1Icon - Inactive */}
+        <div className="flex items-center justify-between md:justify-start gap-2">
           <button className="p-2 text-gray-600 hover:text-gray-800 transition-colors">
             <View1Icon />
           </button>
-          
-          {/* View2Icon - Inactive */}
-          <button className="p-2 text-gray-600 hover:text-gray-800 transition-colors ">
+          <button className="p-2 text-gray-600 hover:text-gray-800 transition-colors">
             <View2Icon />
           </button>
-          
-          {/* View3Icon - Active */}
-          <button className="p-2 text-white hover:text-gray-200 transition-colors ">
+          <button className="p-2 bg-[#01373D] text-white rounded-lg">
             <View3Icon />
           </button>
         </div>
@@ -249,37 +234,43 @@ const ManageDocuments = () => {
       {/* Documents List */}
       <div className="space-y-4">
         {documents.map((doc) => (
-          <div key={doc.id} className="bg-white rounded-lg p-6 border border-gray-200">
-            <div className="flex items-start justify-between">
+          <div key={doc.id} className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
               <div className="flex-1">
-                <div className="flex items-center space-x-2 mb-1">
+                <div className="flex items-start gap-2 mb-2">
                   <FilesaddIcon />
-                  <h3 className="text-lg font-medium text-gray-900">{doc.title}</h3>
+                  <h3 className="text-base sm:text-lg font-medium text-gray-900">{doc.title}</h3>
                 </div>
-                <div className="flex items-center text-sm text-gray-600 mb-4">
-                  <svg className="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <span className="mr-2">{doc.subtitle.split(' • ')[0]}</span>
-                  <svg className="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  <span className="mr-2">{doc.subtitle.split(' • ')[1]}</span>
-                  <svg className="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="mr-2">{doc.subtitle.split(' • ')[2]}</span>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-gray-600 mb-4">
+                  <span className="flex items-center gap-1">
+                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    {doc.subtitle.split(' • ')[0]}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    {doc.subtitle.split(' • ')[1]}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {doc.subtitle.split(' • ')[2]}
+                  </span>
                   {doc.subtitle.split(' • ')[3] && (
-                    <>
-                      <svg className="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <span className="flex items-center gap-1">
+                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
-                      <span>{doc.subtitle.split(' • ')[3]}</span>
-                    </>
+                      {doc.subtitle.split(' • ')[3]}
+                    </span>
                   )}
                 </div>
                 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Document ID</p>
                     <p className="text-sm font-medium text-gray-900">{doc.documentId}</p>
@@ -316,15 +307,15 @@ const ManageDocuments = () => {
                 )}
 
                 {/* Bottom Action Buttons */}
-                <div className="flex items-center space-x-3 mt-4">
-                  <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg bg-[#F4F6F5] text-black hover:bg-gray-200 transition-colors">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mt-4">
+                  <button className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-[#F4F6F5] text-black hover:bg-gray-200 transition-colors">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                     <span className="text-sm font-medium">Preview</span>
                   </button>
-                  <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg bg-[#F4F6F5] text-black hover:bg-gray-200 transition-colors">
+                  <button className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-[#F4F6F5] text-black hover:bg-gray-200 transition-colors">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 10l5 5 5-5" />
@@ -335,11 +326,11 @@ const ManageDocuments = () => {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 ml-6">
+              <div className="flex flex-wrap items-center gap-2 md:flex-col md:items-end md:gap-3">
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${doc.statusColor}`}>
                   {doc.status}
                 </span>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                   <button className="p-2 text-black hover:text-gray-800 transition-colors border border-gray-300 rounded-lg bg-white">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                       <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

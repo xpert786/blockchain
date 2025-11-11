@@ -28,6 +28,7 @@ const SettingsLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState("general-info");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const settingsTabs = [
     { id: "general-info", label: "General Info", icon: PersonIcon, path: "/manager-panel/settings/general-info" },
@@ -44,6 +45,7 @@ const SettingsLayout = () => {
   const handleTabClick = (tab) => {
     setActiveTab(tab.id);
     navigate(tab.path);
+    setIsMobileMenuOpen(false);
   };
 
   // Set active tab based on current path
@@ -56,37 +58,45 @@ const SettingsLayout = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-[#F4F6F5] overflow-x-hidden">
+    <div className="min-h-screen bg-[#F4F6F5] px-4 py-6 sm:px-6 lg:px-0 lg:mt-10 overflow-x-hidden">
       {/* Header */}
-      <div className="mb-8">
-        <h3 className="text-2xl font-bold text-[#01373D] mb-2">Settings</h3>
-        <p className="text-lg text-gray-600">Manage your account settings and preferences.</p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="text-xl sm:text-2xl font-bold text-[#01373D] mb-2">Settings</h3>
+          <p className="text-sm sm:text-base text-gray-600">Manage your account settings and preferences.</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-lg border border-[#01373D] text-[#01373D]"
+          aria-label="Open settings menu"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
       </div>
 
-      <div className="flex gap-6">
-        {/* Left Sidebar */}
-        <div className="w-44 md:w-56 lg:w-64 xl:w-72 shrink-0 bg-white rounded-lg p-6 h-fit">
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block w-64 xl:w-72 shrink-0 bg-white rounded-lg p-6 h-fit">
           <div className="space-y-2">
-            {settingsTabs.map((tab) => {
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => handleTabClick(tab)}
-                  className={`w-full flex items-center px-4 py-2 rounded-lg text-left transition-colors font-poppins-custom ${
-                    activeTab === tab.id
-                      ? "bg-[#00F0C3] text-black"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <span className="text-sm font-medium">{tab.label}</span>
-                </button>
-              );
-            })}
+            {settingsTabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => handleTabClick(tab)}
+                className={`w-full flex items-center px-4 py-2 rounded-lg text-left transition-colors font-poppins-custom ${
+                  activeTab === tab.id ? "bg-[#00F0C3] text-black" : "text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                <span className="text-sm font-medium">{tab.label}</span>
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 min-w-0 bg-white rounded-lg shadow-sm">
+        <div className="flex-1 min-w-0 bg-white rounded-lg">
           <Routes>
             <Route path="/" element={<GeneralInfo />} />
             <Route path="/general-info" element={<GeneralInfo />} />
@@ -102,6 +112,48 @@ const SettingsLayout = () => {
           </Routes>
         </div>
       </div>
+
+      {/* Mobile Sidebar Drawer */}
+      <div
+        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-full transform bg-white transition-transform duration-300 ease-in-out lg:hidden ${
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
+          <h4 className="text-lg font-semibold text-[#01373D]">Settings</h4>
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-[#01373D] text-[#01373D]"
+            aria-label="Close settings menu"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="p-4 space-y-2 overflow-y-auto">
+          {settingsTabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => handleTabClick(tab)}
+              className={`w-full flex items-center px-4 py-3 rounded-lg text-left transition-colors font-poppins-custom ${
+                activeTab === tab.id ? "bg-[#00F0C3] text-black" : "text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              <span className="text-sm font-medium">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      {isMobileMenuOpen && (
+        <button
+          type="button"
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="fixed inset-0 z-30 bg-black/40 lg:hidden"
+          aria-label="Close menu overlay"
+        />
+      )}
     </div>
   );
 };

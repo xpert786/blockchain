@@ -50,15 +50,15 @@ const SolutionsScrollView = () => {
     ];
 
     return (
-        <section className="flex justify-center">
-            <div className="flex flex-col md:flex-row justify-between items-start gap-10 w-full max-w-7xl px-6">
+        <section className="flex justify-center px-4 sm:px-6">
+            <div className="flex flex-col lg:flex-row justify-between items-start gap-10 w-full max-w-7xl">
 
 
-                <div className="md:w-1/2 lg:w-2/5">
-                    <span className="text-sm border border-gray-300 text-gray-700 px-3 py-1 rounded-full">
+                <div className="lg:w-2/5">
+                    <span className="text-xs sm:text-sm border border-gray-300 text-gray-700 px-3 py-1 rounded-full">
                         Our Dashboards
                     </span>
-                    <h2 className="text-3xl md:text-4xl font-semibold leading-snug mb-3">
+                    <h2 className="text-3xl md:text-4xl font-semibold leading-snug mb-3 mt-4">
                         A <span className="text-[#9889FF]">Unified </span><br />
                         <span className="text-[#9889FF]">Dashboard</span> Experience <br /> For Every Role
                     </h2>
@@ -71,14 +71,7 @@ const SolutionsScrollView = () => {
 
                 {/* RIGHT SIDE: SCROLLABLE CARDS */}
                 <div
-                    className="
-            md:w-1/2 lg:w-3/5 
-            h-[85vh] 
-            overflow-y-auto 
-            scroll-smooth 
-            pr-2 md:pr-4 
-            custom-scrollbar
-          "
+                    className="lg:w-3/5 h-[70vh] sm:h-[75vh] lg:h-[85vh] overflow-y-auto scroll-smooth pr-2 md:pr-4 custom-scrollbar"
                     style={{
                         scrollbarWidth: "thin",
                         scrollbarColor: "#BDBDBD transparent",
@@ -88,17 +81,11 @@ const SolutionsScrollView = () => {
                         {cards.map((card, index) => (
                             <div
                                 key={index}
-                                className={`
-                  rounded-2xl shadow-md ${card.color} 
-                  p-6 md:p-10 
-                  transition-all hover:shadow-lg
-                  flex-shrink-0
-                `}
+                                className={`rounded-2xl ${card.color} p-6 sm:p-8 lg:p-10 transition-all flex-shrink-0`}
                             >
-                                <h3 className="text-2xl font-semibold mb-2">{card.title}</h3>
+                                <h3 className="text-xl sm:text-2xl font-semibold mb-2">{card.title}</h3>
                                 <p className="text-gray-600 mb-6">{card.desc}</p>
-
-                                <div className="bg-white rounded-2xl shadow-inner p-5 md:p-6">
+                                <div className="bg-white rounded-2xl p-4 sm:p-5 lg:p-6">
                                     <ul className="space-y-4">
                                         {card.features.map((feature, i) => (
                                             <li key={i} className="flex items-center text-gray-700 font-medium">
@@ -112,7 +99,7 @@ const SolutionsScrollView = () => {
                                 </div>
 
                                 <div className="mt-6">
-                                    <button className="bg-[#00F0C3] text-[#0A2A2E] px-6 py-2 rounded-lg font-medium hover:opacity-80 transition cursor-pointer">
+                                    <button className="w-full sm:w-auto bg-[#00F0C3] text-[#0A2A2E] px-6 py-2 rounded-lg font-medium hover:opacity-80 transition cursor-pointer">
                                         Contact Us
                                     </button>
                                 </div>

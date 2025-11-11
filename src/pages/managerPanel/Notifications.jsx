@@ -80,56 +80,56 @@ const Notifications = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-gray-100 px-4 py-6 sm:px-6 lg:px-8 space-y-6">
       {/* Header Section */}
-      <div className="bg-white rounded-xl  p-8 mb-6">
-        <h1 className="text-4xl font-bold text-[#8A63D2] mb-2">
+      <div className="bg-white rounded-xl p-4 sm:p-6 lg:p-8 space-y-2">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#8A63D2]">
           Syndicate Manager Dashboard
         </h1>
-        <p className="text-lg text-gray-600">
+        <p className="text-sm sm:text-base text-gray-600">
           Manage your SPVs and investor relationships
         </p>
       </div>
 
       {/* Notifications Section */}
-      <div className="bg-[#F9F8FF] rounded-xl p-8">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Notifications</h2>
-          <p className="text-base text-gray-600">
+      <div className="bg-[#F9F8FF] rounded-xl p-4 sm:p-6 lg:px-8 lg:py-6 space-y-6">
+        <div className="space-y-2">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Notifications</h2>
+          <p className="text-sm sm:text-base text-gray-600">
             A new update has been added to your notifications
           </p>
         </div>
 
         {/* Notifications List */}
-        <div className="space-y-0">
-          {notifications.map((notification, index) => (
+        <div className="space-y-4">
+          {notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`flex items-center py-4 px-4 border border-[#D1D5DB80] rounded-lg p-4 mb-4`}
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border border-[#D1D5DB80] rounded-lg p-4 bg-white"
             >
               {/* Left Side - Icons */}
-              <div className="flex items-center space-x-3 mr-4">
+              <div className="flex items-center space-x-3">
                 {getStatusIcon(notification.statusIcon, notification.statusColor)}
                 {getTypeIcon(notification.typeIcon, notification.typeColor)}
               </div>
 
               {/* Middle - Content */}
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-1">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-1">
                   {notification.title}
                 </h3>
-                <p className="text-base text-gray-600 mb-1">
+                <p className="text-sm sm:text-base text-gray-600 mb-1">
                   {notification.description}
                 </p>
                 {notification.relatedTo && (
-                  <p className="text-base text-gray-600">
+                  <p className="text-sm sm:text-base text-gray-600">
                     Related to: <span className="underline">{notification.relatedTo}</span>
                   </p>
                 )}
               </div>
 
               {/* Right Side - Timestamp */}
-              <div className="text-sm text-gray-500">
+              <div className="text-xs sm:text-sm text-gray-500 sm:text-right">
                 {notification.timestamp}
               </div>
             </div>

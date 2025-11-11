@@ -6,34 +6,40 @@ const ManagerLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeMenu, setActiveMenu] = useState("dashboard");
-  
+  const [menuOpen, setMenuOpen] = useState(false);
+
   // Update active menu based on current location
   useEffect(() => {
     const path = location.pathname;
-    if (path.includes('spv-management') || path.includes('spv-details') || path.includes('investor-details')) {
-      setActiveMenu('spv-management');
-    } else if (path.includes('documents') || path.includes('document-template-engine') || path.includes('manage-templates') || path.includes('generated-documents') || path.includes('generate-document')) {
-      setActiveMenu('documents');
-    } else if (path.includes('transfers')) {
-      setActiveMenu('transfers');
-    } else if (path.includes('requests-system')) {
-      setActiveMenu('requests-system');
-    } else if (path.includes('dashboard')) {
-      setActiveMenu('dashboard');
-    } else if (path.includes('notifications')) {
-      setActiveMenu('notifications');
+    if (path.includes("spv-management") || path.includes("spv-details") || path.includes("investor-details")) {
+      setActiveMenu("spv-management");
+    } else if (
+      path.includes("documents") ||
+      path.includes("document-template-engine") ||
+      path.includes("manage-templates") ||
+      path.includes("generated-documents") ||
+      path.includes("generate-document")
+    ) {
+      setActiveMenu("documents");
+    } else if (path.includes("transfers")) {
+      setActiveMenu("transfers");
+    } else if (path.includes("requests-system")) {
+      setActiveMenu("requests-system");
+    } else if (path.includes("dashboard")) {
+      setActiveMenu("dashboard");
+    } else if (path.includes("notifications")) {
+      setActiveMenu("notifications");
     }
+    setMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [location.pathname]);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const menuItems = [
     { id: "dashboard", name: "Dashboard", icon: "dashboard", path: "/manager-panel/dashboard" },
-    // { id: "create-spv", name: "Create New SPV", icon: "plus", path: "/manager-panel/create-spv" },
     { id: "spv-management", name: "SPV Management", icon: "document", path: "/manager-panel/spv-management" },
     { id: "documents", name: "Documents", icon: "documents", path: "/manager-panel/documents" },
     { id: "transfers", name: "Transfers", icon: "transfers", path: "/manager-panel/transfers" },
     { id: "requests-system", name: "Requests System", icon: "requests", path: "/manager-panel/requests-system" },
-    // { id: "analytics", name: "Analytics", icon: "analytics", path: "/manager-panel/analytics" },
     { id: "settings", name: "Settings", icon: "settings", path: "/manager-panel/settings" }
   ];
 
@@ -126,120 +132,172 @@ const ManagerLayout = () => {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: '#F4F6F5' }}>
-      {/* Left Sidebar */}
-      <div className="w-64 bg-[#01373D] text-white flex flex-col">
-        {/* Logo */}
-        <div className="p-6 border-b border-gray-700">
-          <img 
-            src={logoImage} 
-            alt="Logo" 
-            className="h-12 w-auto object-contain"
-          />
-        </div>
+    <div className="min-h-screen bg-[#F4F6F5]">
+      {/* Fixed Header */}
+      <header className="fixed top-0 left-0 right-0 z-40 bg-[#F4F6F5] border-b border-gray-200 px-4 sm:px-6 py-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-lg border border-gray-300 text-gray-600 hover:text-gray-900 hover:border-gray-400 transition-colors"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Open navigation menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div className="hidden lg:block w-48">
+              <img src={logoImage} alt="Logo" className="h-10 w-auto object-contain" />
+            </div>
+          </div>
 
-        {/* Navigation Menu */}
-        <nav className="flex-1 p-4">
-          <ul className="space-y-2">
-            {menuItems.map((item) => (
-              <li key={item.id}>
-                <button
-                  onClick={() => handleMenuClick(item)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                    activeMenu === item.id
-                      ? "bg-[#FFFFFF1A] text-[white]"
-                      : "text-gray-300 hover:text-white hover:bg-gray-700"
-                  }`}
-                >
-                  {getIcon(item.icon)}
-                  <span className="font-medium">{item.name}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
+          {/* Search Bar */}
+          <div className="flex-1 max-w-lg">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search SPVs, investors, documents..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <svg
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
 
-        {/* User Profile */}
-        <div className="p-4 border-t border-gray-700">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+          {/* Actions */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/syndicate-creation/spv-creation/step1")}
+              className="hidden sm:inline-flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              <span>Create New SPV</span>
+            </button>
+            <button
+              onClick={() => navigate("/manager-panel/notifications")}
+              className="relative inline-flex items-center justify-center w-11 h-11  text-gray-600 hover:text-gray-900 hover:border-gray-400 transition-colors"
+              aria-label="View notifications"
+            >
+              <svg width="24" height="24" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="30" height="30" rx="8" fill="#01373D" />
+                <path
+                  d="M14.0083 20.2503C14.106 20.4279 14.2495 20.576 14.424 20.6792C14.5984 20.7823 14.7973 20.8368 15 20.8368C15.2027 20.8368 15.4016 20.7823 15.576 20.6792C15.7505 20.576 15.894 20.4279 15.9917 20.2503M11.5 12.667C11.5 11.7387 11.8687 10.8485 12.5251 10.1921C13.1815 9.53574 14.0717 9.16699 15 9.16699C15.9283 9.16699 16.8185 9.53574 17.4749 10.1921C18.1313 10.8485 18.5 11.7387 18.5 12.667C18.5 16.7503 20.25 17.917 20.25 17.917H9.75C9.75 17.917 11.5 16.7503 11.5 12.667Z"
+                  stroke="white"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="absolute -top-0 -right-0 w-4 h-4 bg-[#F2E0C9] rounded-full flex items-center justify-center text-xs font-bold text-[#01373D]">
+                2
+              </span>
+            </button>
+            <div className="w-9 h-9 bg-gray-300 rounded-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
               </svg>
             </div>
-            <div>
-              <p className="text-white font-medium">John Doe</p>
-              <p className="text-gray-400 text-sm">Manager</p>
-            </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Header */}
-        <header className="bg-[#F4F6F5] px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            {/* Search Bar */}
-            <div className="flex-1 max-w-md">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search SPVs, investors, documents..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
-                />
-                <svg
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      {/* Mobile Slide-in Menu */}
+      {menuOpen && (
+        <div className="fixed inset-0 z-50 flex lg:hidden">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setMenuOpen(false)} aria-label="Close navigation menu" />
+          <aside className="relative w-72 max-w-full bg-[#01373D] text-white h-full shadow-2xl flex flex-col">
+            <div className="p-6 border-b border-gray-700 flex items-center justify-between">
+              <img src={logoImage} alt="Logo" className="h-10 w-auto object-contain" />
+              <button
+                type="button"
+                onClick={() => setMenuOpen(false)}
+                className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-white/40 hover:bg-white/10 transition-colors"
+                aria-label="Close navigation menu"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
+              </button>
+            </div>
+            <nav className="flex-1 p-4 overflow-y-auto">
+              <ul className="space-y-2">
+                {menuItems.map((item) => (
+                  <li key={item.id}>
+                    <button
+                      onClick={() => handleMenuClick(item)}
+                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                        activeMenu === item.id ? "bg-[#FFFFFF1A] text-white" : "text-gray-300 hover:text-white hover:bg-gray-700"
+                      }`}
+                    >
+                      {getIcon(item.icon)}
+                      <span className="font-medium">{item.name}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <div className="p-4 border-t border-gray-700">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-white font-medium">John Doe</p>
+                  <p className="text-gray-400 text-sm">Manager</p>
+                </div>
               </div>
             </div>
+          </aside>
+        </div>
+      )}
 
-            {/* Right Side Actions */}
-            <div className="flex items-center space-x-4">
-              {/* Create New SPV Button */}
-              <button 
-                onClick={() => navigate("/syndicate-creation/spv-creation/step1")}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+      <div className="flex pt-24 lg:pt-0">
+        {/* Desktop Sidebar */}
+        <aside className="hidden lg:flex lg:flex-col lg:w-64 bg-[#01373D] text-white min-h-screen">
+          <div className="py-6 border-b border-gray-700">
+            <img src={logoImage} alt="Logo" className="h-12 w-auto mx-auto object-contain" />
+          </div>
+          <nav className="flex-1 p-4 space-y-2">
+            {menuItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleMenuClick(item)}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                  activeMenu === item.id ? "bg-[#FFFFFF1A] text-white" : "text-gray-300 hover:text-white hover:bg-gray-700"
+                }`}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                <span>Create New SPV</span>
+                {getIcon(item.icon)}
+                <span className="font-medium">{item.name}</span>
               </button>
-
-              {/* Notifications */}
-              <div className="relative">
-                  <button 
-                    onClick={() => navigate("/manager-panel/notifications")}
-                    className="p-2 text-gray-600 hover:text-gray-800 transition-colors"
-                  >
-                    <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="30" height="30" rx="8" fill="#01373D"/>
-                      <path d="M14.0083 20.2503C14.106 20.4279 14.2495 20.576 14.424 20.6792C14.5984 20.7823 14.7973 20.8368 15 20.8368C15.2027 20.8368 15.4016 20.7823 15.576 20.6792C15.7505 20.576 15.894 20.4279 15.9917 20.2503M11.5 12.667C11.5 11.7387 11.8687 10.8485 12.5251 10.1921C13.1815 9.53574 14.0717 9.16699 15 9.16699C15.9283 9.16699 16.8185 9.53574 17.4749 10.1921C18.1313 10.8485 18.5 11.7387 18.5 12.667C18.5 16.7503 20.25 17.917 20.25 17.917H9.75C9.75 17.917 11.5 16.7503 11.5 12.667Z" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </button>
-                  <div className="absolute -top-0 -right-0 w-4 h-4 bg-[#F2E0C9] rounded-full flex items-center justify-center">
-                    <span className="text-[#01373D] text-xs font-bold">2</span>
-                  </div>
-              </div>
-
-              {/* User Avatar */}
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+            ))}
+          </nav>
+          <div className="p-4 border-t border-gray-700">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                 </svg>
               </div>
+              <div>
+                <p className="text-white font-medium">John Doe</p>
+                <p className="text-gray-400 text-sm">Manager</p>
+              </div>
             </div>
           </div>
-        </header>
+        </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
           <Outlet />
         </main>
       </div>

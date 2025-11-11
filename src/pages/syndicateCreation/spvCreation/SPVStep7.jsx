@@ -30,18 +30,18 @@ const SPVStep7 = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-8">
+    <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 lg:p-8 space-y-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Final Summary & Review</h1>
+      <div className="space-y-2 text-center sm:text-left">
+        <h1 className="text-3xl font-bold text-gray-800">Final Summary & Review</h1>
         <p className="text-gray-600">Review and approve the automatically generated legal documents for your SPV.</p>
       </div>
 
       {/* Documents Generated Successfully Banner */}
-      <div className="bg-green-50  rounded-lg p-4 mb-6"
+      <div className="bg-green-50 rounded-lg p-4"
       style={{ border: "0.5px solid #00CC9933" }}
       >
-        <div className="flex items-start space-x-3">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:space-x-3 gap-3">
           <div className="flex-shrink-0">
           <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M21.0834 10.6193V11.5009C21.0822 13.5675 20.4131 15.5783 19.1757 17.2335C17.9383 18.8887 16.1991 20.0996 14.2173 20.6855C12.2355 21.2714 10.1175 21.2011 8.17895 20.4849C6.24044 19.7687 4.58538 18.4451 3.46059 16.7115C2.3358 14.9778 1.80155 12.927 1.93752 10.8649C2.0735 8.8028 2.8724 6.83991 4.2151 5.26896C5.55779 3.69801 7.37233 2.60317 9.3881 2.14773C11.4039 1.6923 13.5128 1.90067 15.4005 2.74176M8.62509 10.5426L11.5001 13.4176L21.0834 3.83426" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -49,8 +49,8 @@ const SPVStep7 = () => {
 
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">Documents Generated Successfully</h3>
-            <p className="text-gray-700">We've automatically generated the necessary legal documents for your SPV based on the information provided. Please review them before proceeding.</p>
+            <h3 className="text-lg font-semibold text-gray-800 mb-1 text-center sm:text-left">Documents Generated Successfully</h3>
+            <p className="text-gray-700 text-center sm:text-left">We've automatically generated the necessary legal documents for your SPV based on the information provided. Please review them before proceeding.</p>
           </div>
         </div>
       </div>
@@ -132,10 +132,10 @@ const SPVStep7 = () => {
       </div>
 
       {/* Legal Review Required Banner */}
-      <div className="bg-[#FDECEC]  rounded-lg p-4 mb-6" 
+      <div className="bg-[#FDECEC] rounded-lg p-4" 
       style={{ border: "1px solid #FACACA" }}
       >
-        <div className="flex items-start space-x-3">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:space-x-3 gap-3">
           <div className="flex-shrink-0">
             <div  className="mt-2">
             <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -184,7 +184,7 @@ const SPVStep7 = () => {
         </div>
         
         <div className="bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Deal Name:</span>
@@ -235,8 +235,8 @@ const SPVStep7 = () => {
           <h2 className="text-xl font-medium text-gray-800">Legal Structure</h2>
         </div>
         
-            <div className="bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
-          <div className="grid grid-cols-2 gap-6">
+        <div className="bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Adviser Entity:</span>
@@ -272,7 +272,7 @@ const SPVStep7 = () => {
         </div>
         
         <div className="bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Access Mode:</span>

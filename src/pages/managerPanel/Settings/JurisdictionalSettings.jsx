@@ -20,19 +20,21 @@ const JurisdictionalSettings = () => {
   };
 
   return (
-    <div className="bg-[#F4F6F5] min-h-screen">
+    <div className="bg-[#F4F6F5] min-h-screen px-4 py-6 sm:px-6 lg:px-8 space-y-6">
       {/* Top header white card */}
-      <div className="bg-white rounded-xl shadow-sm p-4 flex items-start gap-3 mb-4">
-        <JusIcon className="mt-0.5" />
+      <div className="bg-white rounded-xl shadow-sm p-5 flex flex-col sm:flex-row sm:items-start sm:gap-3 gap-4">
+        <div className="flex items-center justify-center sm:justify-start">
+          <JusIcon className="mt-0.5" />
+        </div>
         <div>
-          <h2 className="text-base md:text-xl text-[18px] text-[#001D21]">Jurisdictional Settings</h2>
-          <p className="text-xs md:text-sm text-gray-500 font-poppins-custom mt-1">Manage Legal And Compliance Configurations For Your Selected Jurisdiction.</p>
+          <h2 className="text-base sm:text-lg md:text-xl text-[#001D21]">Jurisdictional Settings</h2>
+          <p className="text-xs sm:text-sm text-gray-500 font-poppins-custom mt-1">Manage Legal And Compliance Configurations For Your Selected Jurisdiction.</p>
         </div>
       </div>
 
       {/* Jurisdiction selection card */}
-      <div className="bg-white rounded-xl px-5 md:px-6 py-15 w-full max-w-8xl">
-        <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center gap-2">
+      <div className="bg-white rounded-xl px-5 md:px-6 py-6 w-full">
+        <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center gap-3">
           <label className="block text-xs md:text-sm font-medium text-gray-700 font-poppins-custom mb-1 md:mb-0 md:mr-3 min-w-fit">Jurisdiction:</label>
           <div className="relative w-full md:max-w-xs flex items-center">
             <div className="relative w-full">
@@ -56,7 +58,7 @@ const JurisdictionalSettings = () => {
               </div>
             </div>
             {/* Question mark button tightly after select */}
-            <div className="flex items-center ml-6 relative">
+            <div className="flex items-center ml-4 sm:ml-6 relative">
               <button
                 onMouseEnter={() => setShowTooltip(true)}
                 onMouseLeave={() => setShowTooltip(false)}

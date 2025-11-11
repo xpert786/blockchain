@@ -7,6 +7,7 @@ import HomeMain from "./pages/home/HomeMain";
 import SolutionsLayout from "./pages/ourSolutions/SolutionsLayout";
 import OurSolutionsMain from "./pages/ourSolutions/OurSolutionsMain";
 import SolutionDetail from "./pages/ourSolutions/SolutionDetail";
+import ContactSales from "./pages/ourSolutions/ContactSales";
 
 // Auth pages
 import Login from "./pages/auth/Login";
@@ -86,6 +87,7 @@ const App = () => {
         {/* Our Solutions main & details */}
         <Route path="our-solutions" element={<SolutionsLayout />}>
           <Route index element={<OurSolutionsMain />} />
+          <Route path="contact-sales" element={<ContactSales />} />
           <Route path=":slug" element={<SolutionDetail />} />
         </Route>
       </Route>

@@ -243,9 +243,9 @@ const LeadInfo = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-8">
+    <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 lg:p-8 space-y-8">
       {/* Header */}
-      <div className="mb-8">
+      <div className="space-y-2 text-center sm:text-left">
         <h1 className="text-2xl  text-[#001D21] mb-2">Step 1: Lead Info</h1>
         <p className="text-gray-600">Personal and investment focus information.</p>
       </div>
@@ -258,45 +258,45 @@ const LeadInfo = () => {
       )}
 
       {/* Accreditation Section */}
-      <div className="mb-8">
-        <h2 className="text-xl text-[#0A2A2E] mb-4">Accreditation</h2>
-            <p className="text-gray-600 mb-4">
-              To be a syndicate, you must be a <span className="text-purple-400 font-semibold">accredited Investor</span>
-            </p>
-        
+      <div className="space-y-4">
+        <h2 className="text-xl text-[#0A2A2E]">Accreditation</h2>
+        <p className="text-gray-600">
+          To be a syndicate, you must be a <span className="text-purple-400 font-semibold">accredited Investor</span>
+        </p>
+
         <div className="space-y-3">
-          <label className="flex items-center">
+          <label className="flex items-start sm:items-center gap-3">
             <input
               type="radio"
               name="accreditation"
               value="accredited"
               checked={formData.accreditation === "accredited"}
               onChange={(e) => handleInputChange("accreditation", e.target.value)}
-              className="mr-3"
+              className="mt-1 sm:mt-0"
             />
             <span className="text-gray-700">I am an accredited investor</span>
           </label>
-          
-          <label className="flex items-center">
+
+          <label className="flex items-start sm:items-center gap-3">
             <input
               type="radio"
               name="accreditation"
               value="not-accredited"
               checked={formData.accreditation === "not-accredited"}
               onChange={(e) => handleInputChange("accreditation", e.target.value)}
-              className="mr-3"
+              className="mt-1 sm:mt-0"
             />
             <span className="text-gray-700">I am not an accredited investor</span>
           </label>
         </div>
 
-        <div className="mt-4">
-          <label className="flex items-center">
+        <div className="pt-2">
+          <label className="flex items-start sm:items-center gap-3">
             <input
               type="checkbox"
               checked={formData.understandRequirements}
               onChange={(e) => handleInputChange("understandRequirements", e.target.checked)}
-              className="mr-3"
+              className="mt-1 sm:mt-0"
             />
             <span className="text-gray-700">I understand I must meet regulatory requirements to lead syndicates</span>
           </label>
@@ -304,8 +304,8 @@ const LeadInfo = () => {
       </div>
 
       {/* Sector Focus Section */}
-      <div className="mb-8">
-        <h2 className="text-xl text-xl text-[#0A2A2E] mb-4">Sector Focus</h2>
+      <div className="space-y-4">
+        <h2 className="text-xl text-xl text-[#0A2A2E]">Sector Focus</h2>
         <div className="relative" ref={sectorDropdownRef}>
           <div 
             className="border border-[#0A2A2E] rounded-lg p-3 min-h-[50px] flex flex-wrap items-center gap-2 bg-[#F4F6F5] cursor-pointer"
@@ -369,8 +369,8 @@ const LeadInfo = () => {
       </div>
 
       {/* Geography Focus Section */}
-      <div className="mb-8">
-        <h2 className=" text-xl text-[#0A2A2E] mb-4">Geography Focus</h2>
+      <div className="space-y-4">
+        <h2 className=" text-xl text-[#0A2A2E]">Geography Focus</h2>
         <div className="relative" ref={geographyDropdownRef}>
           <div 
             className="border border-[#0A2A2E] rounded-lg p-3 min-h-[50px] flex flex-wrap items-center gap-2 bg-[#F4F6F5] cursor-pointer"
@@ -432,11 +432,11 @@ const LeadInfo = () => {
       </div>
 
       {/* Existing LP Network Section */}
-      <div className="mb-8">
-        <h2 className="text-xl text-[#0A2A2E] mb-4">Existing LP Network</h2>
-        <p className="text-gray-600 mb-4">How many LPs do you have to invest in your deal?</p>
+      <div className="space-y-4">
+        <h2 className="text-xl text-[#0A2A2E]">Existing LP Network</h2>
+        <p className="text-gray-600">How many LPs do you have to invest in your deal?</p>
         
-        <div className="border border-[#0A2A2E] rounded-lg p-3 w-full max-w-xs bg-[#F4F6F5]">
+        <div className="border border-[#0A2A2E] rounded-lg p-3 w-full sm:max-w-xs bg-[#F4F6F5]">
           <select
             value={formData.existingLpNetwork}
             onChange={(e) => handleInputChange("existingLpNetwork", e.target.value)}
@@ -459,7 +459,7 @@ const LeadInfo = () => {
                 type="number"
                 value={formData.lpBaseSize}
                 onChange={(e) => handleInputChange("lpBaseSize", parseInt(e.target.value))}
-                className="border border-[#0A2A2E] rounded-lg p-3 w-full max-w-xs bg-[#F4F6F5]"
+                className="border border-[#0A2A2E] rounded-lg p-3 w-full sm:max-w-xs bg-[#F4F6F5]"
                 placeholder="Enter LP base size"
               />
             </div>
@@ -518,22 +518,20 @@ const LeadInfo = () => {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between pt-6 border-t border-gray-200">
-        <button
-          className=" text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
-        >
-         
-        </button>
-        <button
-          onClick={handleNext}
-          disabled={loading}
-          className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {loading ? "Submitting..." : "Next"}
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+      <div className="flex flex-col sm:flex-row sm:justify-between gap-4 pt-6 border-t border-gray-200">
+        <div />
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+          <button
+            onClick={handleNext}
+            disabled={loading}
+            className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+          >
+            {loading ? "Submitting..." : "Next"}
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );

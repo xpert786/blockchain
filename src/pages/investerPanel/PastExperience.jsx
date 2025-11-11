@@ -52,9 +52,9 @@ const PastExperience = () => {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-200px)]">
+    <div className="flex flex-col lg:flex-row min-h-[calc(100vh-200px)] gap-6 lg:gap-0 px-4 sm:px-6 lg:px-0">
       {/* Left Sidebar */}
-      <div className="w-64 bg-[#CEC6FF] rounded-xl p-4 m-10 h-fit">
+      <div className="w-full lg:w-64 bg-[#CEC6FF] rounded-xl p-4 sm:p-5 lg:p-6 mt-6 sm:mt-8 lg:mt-10 mx-auto lg:mx-10 h-fit">
         <div className="space-y-4">
           <div 
             className={`${activeItem === "Accreditation" ? "bg-[#FFFFFF]" : ""} rounded-lg px-4 py-3 cursor-pointer transition-colors text-[#001D21]`}
@@ -78,13 +78,13 @@ const PastExperience = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 bg-white rounded-xl p-6 m-10">
-        <div className=" px-10 mx-auto">
+      <div className="flex-1 bg-white rounded-xl p-6 sm:p-8 lg:px-10 mx-auto mb-10 lg:mb-10 w-full max-w-4xl">
+        <div className="mx-auto">
           {/* Title */}
           <h1 className="text-3xl font-bold text-[#0A2A2E] mb-2">Past Experience</h1>
           
           {/* Subtitle */}
-          <p className="text-sm text-[#748A91] mb-8 font-poppins-custom">
+          <p className="text-sm sm:text-base text-[#748A91] mb-8 font-poppins-custom text-center sm:text-left">
             Your goals and past experience can help unlock access to investment opportunities
           </p>
 
@@ -359,17 +359,17 @@ const PastExperience = () => {
           </div>
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between mt-12">
+          <div className="flex flex-col sm:flex-row justify-between gap-4 sm:gap-6 mt-12">
             <button
               onClick={handlePrevious}
-              className="px-6 py-3 bg-[#F4F6F5] text-[black] rounded-lg hover:bg-gray-300 transition-colors font-medium font-poppins-custom"
+              className="w-full sm:w-auto px-6 py-3 bg-[#F4F6F5] text-[black] rounded-lg hover:bg-gray-300 transition-colors font-medium font-poppins-custom"
               style={{ border: "1px solid #0A2A2E" }}
             >
               ← Previous
             </button>
             <button
               onClick={handleSubmit}
-              className="px-6 py-3 bg-[#00F0C3] text-black rounded-lg hover:bg-[#00C4B3] transition-colors font-medium font-poppins-custom"
+              className="w-full sm:w-auto px-6 py-3 bg-[#00F0C3] text-black rounded-lg hover:bg-[#00C4B3] transition-colors font-medium font-poppins-custom"
             >
               Submit Application
             </button>
