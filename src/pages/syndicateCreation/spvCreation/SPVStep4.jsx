@@ -1,8 +1,10 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
 const SPVStep4 = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     jurisdiction: "",
     entityType: "",
@@ -15,6 +17,11 @@ const SPVStep4 = () => {
     dealName: "",
     accessMode: "private"
   });
+  const [hasExistingData, setHasExistingData] = useState(false);
+  const [isLoadingExistingData, setIsLoadingExistingData] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [spvId, setSpvId] = useState(null);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -23,8 +30,448 @@ const SPVStep4 = () => {
     }));
   };
 
-  const handleNext = () => {
+  // Fetch existing SPV step4 data on mount
+  useEffect(() => {
+    const fetchExistingData = async () => {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          setIsLoadingExistingData(false);
+          return;
+        }
+
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        
+        let step4Data = null;
+        let currentSpvId = null;
+
+        // Try to get SPV ID from SPV list
+        try {
+          const spvListUrl = `${API_URL.replace(/\/$/, "")}/spv/`;
+          const spvListResponse = await axios.get(spvListUrl, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+
+          console.log("SPV list response:", spvListResponse.data);
+
+          // Handle paginated response or direct array
+          const spvData = spvListResponse.data?.results || spvListResponse.data;
+
+          if (Array.isArray(spvData) && spvData.length > 0) {
+            const sortedSpvs = [...spvData].sort((a, b) => {
+              if (a.created_at && b.created_at) {
+                return new Date(b.created_at) - new Date(a.created_at);
+              }
+              return (b.id || 0) - (a.id || 0);
+            });
+            currentSpvId = sortedSpvs[0].id;
+            console.log("✅ Found existing SPV ID:", currentSpvId);
+          } else if (spvData && spvData.id) {
+            currentSpvId = spvData.id;
+            console.log("✅ Found SPV ID from single object:", currentSpvId);
+          }
+        } catch (spvListError) {
+          console.log("⚠️ Could not get SPV list:", spvListError.response?.status);
+        }
+
+        // Try to get step4 data with SPV ID or default to 1
+        const testSpvId = currentSpvId || 1;
+        const step4Url = `${API_URL.replace(/\/$/, "")}/spv/${testSpvId}/update_step4/`;
+        
+        try {
+          console.log("🔍 Fetching step4 data from:", step4Url);
+          const step4Response = await axios.get(step4Url, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+
+          console.log("✅ Step4 GET response:", step4Response.data);
+
+          if (step4Response.data && step4Response.status === 200) {
+            step4Data = step4Response.data;
+            if (!currentSpvId) {
+              currentSpvId = testSpvId;
+              console.log("✅ Found SPV ID from step4 data:", currentSpvId);
+            }
+          }
+        } catch (getError) {
+          if (getError.response?.status === 404) {
+            console.log("⚠️ No step4 data found for SPV ID", testSpvId, "(this is normal for new SPVs)");
+            if (!currentSpvId) {
+              currentSpvId = testSpvId;
+              console.log("ℹ️ Will use SPV ID", testSpvId, "for new submission");
+            }
+          } else {
+            console.error("❌ Error fetching step4 data:", getError.response?.status, getError.response?.data);
+          }
+        }
+
+        // Set SPV ID if we found one
+        if (currentSpvId) {
+          setSpvId(currentSpvId);
+        }
+
+        // If we got step4 data, populate the form
+        if (step4Data) {
+          const responseData = step4Data.step_data || step4Data.data || step4Data;
+          
+          console.log("✅ Step4 data found:", responseData);
+          console.log("📋 Raw step4 response:", step4Data);
+
+          // Map jurisdiction from API format (capitalized) to form format (lowercase)
+          const jurisdictionMap = {
+            "Delaware": "delaware",
+            "Cayman": "cayman",
+            "Singapore": "singapore",
+            "delaware": "delaware",
+            "cayman": "cayman",
+            "singapore": "singapore"
+          };
+
+          // Map entity_type from API format (uppercase) to form format (lowercase)
+          const entityTypeMap = {
+            "LLC": "llc",
+            "C-Corp": "c-corp",
+            "LP": "lp",
+            "llc": "llc",
+            "c-corp": "c-corp",
+            "lp": "lp"
+          };
+
+          // Map access_mode from API format to form format
+          const accessModeMap = {
+            "private": "private",
+            "public": "public",
+            "Visible to all": "public"
+          };
+
+          // Format numbers - API returns strings like "25000.00", convert to number for form
+          const formatNumber = (value) => {
+            if (!value) return "";
+            if (typeof value === "string") {
+              const num = parseFloat(value);
+              return isNaN(num) ? "" : num.toString();
+            }
+            return value.toString();
+          };
+
+          // Format date - API returns "2025-01-15", form expects same format
+          const formatDate = (dateValue) => {
+            if (!dateValue) return "";
+            // If it's already in YYYY-MM-DD format, return as is
+            if (typeof dateValue === "string" && dateValue.match(/^\d{4}-\d{2}-\d{2}$/)) {
+              return dateValue;
+            }
+            // Try to parse and format
+            try {
+              const date = new Date(dateValue);
+              if (!isNaN(date.getTime())) {
+                return date.toISOString().split('T')[0];
+              }
+            } catch (e) {
+              console.error("Error parsing date:", e);
+            }
+            return dateValue;
+          };
+
+          const mappedData = {
+            jurisdiction: jurisdictionMap[responseData.jurisdiction] || responseData.jurisdiction?.toLowerCase() || "",
+            entityType: entityTypeMap[responseData.entity_type] || responseData.entity_type?.toLowerCase() || "",
+            minimumLPInvestment: formatNumber(responseData.minimum_lp_investment),
+            targetClosingDate: formatDate(responseData.target_closing_date),
+            totalCarry: formatNumber(responseData.total_carry_percentage),
+            carryRecipient: responseData.carry_recipient || "",
+            gpCommitment: formatNumber(responseData.gp_commitment),
+            dealPartners: responseData.deal_partners || "",
+            dealName: responseData.deal_name || "",
+            accessMode: accessModeMap[responseData.access_mode] || responseData.access_mode || "private"
+          };
+
+          setFormData(prev => ({
+            ...prev,
+            ...mappedData
+          }));
+
+          setHasExistingData(true);
+          console.log("✅ Form populated with existing step4 data:", mappedData);
+        } else if (currentSpvId) {
+          setSpvId(currentSpvId);
+          setHasExistingData(false);
+          console.log("✅ SPV ID found but no step4 data yet:", currentSpvId);
+        } else {
+          console.log("⚠️ No existing SPV or step4 data found");
+          setHasExistingData(false);
+        }
+      } catch (err) {
+        console.error("Error in fetchExistingData:", err);
+      } finally {
+        setIsLoadingExistingData(false);
+      }
+    };
+
+    fetchExistingData();
+  }, [location.pathname]); // Refetch when route changes
+
+  const handleNext = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+
+      // Get SPV ID from state or fetch it
+      let currentSpvId = spvId;
+
+      if (!currentSpvId) {
+        try {
+          const spvListUrl = `${API_URL.replace(/\/$/, "")}/spv/`;
+          const spvListResponse = await axios.get(spvListUrl, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+
+          const spvData = spvListResponse.data?.results || spvListResponse.data;
+
+          if (Array.isArray(spvData) && spvData.length > 0) {
+            const sortedSpvs = [...spvData].sort((a, b) => {
+              if (a.created_at && b.created_at) {
+                return new Date(b.created_at) - new Date(a.created_at);
+              }
+              return (b.id || 0) - (a.id || 0);
+            });
+            currentSpvId = sortedSpvs[0].id;
+            console.log("✅ Found SPV ID from list:", currentSpvId);
+          } else if (spvData && spvData.id) {
+            currentSpvId = spvData.id;
+            console.log("✅ Found SPV ID from single object:", currentSpvId);
+          }
+        } catch (spvError) {
+          console.log("⚠️ Could not get SPV list:", spvError.response?.status);
+        }
+
+        // If still no SPV ID, use 1 as default
+        if (!currentSpvId) {
+          currentSpvId = 1;
+          console.log("ℹ️ Using default SPV ID: 1");
+        }
+
+        setSpvId(currentSpvId);
+      }
+
+      const step4Url = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/update_step4/`;
+
+      console.log("=== SPV Step4 API Call ===");
+      console.log("Has Existing Data:", hasExistingData);
+      console.log("SPV ID:", currentSpvId);
+      console.log("API URL:", step4Url);
+      console.log("Form Data:", formData);
+
+      // Map form values to API format
+      // Map jurisdiction from form format (lowercase) to API format (capitalized)
+      const jurisdictionMap = {
+        "delaware": "Delaware",
+        "cayman": "Cayman",
+        "singapore": "Singapore"
+      };
+
+      // Map entity_type from form format (lowercase) to API format (uppercase)
+      const entityTypeMap = {
+        "llc": "LLC",
+        "c-corp": "C-Corp",
+        "lp": "LP"
+      };
+
+      // Format numbers as strings with decimals
+      const formatNumberString = (value) => {
+        if (!value || value === "") return null;
+        const num = parseFloat(value);
+        if (isNaN(num)) return null;
+        // Format to 2 decimal places
+        return num.toFixed(2);
+      };
+
+      // Prepare data for API
+      const dataToSend = {};
+
+      // Jurisdiction - capitalize first letter
+      if (formData.jurisdiction) {
+        dataToSend.jurisdiction = jurisdictionMap[formData.jurisdiction] || 
+          formData.jurisdiction.charAt(0).toUpperCase() + formData.jurisdiction.slice(1).toLowerCase();
+      }
+
+      // Entity type - uppercase
+      if (formData.entityType) {
+        dataToSend.entity_type = entityTypeMap[formData.entityType] || 
+          formData.entityType.toUpperCase();
+      }
+
+      // Minimum LP investment - format as string with decimals
+      if (formData.minimumLPInvestment) {
+        const formatted = formatNumberString(formData.minimumLPInvestment);
+        if (formatted !== null) {
+          dataToSend.minimum_lp_investment = formatted;
+        }
+      }
+
+      // Target closing date - send as is (should be in YYYY-MM-DD format)
+      if (formData.targetClosingDate) {
+        dataToSend.target_closing_date = formData.targetClosingDate;
+      }
+
+      // Total carry percentage - format as string with decimals
+      if (formData.totalCarry) {
+        const formatted = formatNumberString(formData.totalCarry);
+        if (formatted !== null) {
+          dataToSend.total_carry_percentage = formatted;
+        }
+      }
+
+      // Carry recipient - send as is
+      if (formData.carryRecipient) {
+        dataToSend.carry_recipient = formData.carryRecipient;
+      }
+
+      // GP commitment - format as string with decimals
+      if (formData.gpCommitment) {
+        const formatted = formatNumberString(formData.gpCommitment);
+        if (formatted !== null) {
+          dataToSend.gp_commitment = formatted;
+        }
+      }
+
+      // Deal partners - send as is (could be a string or select value)
+      if (formData.dealPartners) {
+        dataToSend.deal_partners = formData.dealPartners;
+      }
+
+      // Deal name - send as is
+      if (formData.dealName) {
+        dataToSend.deal_name = formData.dealName;
+      }
+
+      // Access mode - send as is (defaults to "private")
+      if (formData.accessMode) {
+        dataToSend.access_mode = formData.accessMode;
+      }
+
+      console.log("📤 Prepared step4 data:", dataToSend);
+      console.log("📤 Data keys:", Object.keys(dataToSend));
+
+      // Check if we have any data to send
+      if (Object.keys(dataToSend).length === 0) {
+        console.log("⚠️ No data to send - all fields are empty");
+        setError("Please fill in at least one field before proceeding.");
+        setLoading(false);
+        return;
+      }
+
+      let response;
+
+      // Use PATCH if we have existing data, otherwise POST
+      if (hasExistingData && currentSpvId) {
+        console.log("🔄 Attempting to update existing SPV step4 data with PATCH");
+        response = await axios.patch(step4Url, dataToSend, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+        console.log("✅ SPV step4 updated successfully with PATCH:", response.data);
+      } else {
+        console.log("➕ Creating new SPV step4 data with POST");
+        response = await axios.post(step4Url, dataToSend, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+        console.log("✅ SPV step4 created successfully with POST:", response.data);
+        console.log("📋 POST response:", response);
+        console.log("📋 POST response status:", response.status);
+        console.log("📋 POST response data:", response.data);
+        
+        if (response?.data?.id || response?.data?.spv_id) {
+          const newSpvId = response.data.id || response.data.spv_id;
+          setSpvId(newSpvId);
+          console.log("✅ Stored SPV ID:", newSpvId);
+        }
+        setHasExistingData(true);
+      }
+
+      // Navigate to next step on success
+      if (response && response.status >= 200 && response.status < 300) {
+        console.log("✅ Success! Navigating to step5");
     navigate("/syndicate-creation/spv-creation/step5");
+      } else {
+        console.log("⚠️ Unexpected response status:", response?.status);
+        setError("Unexpected response from server. Please try again.");
+      }
+    } catch (err) {
+      console.error("SPV step4 error:", err);
+      console.error("Error response:", err.response);
+      console.error("Error status:", err.response?.status);
+      console.error("Error data:", err.response?.data);
+      
+      const backendData = err.response?.data;
+      
+      if (backendData) {
+        if (typeof backendData === "object") {
+          // Handle specific field errors
+          let errorMessages = [];
+          
+          // Check for field errors
+          Object.keys(backendData).forEach(key => {
+            if (Array.isArray(backendData[key])) {
+              const fieldErrors = backendData[key];
+              fieldErrors.forEach(errorMsg => {
+                if (errorMsg && (errorMsg.includes("Invalid pk") || errorMsg.includes("does not exist"))) {
+                  errorMessages.push(`${key}: Invalid value selected. Please choose a valid option.`);
+                } else {
+                  errorMessages.push(`${key}: ${errorMsg}`);
+                }
+              });
+            } else if (backendData[key]) {
+              errorMessages.push(`${key}: ${backendData[key]}`);
+            }
+          });
+          
+          if (errorMessages.length > 0) {
+            setError(errorMessages.join(" "));
+          } else {
+            setError("Failed to submit SPV step4 data. Please check your input.");
+          }
+        } else {
+          setError(String(backendData));
+        }
+      } else if (err.response?.status === 405) {
+        setError("Method not allowed. Please contact support.");
+      } else if (err.response?.status === 404) {
+        setError("SPV not found. Please start from step 1.");
+      } else if (err.response?.status === 401) {
+        setError("Unauthorized. Please login again.");
+      } else {
+        setError(err.message || "Failed to submit SPV step4 data. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePrevious = () => {
@@ -37,7 +484,17 @@ const SPVStep4 = () => {
       <div className="space-y-2 text-center sm:text-left">
         <h1 className="text-3xl font-medium text-gray-800">Fundraising & Jurisdiction Selection</h1>
         <p className="text-gray-600">Select the jurisdiction for your SPV and review the legal structure.</p>
+        {isLoadingExistingData && (
+          <p className="text-sm text-gray-500">Loading existing data...</p>
+        )}
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-600 text-sm">{error}</p>
+        </div>
+      )}
 
       {/* Form Fields */}
       <div className="space-y-6">
@@ -267,12 +724,25 @@ const SPVStep4 = () => {
         </button>
         <button
           onClick={handleNext}
-          className="bg-[#00F0C3] hover:scale-102 text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
+          disabled={loading || isLoadingExistingData}
+          className="bg-[#00F0C3] hover:scale-102 text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Next
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+          {loading ? (
+            <>
+              <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Submitting...
+            </>
+          ) : (
+            <>
+              Next
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </>
+          )}
         </button>
       </div>
     </div>

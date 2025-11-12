@@ -233,11 +233,11 @@ const ComplianceAttestation = () => {
       } else {
         console.log("➕ Creating new data with POST");
         response = await axios.post(finalUrl, formDataToSend, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Accept': 'application/json'
-          }
-        });
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json'
+        }
+      });
         console.log("Compliance attestation created successfully:", response.data);
         // Mark that data now exists for future updates
         setHasExistingData(true);

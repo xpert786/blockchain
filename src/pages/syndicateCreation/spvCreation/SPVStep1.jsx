@@ -1,23 +1,58 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
 const SPVStep1 = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     portfolioCompany: "",
+    portfolioCompanyId: null,
     companyStage: "pre-seed",
+    companyStageId: null,
     countryOfIncorporation: "",
     incorporationType: "",
+    incorporationTypeId: null,
     founderEmail: "",
     displayName: "",
     pitchDeck: null
   });
+  const [hasExistingData, setHasExistingData] = useState(false);
+  const [isLoadingExistingData, setIsLoadingExistingData] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [spvId, setSpvId] = useState(null);
+  const [pitchDeckUrl, setPitchDeckUrl] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  // Helper function to construct file URL from API response
+  const constructFileUrl = (filePath) => {
+    if (!filePath) return null;
+    
+    const baseDomain = "http://168.231.121.7";
+    
+    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+      return filePath;
+    } else if (filePath.startsWith('/')) {
+      if (filePath.startsWith('/api/blockchain-backend/')) {
+        return `${baseDomain}${filePath.replace(/^\/api/, '')}`;
+      } else if (filePath.startsWith('/blockchain-backend/')) {
+        return `${baseDomain}${filePath}`;
+      } else if (filePath.startsWith('/media/')) {
+        return `${baseDomain}/blockchain-backend${filePath}`;
+      } else {
+        return `${baseDomain}/blockchain-backend${filePath}`;
+      }
+    } else {
+      return `${baseDomain}/blockchain-backend/${filePath}`;
+    }
   };
 
   const handleFileChange = (e) => {
@@ -27,6 +62,8 @@ const SPVStep1 = () => {
         ...prev,
         pitchDeck: file
       }));
+      // Clear existing URL when new file is selected
+      setPitchDeckUrl(null);
     }
   };
 
@@ -42,11 +79,376 @@ const SPVStep1 = () => {
         ...prev,
         pitchDeck: file
       }));
+      // Clear existing URL when new file is selected
+      setPitchDeckUrl(null);
     }
   };
 
-  const handleNext = () => {
-    navigate("/syndicate-creation/spv-creation/step2");
+  // Fetch existing SPV step1 data on mount
+  useEffect(() => {
+    const fetchExistingData = async () => {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          setIsLoadingExistingData(false);
+          return;
+        }
+
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        
+        // First, try to get the user's SPV ID or create a new SPV
+        // We'll try to get existing SPV data - the endpoint might be different for GET
+        // Try multiple possible endpoints
+        let step1Data = null;
+        let currentSpvId = null;
+
+        // Try to get SPV list first to find existing SPV ID
+        try {
+          // Try to get user's SPVs
+          const spvListUrl = `${API_URL.replace(/\/$/, "")}/spv/`;
+          const spvListResponse = await axios.get(spvListUrl, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+
+          console.log("SPV list response:", spvListResponse.data);
+
+          // Handle paginated response or direct array
+          const spvData = spvListResponse.data?.results || spvListResponse.data;
+
+          // If we get a list, use the first SPV or most recent one
+          if (Array.isArray(spvData) && spvData.length > 0) {
+            // Sort by id (highest first) or created_at to get most recent
+            const sortedSpvs = [...spvData].sort((a, b) => {
+              if (a.created_at && b.created_at) {
+                return new Date(b.created_at) - new Date(a.created_at);
+              }
+              return (b.id || 0) - (a.id || 0);
+            });
+            currentSpvId = sortedSpvs[0].id;
+            console.log("✅ Found existing SPV ID:", currentSpvId);
+          } else if (spvData && spvData.id) {
+            // Single SPV object
+            currentSpvId = spvData.id;
+            console.log("✅ Found SPV ID from single object:", currentSpvId);
+          }
+        } catch (spvListError) {
+          console.log("⚠️ Could not get SPV list:", spvListError.response?.status, spvListError.response?.data);
+          // If we can't get SPV list, we'll try to get step1 data with default ID 1
+        }
+
+        // If we have an SPV ID, try to get step1 data
+        // Otherwise, try with default ID 1 to see if it exists
+        const testSpvId = currentSpvId || 1;
+        const step1Url = `${API_URL.replace(/\/$/, "")}/spv/${testSpvId}/update_step1/`;
+        
+        try {
+          console.log("🔍 Fetching step1 data from:", step1Url);
+          const step1Response = await axios.get(step1Url, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+
+          console.log("✅ Step1 GET response:", step1Response.data);
+
+          if (step1Response.data && step1Response.status === 200) {
+            step1Data = step1Response.data;
+            // If we didn't have an SPV ID before, use the one we just tested
+            if (!currentSpvId) {
+              currentSpvId = testSpvId;
+              console.log("✅ Found SPV ID from step1 data:", currentSpvId);
+            }
+          }
+        } catch (getError) {
+          if (getError.response?.status === 404) {
+            console.log("⚠️ No step1 data found for SPV ID", testSpvId, "(this is normal for new SPVs)");
+            // If we got 404 and don't have an SPV ID, we'll use the test ID (1) when submitting
+            if (!currentSpvId) {
+              currentSpvId = testSpvId;
+              console.log("ℹ️ Will use SPV ID", testSpvId, "for new submission");
+            }
+          } else {
+            console.error("❌ Error fetching step1 data:", getError.response?.status, getError.response?.data);
+          }
+        }
+
+        // Set SPV ID if we found one
+        if (currentSpvId) {
+          setSpvId(currentSpvId);
+        }
+
+        // If we got step1 data, populate the form
+        if (step1Data) {
+          // Handle different response structures
+          const responseData = step1Data.step_data || step1Data.data || step1Data;
+          
+          console.log("✅ Step1 data found:", responseData);
+          console.log("📋 Raw step1 response:", step1Data);
+
+          // Map company_stage ID to string value
+          const stageIdToString = (stageId) => {
+            const stageMap = {
+              1: "pre-seed",
+              2: "seed",
+              3: "series-a",
+              4: "series-b",
+              5: "growth"
+            };
+            return stageMap[stageId] || "pre-seed";
+          };
+
+          // Map incorporation_type ID to string value
+          const typeIdToString = (typeId) => {
+            const typeMap = {
+              1: "llc",
+              2: "corporation",
+              3: "c-corp",
+              4: "s-corp",
+              5: "other"
+            };
+            return typeMap[typeId] || "";
+          };
+
+          // Map API response to form data
+          const companyStageValue = typeof responseData.company_stage === 'number' 
+            ? stageIdToString(responseData.company_stage) 
+            : (responseData.company_stage || "pre-seed");
+          
+          const incorporationTypeValue = typeof responseData.incorporation_type === 'number'
+            ? typeIdToString(responseData.incorporation_type)
+            : (responseData.incorporation_type || "");
+
+          const mappedData = {
+            displayName: responseData.display_name || "",
+            portfolioCompany: responseData.portfolio_company_name || (typeof responseData.portfolio_company === 'string' ? responseData.portfolio_company : "") || "",
+            portfolioCompanyId: typeof responseData.portfolio_company === 'number' ? responseData.portfolio_company : null,
+            companyStage: companyStageValue,
+            companyStageId: typeof responseData.company_stage === 'number' ? responseData.company_stage : null,
+            countryOfIncorporation: responseData.country_of_incorporation || "",
+            incorporationType: incorporationTypeValue,
+            incorporationTypeId: typeof responseData.incorporation_type === 'number' ? responseData.incorporation_type : null,
+            founderEmail: responseData.founder_email || "",
+            pitchDeck: null // Don't set file object, just URL
+          };
+
+          // Handle pitch deck URL
+          if (responseData.pitch_deck) {
+            const pitchDeckUrlValue = constructFileUrl(responseData.pitch_deck);
+            setPitchDeckUrl(pitchDeckUrlValue);
+          }
+
+          setFormData(prev => ({
+            ...prev,
+            ...mappedData
+          }));
+
+          setHasExistingData(true);
+          console.log("✅ Form populated with existing step1 data:", mappedData);
+        } else if (currentSpvId) {
+          // If we have an SPV ID but no step1 data, it means the SPV exists but step1 hasn't been filled yet
+          setSpvId(currentSpvId);
+          setHasExistingData(false);
+          console.log("✅ SPV ID found but no step1 data yet:", currentSpvId);
+        } else {
+          console.log("⚠️ No existing SPV or step1 data found");
+          setHasExistingData(false);
+        }
+      } catch (err) {
+        console.error("Error in fetchExistingData:", err);
+      } finally {
+        setIsLoadingExistingData(false);
+      }
+    };
+
+    fetchExistingData();
+  }, [location.pathname]); // Refetch when route changes
+
+  const handleNext = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+
+      // If we don't have an SPV ID yet, we need to create one first or use a default
+      // For now, we'll try to use SPV ID 1 if it doesn't exist, or create a new SPV
+      let currentSpvId = spvId;
+
+      // If no SPV ID, try to get or use default
+      if (!currentSpvId) {
+        // Use the SPV ID from state, or try to get from API, or default to 1
+        currentSpvId = spvId;
+        
+        if (!currentSpvId) {
+          try {
+            // Try to get user's SPVs
+            const spvListUrl = `${API_URL.replace(/\/$/, "")}/spv/`;
+            const spvListResponse = await axios.get(spvListUrl, {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              }
+            });
+
+            // Handle paginated response or direct array
+            const spvData = spvListResponse.data?.results || spvListResponse.data;
+
+            if (Array.isArray(spvData) && spvData.length > 0) {
+              const sortedSpvs = [...spvData].sort((a, b) => {
+                if (a.created_at && b.created_at) {
+                  return new Date(b.created_at) - new Date(a.created_at);
+                }
+                return (b.id || 0) - (a.id || 0);
+              });
+              currentSpvId = sortedSpvs[0].id;
+              console.log("✅ Found SPV ID from list:", currentSpvId);
+            } else if (spvData && spvData.id) {
+              currentSpvId = spvData.id;
+              console.log("✅ Found SPV ID from single object:", currentSpvId);
+            }
+          } catch (spvError) {
+            console.log("⚠️ Could not get SPV list:", spvError.response?.status);
+          }
+
+          // If still no SPV ID, use 1 as default (as shown in curl)
+          if (!currentSpvId) {
+            currentSpvId = 1;
+            console.log("ℹ️ Using default SPV ID: 1");
+          }
+        }
+
+        setSpvId(currentSpvId);
+      }
+
+      const step1Url = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/update_step1/`;
+
+      console.log("=== SPV Step1 API Call ===");
+      console.log("Has Existing Data:", hasExistingData);
+      console.log("SPV ID:", currentSpvId);
+      console.log("API URL:", step1Url);
+
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+
+      // Add text fields
+      if (formData.displayName) {
+        formDataToSend.append("display_name", formData.displayName);
+      }
+      if (formData.portfolioCompany) {
+        // If we have an ID, send ID, otherwise send name
+        if (formData.portfolioCompanyId) {
+          formDataToSend.append("portfolio_company", formData.portfolioCompanyId);
+        }
+        formDataToSend.append("portfolio_company_name", formData.portfolioCompany);
+      }
+      if (formData.companyStageId) {
+        formDataToSend.append("company_stage", formData.companyStageId);
+      } else if (formData.companyStage) {
+        // Map stage names to IDs (you may need to adjust this based on your API)
+        const stageMap = {
+          "pre-seed": 1,
+          "seed": 2,
+          "series-a": 3,
+          "series-b": 4,
+          "growth": 5
+        };
+        const stageId = stageMap[formData.companyStage] || 1;
+        formDataToSend.append("company_stage", stageId);
+      }
+      if (formData.countryOfIncorporation) {
+        formDataToSend.append("country_of_incorporation", formData.countryOfIncorporation);
+      }
+      if (formData.incorporationTypeId) {
+        formDataToSend.append("incorporation_type", formData.incorporationTypeId);
+      } else if (formData.incorporationType) {
+        // Map incorporation types to IDs (you may need to adjust this based on your API)
+        const typeMap = {
+          "llc": 1,
+          "corporation": 2,
+          "c-corp": 3,
+          "s-corp": 4,
+          "other": 5
+        };
+        const typeId = typeMap[formData.incorporationType] || 1;
+        formDataToSend.append("incorporation_type", typeId);
+      }
+      if (formData.founderEmail) {
+        formDataToSend.append("founder_email", formData.founderEmail);
+      }
+
+      // Add pitch deck file if a new one is selected
+      if (formData.pitchDeck) {
+        formDataToSend.append("pitch_deck", formData.pitchDeck);
+        console.log("Pitch deck file will be uploaded:", formData.pitchDeck.name);
+      } else if (!hasExistingData) {
+        // For new data, file is optional
+        console.log("No pitch deck file for new data");
+      } else {
+        // For update, if no new file, don't send (keeps existing file)
+        console.log("No new pitch deck file, keeping existing file");
+      }
+
+      let response;
+
+      // Use PATCH if we have existing data, otherwise POST
+      if (hasExistingData && currentSpvId) {
+        console.log("🔄 Updating existing SPV step1 data with PATCH");
+        response = await axios.patch(step1Url, formDataToSend, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json'
+          }
+        });
+        console.log("✅ SPV step1 updated successfully:", response.data);
+      } else {
+        console.log("➕ Creating new SPV step1 data with POST");
+        response = await axios.post(step1Url, formDataToSend, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json'
+          }
+        });
+        console.log("✅ SPV step1 created successfully:", response.data);
+        // Update SPV ID if response includes it
+        if (response.data?.id || response.data?.spv_id) {
+          const newSpvId = response.data.id || response.data.spv_id;
+          setSpvId(newSpvId);
+          console.log("✅ Stored SPV ID:", newSpvId);
+        }
+        setHasExistingData(true);
+      }
+
+      // Navigate to next step on success
+      navigate("/syndicate-creation/spv-creation/step2");
+    } catch (err) {
+      console.error("SPV step1 error:", err);
+      const backendData = err.response?.data;
+      if (backendData) {
+        if (typeof backendData === "object") {
+          // Handle specific field errors
+          const errorMessages = Object.values(backendData).flat();
+          setError(errorMessages.join(", ") || "Failed to submit SPV step1 data.");
+        } else {
+          setError(String(backendData));
+        }
+      } else {
+        setError(err.message || "Failed to submit SPV step1 data. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -55,7 +457,17 @@ const SPVStep1 = () => {
           <div className="space-y-2 text-center sm:text-left">
             <h1 className="text-3xl font-medium text-gray-800">Company Overview</h1>
             <p className="text-gray-600">Let's start by gathering some basic information about the deal you're creating.</p>
+            {isLoadingExistingData && (
+              <p className="text-sm text-gray-500">Loading existing data...</p>
+            )}
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
 
           {/* Form Fields */}
           <div className="space-y-6">
@@ -77,18 +489,18 @@ const SPVStep1 = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Company stage
-              </label>
-              <select
+                </label>
+                <select
                 value={formData.companyStage}
                 onChange={(e) => handleInputChange("companyStage", e.target.value)}
                 className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
-                <option value="pre-seed">Pre-seed</option>
-                <option value="seed">Seed</option>
-                <option value="series-a">Series A</option>
-                <option value="series-b">Series B</option>
-                <option value="growth">Growth</option>
-              </select>
+                  <option value="pre-seed">Pre-seed</option>
+                  <option value="seed">Seed</option>
+                  <option value="series-a">Series A</option>
+                  <option value="series-b">Series B</option>
+                  <option value="growth">Growth</option>
+                </select>
             </div>
 
             {/* Country of Incorporation */}
@@ -181,7 +593,7 @@ const SPVStep1 = () => {
                 htmlFor="pitch-deck-upload"
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                className="w-full border-1  bg-[#F4F6F5] border-[#0A2A2E] rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors block"
+                className="w-full border-1 bg-[#F4F6F5] border-[#0A2A2E] rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors block"
               >
                 <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -190,9 +602,38 @@ const SPVStep1 = () => {
                   Drag and drop or click to upload pitch deck (PDF, PPT, PPTX)
                 </p>
                 {formData.pitchDeck && (
-                  <p className="text-sm text-gray-500 mt-2">{formData.pitchDeck.name}</p>
+                  <p className="text-sm text-green-600 mt-2">✓ {formData.pitchDeck.name}</p>
+                )}
+                {pitchDeckUrl && !formData.pitchDeck && (
+                  <div className="mt-2">
+                    <p className="text-blue-600 text-sm">✓ File loaded from server</p>
+                    <a 
+                      href={pitchDeckUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-blue-500 text-xs underline mt-1 inline-block"
+                    >
+                      View existing file
+                    </a>
+                  </div>
                 )}
               </label>
+              {(formData.pitchDeck || pitchDeckUrl) && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setFormData(prev => ({ ...prev, pitchDeck: null }));
+                    setPitchDeckUrl(null);
+                    const fileInput = document.getElementById("pitch-deck-upload");
+                    if (fileInput) fileInput.value = "";
+                  }}
+                  className="mt-2 px-3 py-1 text-sm text-red-600 hover:text-red-800"
+                >
+                  Remove
+                </button>
+              )}
             </div>
           </div>
 
@@ -201,12 +642,25 @@ const SPVStep1 = () => {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
               <button
                 onClick={handleNext}
-                className="bg-[#00F0C3] hover:scale-102 text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
+                disabled={loading || isLoadingExistingData}
+                className="bg-[#00F0C3] hover:scale-102 text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
               >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Submitting...
+                  </>
+                ) : (
+                  <>
                 Next
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
+                  </>
+                )}
               </button>
             </div>
           </div>

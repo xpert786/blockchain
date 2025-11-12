@@ -144,7 +144,6 @@ const SPVLayout = () => {
     { id: "step3", name: "Adviser & Legal Structure", path: "/syndicate-creation/spv-creation/step3" },
     { id: "step4", name: "Fundraising & Jurisdiction selection", path: "/syndicate-creation/spv-creation/step4" },
     { id: "step5", name: "Invite LPs", path: "/syndicate-creation/spv-creation/step5" },
-    { id: "step6", name: "Deal Discription", path: "/syndicate-creation/spv-creation/step6" },
     { id: "step7", name: "Final Summary & Review", path: "/syndicate-creation/spv-creation/step7" }
   ];
 
