@@ -32,7 +32,7 @@ const SPVStep2 = () => {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8 space-y-8">
       {/* Header */}
       <div className="space-y-2 text-center sm:text-left">
-        <h1 className="text-3xl font-bold text-gray-800">Terms</h1>
+        <h1 className="text-3xl font-medium text-gray-800">Terms</h1>
         <p className="text-gray-600">Define the financial and legal terms for your SPV.</p>
       </div>
 
@@ -40,7 +40,7 @@ const SPVStep2 = () => {
       <div className="space-y-8">
         {/* Transaction Type */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Transaction Type</h2>
+          <h2 className="text-lg font-medium text-gray-800 mb-2">Transaction Type</h2>
           <p className="text-sm text-gray-600 mb-4">This helps with regulatory and legal structuring of your deal</p>
           <div className="space-y-3">
             <label className="flex items-start sm:items-center gap-3">
@@ -70,7 +70,7 @@ const SPVStep2 = () => {
 
         {/* Instrument Type */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Instrument Type</h2>
+          <h2 className="text-lg font-medium text-gray-800 mb-2">Instrument Type</h2>
           <p className="text-sm text-gray-600 mb-4">Determines the legal instrument used for the deal</p>
           <select
             value={formData.instrumentType}
@@ -87,7 +87,7 @@ const SPVStep2 = () => {
 
         {/* Valuation */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Valuation</h2>
+          <h2 className="text-lg font-medium text-gray-800 mb-2">Valuation</h2>
           <p className="text-sm text-gray-600 mb-4">This helps with regulatory and legal structuring of your deal</p>
           <div className="space-y-3">
             <label className="flex items-start sm:items-center gap-3">
@@ -118,7 +118,7 @@ const SPVStep2 = () => {
         {/* Share Class and Round */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h2 className="text-lg font-semibold text-gray-800 mb-2">Share class</h2>
+            <h2 className="text-lg font-medium text-gray-800 mb-2">Share class</h2>
             <select
               value={formData.shareClass}
               onChange={(e) => handleInputChange("shareClass", e.target.value)}
@@ -132,7 +132,7 @@ const SPVStep2 = () => {
           </div>
 
           <div>
-            <h2 className="text-lg font-semibold text-gray-800 mb-2">Round</h2>
+            <h2 className="text-lg font-medium text-gray-800 mb-2">Round</h2>
             <select
               value={formData.round}
               onChange={(e) => handleInputChange("round", e.target.value)}
@@ -149,7 +149,7 @@ const SPVStep2 = () => {
 
         {/* Round Size */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Round Size</h2>
+          <h2 className="text-lg font-medium text-gray-800 mb-2">Round Size</h2>
           <input
             type="number"
             value={formData.roundSize}
@@ -161,7 +161,7 @@ const SPVStep2 = () => {
 
         {/* Your Allocation */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Your Allocation</h2>
+            <h2 className="text-lg font-medium text-gray-800 mb-2">Your Allocation</h2>
           <input
             type="number"
             value={formData.yourAllocation}

@@ -148,7 +148,10 @@ const InvestorSettings = () => {
 
   const [activeNav, setActiveNav] = useState("settings");
   const [showInvestDropdown, setShowInvestDropdown] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("Identity");
+  const [showTabsDropdown, setShowTabsDropdown] = useState(false);
+  const tabsDropdownRef = useRef(null);
 
   useEffect(() => {
     if (location.pathname.includes("/investor-panel/invest")) {
@@ -175,6 +178,9 @@ const InvestorSettings = () => {
       if (investDropdownRef.current && !investDropdownRef.current.contains(event.target)) {
         setShowInvestDropdown(false);
       }
+      if (tabsDropdownRef.current && !tabsDropdownRef.current.contains(event.target)) {
+        setShowTabsDropdown(false);
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -184,47 +190,123 @@ const InvestorSettings = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#F4F6F5]">
-      <header className="bg-white px-6 py-4 border-b border-gray-200">
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center">
-            <img src={logoImage} alt="Unlocksley Logo" className="h-12 w-auto object-contain" />
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="max-w-md">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search SPVs, investors, documents..."
-                  className="w-full bg-[#F4F6F5] border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-                />
-              </div>
+    <div className="min-h-screen bg-[#F4F6F5] overflow-x-hidden">
+      {/* Top Header */}
+      <header className="bg-white px-4 sm:px-6 py-4 border-b border-gray-200">
+        <div className="flex flex-col gap-4">
+          {/* Mobile Header */}
+          <div className="flex items-center justify-between w-full md:hidden">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsMobileNavOpen(true)}
+                className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-[#01373D] text-[#01373D]"
+                aria-label="Open primary navigation"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              <img src={logoImage} alt="Unlocksley Logo" className="h-10 w-auto object-contain" />
             </div>
-            <div className="relative">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate("/investor-panel/notifications")}
-                className="bg-[#01373D] p-2 rounded-lg hover:bg-[#014a54] transition-colors"
+                className="relative bg-[#01373D] p-2 rounded-lg hover:bg-[#014a54] transition-colors"
+                aria-label="View notifications"
               >
                 <AlertsIcon />
                 <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#F2E0C9] rounded-full flex items-center justify-center">
                   <span className="text-[#01373D] text-xs font-bold">2</span>
                 </div>
               </button>
+              <div className="flex items-center gap-1">
+                <img src={profileImage} alt="Profile" className="h-9 w-9 rounded-full object-cover" />
+                <button
+                  className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-[#01373D] text-[#01373D]"
+                  aria-label="Open profile menu"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 6L8 10L12 6" stroke="#0A2A2E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <img src={profileImage} alt="Profile" className="h-10 w-10 rounded-full object-cover" />
-              <button>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4 6L8 10L12 6" stroke="#0A2A2E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </div>
+
+          {/* Desktop Header */}
+          <div className="hidden md:flex items-center w-full gap-4">
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <img src={logoImage} alt="Unlocksley Logo" className="h-12 w-auto object-contain" />
+            </div>
+            <div className="flex items-center gap-4 ml-auto">
+              <div className="relative w-full max-w-2xl">
+                <input
+                  type="text"
+                  placeholder="Search SPVs, investors, documents..."
+                  className="w-full bg-[#F4F6F5] border border-gray-300 rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                />
+                <svg
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-              </button>
+              </div>
+              <div className="flex items-center gap-4 flex-shrink-0">
+                <div className="relative">
+                  <button
+                    onClick={() => navigate("/investor-panel/notifications")}
+                    className="bg-[#01373D] p-2 rounded-lg hover:bg-[#014a54] transition-colors"
+                    aria-label="View notifications"
+                  >
+                    <AlertsIcon />
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#F2E0C9] rounded-full flex items-center justify-center">
+                      <span className="text-[#01373D] text-xs font-bold">2</span>
+                    </div>
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <img src={profileImage} alt="Profile" className="h-10 w-10 rounded-full object-cover" />
+                  <button
+                    className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-[#01373D] text-[#01373D]"
+                    aria-label="Open profile menu"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M4 6L8 10L12 6" stroke="#0A2A2E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Search */}
+          <div className="md:hidden">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search SPVs, investors, documents..."
+                className="w-full bg-[#F4F6F5] border border-gray-300 rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
           </div>
         </div>
       </header>
 
-      <nav className="bg-[#001D21] px-6">
-        <div className="flex items-center gap-2 w-full">
+      {/* Main Navigation Bar (Dark Teal) */}
+      <nav className="hidden lg:block bg-[#001D21] px-6">
+        <div className="flex items-center gap-2 w-full overflow-x-auto py-2">
           <button
             onClick={() => {
               navigate("/investor-panel/dashboard");
@@ -338,10 +420,125 @@ const InvestorSettings = () => {
         </div>
       </nav>
 
-      <main className="w-full px-6 py-8 space-y-6">
-        <section className=" p-6 md:p-8">
-          <div className="bg-white border border-[#E5E7EB] rounded-md p-4 flex flex-col gap-2 mb-6">
-            <h1 className="text-3xl font-medium font-poppins-custom">
+      {/* Mobile Navigation Drawer */}
+      <div
+        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-full transform bg-white transition-transform duration-300 ease-in-out shadow-lg lg:hidden ${
+          isMobileNavOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
+          <h4 className="text-lg font-semibold text-[#01373D]">Navigation</h4>
+          <button
+            type="button"
+            onClick={() => setIsMobileNavOpen(false)}
+            className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-[#01373D] text-[#01373D]"
+            aria-label="Close navigation"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 18L18 6M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
+        <div className="p-4 space-y-3 overflow-y-auto">
+          <button
+            onClick={() => {
+              navigate("/investor-panel/dashboard");
+              setIsMobileNavOpen(false);
+            }}
+            className="w-full text-left px-4 py-3 rounded-lg border transition-colors font-poppins-custom text-[#001D21] hover:bg-[#F4F6F5]"
+          >
+            Overview
+          </button>
+          <div className="space-y-2 rounded-lg border border-[#E2E2FB] p-4">
+            <p className="text-sm font-semibold text-[#01373D] font-poppins-custom">Invest</p>
+            <button
+              onClick={() => {
+                navigate("/investor-panel/invest");
+                setIsMobileNavOpen(false);
+              }}
+              className="w-full text-left px-4 py-3 rounded-lg transition-colors font-poppins-custom text-[#0A2A2E] hover:bg-[#F4F6F5]"
+            >
+              Discover
+            </button>
+            <button
+              onClick={() => {
+                navigate("/investor-panel/invites");
+                setIsMobileNavOpen(false);
+              }}
+              className="w-full text-left px-4 py-3 rounded-lg transition-colors font-poppins-custom text-[#0A2A2E] hover:bg-[#F4F6F5]"
+            >
+              Invites
+            </button>
+            <button
+              onClick={() => {
+                navigate("/investor-panel/top-syndicates");
+                setIsMobileNavOpen(false);
+              }}
+              className="w-full text-left px-4 py-3 rounded-lg transition-colors font-poppins-custom text-[#0A2A2E] hover:bg-[#F4F6F5]"
+            >
+              Top Syndicates
+            </button>
+            <button
+              onClick={() => {
+                navigate("/investor-panel/wishlist");
+                setIsMobileNavOpen(false);
+              }}
+              className="w-full text-left px-4 py-3 rounded-lg transition-colors font-poppins-custom text-[#0A2A2E] hover:bg-[#F4F6F5]"
+            >
+              Wishlist
+            </button>
+          </div>
+          <button
+            onClick={() => {
+              navigate("/investor-panel/portfolio");
+              setIsMobileNavOpen(false);
+            }}
+            className="w-full text-left px-4 py-3 rounded-lg transition-colors font-poppins-custom text-[#001D21] hover:bg-[#F4F6F5]"
+          >
+            Your Portfolio
+          </button>
+          <button
+            onClick={() => {
+              navigate("/investor-panel/tax-documents");
+              setIsMobileNavOpen(false);
+            }}
+            className="w-full text-left px-4 py-3 rounded-lg transition-colors font-poppins-custom text-[#001D21] hover:bg-[#F4F6F5]"
+          >
+            Taxes & Document
+          </button>
+          <button
+            onClick={() => {
+              navigate("/investor-panel/messages");
+              setIsMobileNavOpen(false);
+            }}
+            className="w-full text-left px-4 py-3 rounded-lg transition-colors font-poppins-custom text-[#001D21] hover:bg-[#F4F6F5]"
+          >
+            Messages
+          </button>
+          <button
+            onClick={() => {
+              navigate("/investor-panel/settings");
+              setIsMobileNavOpen(false);
+            }}
+            className="w-full text-left px-4 py-3 rounded-lg transition-colors font-poppins-custom text-[#001D21] hover:bg-[#F4F6F5]"
+            style={{ backgroundColor: "#00F0C3" }}
+          >
+            Investor Settings
+          </button>
+        </div>
+      </div>
+      {isMobileNavOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/60 lg:hidden"
+          onClick={() => setIsMobileNavOpen(false)}
+          aria-hidden="true"
+        ></div>
+      )}
+
+      <main className="w-full px-4 sm:px-6 py-8 space-y-6">
+        <section className="p-4 sm:p-6 md:p-8">
+          <div className="bg-white border border-[#E5E7EB] rounded-md p-4 sm:p-6 flex flex-col gap-2 mb-6">
+            <h1 className="text-2xl sm:text-3xl font-medium font-poppins-custom">
               <span className="text-[#7A61EA]">Account</span> <span className="text-[#0A2A2E]">Settings</span>
             </h1>
             <p className="text-sm text-[#748A91] font-poppins-custom">
@@ -350,33 +547,79 @@ const InvestorSettings = () => {
           </div>
 
           <div className="flex flex-col lg:flex-row gap-6">
-            <aside className="bg-white border border-[#E5E7EB] rounded-md p-4 w-fit lg:w-1/4 space-y-2 ">
-              {settingsTabs.map((tab) => (
+            {/* Settings Tabs - Dropdown on mobile, vertical sidebar on desktop */}
+            <aside className="w-full lg:w-1/4">
+              {/* Mobile Dropdown */}
+              <div className="lg:hidden relative" ref={tabsDropdownRef}>
                 <button
-                  key={tab}
                   type="button"
-                  onClick={() => setActiveTab(tab)}
-                  className={`w-full text-left px-4 py-3 rounded-md text-sm font-medium font-poppins-custom transition-colors ${
-                    tab === activeTab
-                      ? "bg-[#00F0C3] text-[#001D21]"
-                      : "text-[#0A2A2E] bg-[#F4F6F5] hover:bg-[#F3F4F6] border border-transparent"
-                  }`}
+                  onClick={() => setShowTabsDropdown(!showTabsDropdown)}
+                  className="w-full bg-white border border-[#E5E7EB] rounded-md px-4 py-3 flex items-center justify-between text-sm font-medium font-poppins-custom text-[#0A2A2E] hover:bg-[#F4F6F5] transition-colors"
                 >
-                  {tab}
+                  <span>{activeTab}</span>
+                  <svg 
+                    width="16" 
+                    height="16" 
+                    viewBox="0 0 16 16" 
+                    fill="none" 
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`transition-transform ${showTabsDropdown ? "rotate-180" : ""}`}
+                  >
+                    <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </button>
-              ))}
+                {showTabsDropdown && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-[#E5E7EB] rounded-md shadow-lg z-10 max-h-96 overflow-y-auto">
+                    {settingsTabs.map((tab) => (
+                      <button
+                        key={tab}
+                        type="button"
+                        onClick={() => {
+                          setActiveTab(tab);
+                          setShowTabsDropdown(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 text-sm font-medium font-poppins-custom transition-colors border-b border-[#E5E7EB] last:border-b-0 ${
+                          tab === activeTab
+                            ? "bg-[#00F0C3] text-[#001D21]"
+                            : "text-[#0A2A2E] hover:bg-[#F4F6F5]"
+                        }`}
+                      >
+                        {tab}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop Vertical Sidebar */}
+              <div className="hidden lg:block bg-white border border-[#E5E7EB] rounded-md p-4 space-y-2">
+                {settingsTabs.map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setActiveTab(tab)}
+                    className={`w-full text-left px-4 py-3 rounded-md text-sm font-medium font-poppins-custom transition-colors ${
+                      tab === activeTab
+                        ? "bg-[#00F0C3] text-[#001D21]"
+                        : "text-[#0A2A2E] bg-[#F4F6F5] hover:bg-[#F3F4F6] border border-transparent"
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
             </aside>
 
             <div className="flex-1 space-y-6">
             {activeTab === "Identity" && (
-            <section className="bg-white border border-[#E5E7EB] rounded-3xl p-6 space-y-6">
+            <section className="bg-white border border-[#E5E7EB] rounded-3xl p-4 sm:p-6 space-y-6">
               <header className="flex items-start gap-3">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M19 21V19C19 17.9391 18.5786 16.9217 17.8284 16.1716C17.0783 15.4214 16.0609 15 15 15H9C7.93913 15 6.92172 15.4214 6.17157 16.1716C5.42143 16.9217 5 17.9391 5 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="#00F0C3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
 
                 <div>
-                  <h2 className="text-xl font-medium text-[#0A2A2E] font-poppins-custom">Identity & Jurisdiction</h2>
+                  <h2 className="text-lg sm:text-xl font-medium text-[#0A2A2E] font-poppins-custom">Identity & Jurisdiction</h2>
                   <p className="text-sm text-[#748A91] font-poppins-custom">
                     Legal identity and residency information
                   </p>
@@ -432,7 +675,7 @@ const InvestorSettings = () => {
             )}
 
             {activeTab === "Accreditation" && (
-            <section className="bg-white border border-[#E5E7EB] rounded-3xl p-6 space-y-6">
+            <section className="bg-white border border-[#E5E7EB] rounded-3xl p-4 sm:p-6 space-y-6">
               <header className="flex items-start gap-3">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -445,7 +688,7 @@ const InvestorSettings = () => {
                   <path d="M10.5 12L12 13.5L15 10.5" stroke="#00F0C3" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 <div>
-                  <h2 className="text-xl font-medium text-[#0A2A2E] font-poppins-custom">Accreditation Status</h2>
+                  <h2 className="text-lg sm:text-xl font-medium text-[#0A2A2E] font-poppins-custom">Accreditation Status</h2>
                   <p className="text-sm text-[#748A91] font-poppins-custom">
                     Investor accreditation verification and documentation
                   </p>
@@ -518,7 +761,7 @@ const InvestorSettings = () => {
             )}
 
             {activeTab === "Tax & Compliance" && (
-              <section className="bg-white border border-[#E5E7EB] rounded-3xl p-6 space-y-6">
+              <section className="bg-white border border-[#E5E7EB] rounded-3xl p-4 sm:p-6 space-y-6">
                 <header className="flex items-start gap-3">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M15 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V7L15 2Z" stroke="#00F0C3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -529,7 +772,7 @@ const InvestorSettings = () => {
                 </svg>
 
                   <div>
-                    <h2 className="text-xl font-medium text-[#0A2A2E] font-poppins-custom">Tax & Compliance</h2>
+                    <h2 className="text-lg sm:text-xl font-medium text-[#0A2A2E] font-poppins-custom">Tax & Compliance</h2>
                     <p className="text-sm text-[#748A91] font-poppins-custom">
                       Tax identification and compliance documentation
                     </p>
@@ -607,7 +850,7 @@ const InvestorSettings = () => {
             )}
 
             {activeTab === "Eligibility" && (
-              <section className="bg-white border border-[#E5E7EB] rounded-3xl p-6 space-y-6">
+              <section className="bg-white border border-[#E5E7EB] rounded-3xl p-4 sm:p-6 space-y-6">
                 <header className="flex items-start gap-3">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#00F0C3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -616,7 +859,7 @@ const InvestorSettings = () => {
                 </svg>
 
                   <div>
-                    <h2 className="text-xl font-medium text-[#0A2A2E] font-poppins-custom">Investment Eligibility Rules</h2>
+                    <h2 className="text-lg sm:text-xl font-medium text-[#0A2A2E] font-poppins-custom">Investment Eligibility Rules</h2>
                     <p className="text-sm text-[#748A91] font-poppins-custom">
                       Jurisdiction preferences and investment constraints
                     </p>
@@ -707,7 +950,7 @@ const InvestorSettings = () => {
             )}
 
             {activeTab === "Financial" && (
-              <section className="bg-white border border-[#E5E7EB] rounded-3xl p-6 space-y-6">
+              <section className="bg-white border border-[#E5E7EB] rounded-3xl p-4 sm:p-6 space-y-6">
                 <header className="flex items-start gap-3">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M20 5H4C2.89543 5 2 5.89543 2 7V17C2 18.1046 2.89543 19 4 19H20C21.1046 19 22 18.1046 22 17V7C22 5.89543 21.1046 5 20 5Z" stroke="#00F0C3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -715,7 +958,7 @@ const InvestorSettings = () => {
                 </svg>
 
                   <div>
-                    <h2 className="text-xl font-medium text-[#0A2A2E] font-poppins-custom">Financial & Transaction Settings</h2>
+                    <h2 className="text-lg sm:text-xl font-medium text-[#0A2A2E] font-poppins-custom">Financial & Transaction Settings</h2>
                     <p className="text-sm text-[#748A91] font-poppins-custom">
                       Currency preferences and banking information
                     </p>
@@ -808,7 +1051,7 @@ const InvestorSettings = () => {
             )}
 
             {activeTab === "Portfolio" && (
-              <section className="bg-white border border-[#E5E7EB] rounded-3xl p-6 space-y-6">
+              <section className="bg-white border border-[#E5E7EB] rounded-3xl p-4 sm:p-6 space-y-6">
                 <header className="flex items-start gap-3">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M16 20V4C16 3.46957 15.7893 2.96086 15.4142 2.58579C15.0391 2.21071 14.5304 2 14 2H10C9.46957 2 8.96086 2.21071 8.58579 2.58579C8.21071 2.96086 8 3.46957 8 4V20" stroke="#00F0C3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -816,7 +1059,7 @@ const InvestorSettings = () => {
                 </svg>
 
                   <div>
-                    <h2 className="text-xl font-medium text-[#0A2A2E] font-poppins-custom">Portfolio & Liquidity</h2>
+                    <h2 className="text-lg sm:text-xl font-medium text-[#0A2A2E] font-poppins-custom">Portfolio & Liquidity</h2>
                     <p className="text-sm text-[#748A91] font-poppins-custom">
                       Portfolio display and secondary market preferences
                     </p>
@@ -885,7 +1128,7 @@ const InvestorSettings = () => {
 
             {activeTab === "Security & Privacy" && (
               <section className="space-y-6">
-                <div className="bg-white border border-[#E5E7EB] rounded-3xl p-6 space-y-6">
+                <div className="bg-white border border-[#E5E7EB] rounded-3xl p-4 sm:p-6 space-y-6">
                   <header className="flex items-start gap-3">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M6 8C6 6.4087 6.63214 4.88258 7.75736 3.75736C8.88258 2.63214 10.4087 2 12 2C13.5913 2 15.1174 2.63214 16.2426 3.75736C17.3679 4.88258 18 6.4087 18 8C18 15 21 17 21 17H3C3 17 6 15 6 8Z" stroke="#00F0C3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -893,7 +1136,7 @@ const InvestorSettings = () => {
                         </svg>
 
                     <div>
-                      <h2 className="text-xl font-medium text-[#0A2A2E] font-poppins-custom">Security & Access</h2>
+                      <h2 className="text-lg sm:text-xl font-medium text-[#0A2A2E] font-poppins-custom">Security & Access</h2>
                       <p className="text-sm text-[#748A91] font-poppins-custom">
                         Manage your account security and access controls
                       </p>
@@ -996,7 +1239,7 @@ const InvestorSettings = () => {
                   </div>
                 </div>
 
-                <div className="bg-white border border-[#E5E7EB] rounded-3xl p-6 space-y-6">
+                <div className="bg-white border border-[#E5E7EB] rounded-3xl p-4 sm:p-6 space-y-6">
                   <header className="flex items-start gap-3">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="#00F0C3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1004,7 +1247,7 @@ const InvestorSettings = () => {
                     </svg>
 
                     <div>
-                      <h2 className="text-xl font-medium text-[#0A2A2E] font-poppins-custom">Privacy & Visibility</h2>
+                      <h2 className="text-lg sm:text-xl font-medium text-[#0A2A2E] font-poppins-custom">Privacy & Visibility</h2>
                       <p className="text-sm text-[#748A91] font-poppins-custom">
                         Control your privacy settings and profile visibility
                       </p>
@@ -1070,7 +1313,7 @@ const InvestorSettings = () => {
             )}
 
             {activeTab === "Communication" && (
-              <section className="bg-white border border-[#E5E7EB] rounded-3xl p-6 space-y-6">
+              <section className="bg-white border border-[#E5E7EB] rounded-3xl p-4 sm:p-6 space-y-6">
                 <header className="flex items-start gap-3">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
@@ -1082,7 +1325,7 @@ const InvestorSettings = () => {
                     />
                   </svg>
                   <div>
-                    <h2 className="text-xl font-medium text-[#0A2A2E] font-poppins-custom">Communication & Notifications</h2>
+                    <h2 className="text-lg sm:text-xl font-medium text-[#0A2A2E] font-poppins-custom">Communication & Notifications</h2>
                     <p className="text-sm text-[#748A91] font-poppins-custom">
                       Manage how you receive updates and communications
                     </p>

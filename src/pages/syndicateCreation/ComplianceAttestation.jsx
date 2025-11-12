@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { UpsyndicateIcon } from "../../components/Icons";
@@ -7,7 +7,10 @@ const ComplianceAttestation = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [hasExistingData, setHasExistingData] = useState(false);
+  const [isLoadingExistingData, setIsLoadingExistingData] = useState(true);
   const [additionalPolicies, setAdditionalPolicies] = useState(null);
+  const [additionalPoliciesUrl, setAdditionalPoliciesUrl] = useState(null); // Store file URL from API
   const [formData, setFormData] = useState({
     regulatoryCompliance: false,
     antiMoneyLaundering: false,
@@ -28,8 +31,136 @@ const ComplianceAttestation = () => {
     const file = e.target.files[0];
     if (file) {
       setAdditionalPolicies(file);
+      // Clear file URL when new file is selected
+      setAdditionalPoliciesUrl(null);
     }
   };
+
+  // Helper function to construct file URL from API response
+  const constructFileUrl = (filePath) => {
+    if (!filePath) return null;
+    
+    const baseDomain = "http://168.231.121.7";
+    
+    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+      return filePath;
+    } else if (filePath.startsWith('/')) {
+      if (filePath.startsWith('/api/blockchain-backend/')) {
+        return `${baseDomain}${filePath.replace(/^\/api/, '')}`;
+      } else if (filePath.startsWith('/blockchain-backend/')) {
+        return `${baseDomain}${filePath}`;
+      } else if (filePath.startsWith('/media/')) {
+        return `${baseDomain}/blockchain-backend${filePath}`;
+      } else {
+        return `${baseDomain}/blockchain-backend${filePath}`;
+      }
+    } else {
+      return `${baseDomain}/blockchain-backend/${filePath}`;
+    }
+  };
+
+  // Fetch existing step3 data on mount
+  useEffect(() => {
+    const fetchExistingData = async () => {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          setIsLoadingExistingData(false);
+          return;
+        }
+
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const step3Url = `${API_URL.replace(/\/$/, "")}/syndicate/step3/`;
+
+        console.log("=== Fetching Step3 Data ===");
+        console.log("API URL:", step3Url);
+
+        try {
+          const step3Response = await axios.get(step3Url, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+
+          console.log("Step3 response:", step3Response.data);
+
+          if (step3Response.data && step3Response.status === 200) {
+            const responseData = step3Response.data;
+            
+            console.log("📦 Full Step3 response structure:", JSON.stringify(responseData, null, 2));
+            
+            // Get step_data and profile (same structure as step1/step2)
+            const stepData = responseData.step_data || {};
+            const profile = responseData.profile || {};
+            
+            console.log("✅ step_data:", stepData);
+            console.log("✅ profile:", profile);
+            
+            // Get compliance data from step_data or profile
+            const riskRegulatoryAttestation = stepData.risk_regulatory_attestation || 
+                                             profile.risk_regulatory_attestation || 
+                                             false;
+            const jurisdictionalComplianceAcknowledged = stepData.jurisdictional_compliance_acknowledged || 
+                                                         profile.jurisdictional_compliance_acknowledged || 
+                                                         false;
+            const additionalPoliciesPath = stepData.additional_compliance_policies || 
+                                          profile.additional_compliance_policies;
+            
+            console.log("✅ Risk Regulatory Attestation:", riskRegulatoryAttestation);
+            console.log("✅ Jurisdictional Compliance Acknowledged:", jurisdictionalComplianceAcknowledged);
+            console.log("✅ Additional Policies Path:", additionalPoliciesPath);
+            
+            // Check if we have any data
+            if (riskRegulatoryAttestation || jurisdictionalComplianceAcknowledged || additionalPoliciesPath) {
+              setHasExistingData(true);
+              
+              // Populate form with existing data
+              setFormData({
+                regulatoryCompliance: riskRegulatoryAttestation || false,
+                antiMoneyLaundering: jurisdictionalComplianceAcknowledged || false,
+                dataProtection: false,
+                termsAndConditions: false,
+                privacyPolicy: false,
+                riskDisclosure: false
+              });
+              
+              // If additional policies file exists as URL, set it for display
+              if (additionalPoliciesPath) {
+                const fileUrl = constructFileUrl(additionalPoliciesPath);
+                setAdditionalPoliciesUrl(fileUrl);
+                console.log("✅ Additional policies file URL set:", fileUrl);
+                console.log("✅ Original additional policies value from API:", additionalPoliciesPath);
+              }
+              
+              console.log("✅ Form populated with existing Step3 data");
+            } else {
+              setHasExistingData(false);
+            }
+          } else {
+            setHasExistingData(false);
+          }
+        } catch (step3Err) {
+          // If step3 data doesn't exist (404), it's fine - user will create new
+          if (step3Err.response?.status === 404) {
+            console.log("No existing step3 data found - will create new");
+            setHasExistingData(false);
+          } else {
+            console.error("Error fetching existing step3 data:", step3Err);
+            console.error("Error details:", step3Err.response?.data);
+            console.error("Error status:", step3Err.response?.status);
+          }
+        }
+      } catch (err) {
+        console.error("Error in fetchExistingData:", err);
+      } finally {
+        setIsLoadingExistingData(false);
+      }
+    };
+
+    fetchExistingData();
+  }, []);
 
   const handleNext = async () => {
     setLoading(true);
@@ -59,26 +190,58 @@ const ComplianceAttestation = () => {
       formDataToSend.append("risk_regulatory_attestation", formData.regulatoryCompliance ? "true" : "false");
       formDataToSend.append("jurisdictional_compliance_acknowledged", formData.antiMoneyLaundering ? "true" : "false");
 
-      // Add optional file if provided
+      // Handle additional policies file
+      // For PATCH: If no new file, don't send file field (keeps existing file)
+      // For POST: Send file if exists, otherwise don't send (optional field)
       if (additionalPolicies) {
         formDataToSend.append("additional_compliance_policies", additionalPolicies);
+        console.log("Additional policies file will be uploaded:", additionalPolicies.name);
+      } else if (!hasExistingData) {
+        // For new data, file is optional - don't send if not provided
+        console.log("No additional policies file for new data");
+      } else {
+        // For existing data, don't send file field (keeps existing file)
+        console.log("No new additional policies file, keeping existing file");
       }
 
       // Get API URL
       const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
       const finalUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step3/`;
 
-      console.log("Submitting compliance attestation data to:", finalUrl);
-
-      // Note: Don't set Content-Type for FormData - axios will set it automatically with proper boundary
-      const response = await axios.post(finalUrl, formDataToSend, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json'
-        }
+      console.log("=== Compliance Attestation API Call ===");
+      console.log("Has Existing Data:", hasExistingData);
+      console.log("API URL:", finalUrl);
+      console.log("Form Data:", {
+        regulatoryCompliance: formData.regulatoryCompliance,
+        antiMoneyLaundering: formData.antiMoneyLaundering,
+        hasAdditionalPoliciesFile: !!additionalPolicies,
+        hasAdditionalPoliciesUrl: !!additionalPoliciesUrl
       });
 
-      console.log("Compliance attestation successful:", response.data);
+      let response;
+      
+      // Use PATCH if data exists, POST if it's new
+      if (hasExistingData) {
+        console.log("🔄 Updating existing data with PATCH");
+        response = await axios.patch(finalUrl, formDataToSend, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json'
+          }
+        });
+        console.log("Compliance attestation updated successfully:", response.data);
+      } else {
+        console.log("➕ Creating new data with POST");
+        response = await axios.post(finalUrl, formDataToSend, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json'
+          }
+        });
+        console.log("Compliance attestation created successfully:", response.data);
+        // Mark that data now exists for future updates
+        setHasExistingData(true);
+      }
 
       // Navigate to next step on success
       navigate("/syndicate-creation/final-review");
@@ -200,8 +363,43 @@ const ComplianceAttestation = () => {
               {additionalPolicies && (
                 <p className="text-green-600 mt-2">✓ {additionalPolicies.name}</p>
               )}
+              {additionalPoliciesUrl && !additionalPolicies && (
+                <div className="mt-2">
+                  <p className="text-blue-600 text-sm">✓ File loaded from server</p>
+                  <a 
+                    href={additionalPoliciesUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-blue-500 text-xs underline mt-1 inline-block"
+                  >
+                    View existing file
+                  </a>
+                </div>
+              )}
             </div>
           </label>
+          {(additionalPolicies || additionalPoliciesUrl) && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setAdditionalPolicies(null);
+                setAdditionalPoliciesUrl(null);
+                const fileInput = document.getElementById("additionalPolicies");
+                if (fileInput) fileInput.value = "";
+              }}
+              className="mt-2 px-3 py-1 text-sm text-red-600 hover:text-red-800"
+            >
+              Remove
+            </button>
+          )}
+          {additionalPolicies && (
+            <p className="text-xs text-gray-500 mt-2">Selected: {additionalPolicies.name}</p>
+          )}
+          {additionalPoliciesUrl && !additionalPolicies && (
+            <p className="text-xs text-gray-500 mt-2">Current file loaded from server</p>
+          )}
         </div>
       </div>
 

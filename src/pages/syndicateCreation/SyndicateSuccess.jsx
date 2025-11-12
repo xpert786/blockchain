@@ -1,16 +1,107 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import unlockLogo from "../../assets/img/unlocklogo.png";
 
 const SyndicateSuccess = () => {
   const navigate = useNavigate();
+  const [isCheckingAccess, setIsCheckingAccess] = useState(false);
+  const [accessError, setAccessError] = useState("");
 
   const handleGoToDashboard = () => {
     navigate("/");
   };
 
-  const handleCreateDeal = () => {
-    navigate("/syndicate-creation/spv-creation/step1");
+  const handleCreateDeal = async () => {
+    setIsCheckingAccess(true);
+    setAccessError("");
+
+    try {
+      // Get user ID from localStorage
+      const accessToken = localStorage.getItem("accessToken");
+      const userDataStr = localStorage.getItem("userData");
+      
+      if (!accessToken) {
+        setAccessError("No access token found. Please login again.");
+        setIsCheckingAccess(false);
+        return;
+      }
+
+      if (!userDataStr) {
+        setAccessError("User data not found. Please login again.");
+        setIsCheckingAccess(false);
+        return;
+      }
+
+      const userData = JSON.parse(userDataStr);
+      const userId = userData?.user_id || userData?.id;
+
+      if (!userId) {
+        setAccessError("User ID not found. Please login again.");
+        setIsCheckingAccess(false);
+        return;
+      }
+
+      // Check user status from API
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const userUrl = `${API_URL.replace(/\/$/, "")}/users/${userId}/`;
+
+      console.log("=== Checking User Status for SPV Creation Access ===");
+      console.log("API URL:", userUrl);
+      console.log("User ID:", userId);
+
+      const response = await axios.get(userUrl, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+
+      console.log("User status response:", response.data);
+
+      if (response.data && response.status === 200) {
+        const user = response.data;
+        const isActive = user.is_active === true;
+        const isStaff = user.is_staff === true;
+
+        console.log("User status check:", {
+          isActive,
+          isStaff,
+          bothRequired: isActive && isStaff
+        });
+
+        // Check if both is_active and is_staff are true
+        if (isActive && isStaff) {
+          console.log("✅ User has access to SPV creation");
+          // Allow access - navigate to SPV creation
+          navigate("/syndicate-creation/spv-creation/step1");
+        } else {
+          // Deny access - show error message
+          let errorMsg = "Access denied. ";
+          if (!isActive && !isStaff) {
+            errorMsg += "Your account is not active and you are not a staff member. Please contact support.";
+          } else if (!isActive) {
+            errorMsg += "Your account is not active. Please contact support to activate your account.";
+          } else if (!isStaff) {
+            errorMsg += "You are not authorized to create deals. Please contact support to get staff access.";
+          }
+          setAccessError(errorMsg);
+          console.log("❌ Access denied:", errorMsg);
+        }
+      } else {
+        setAccessError("Failed to verify user status. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error checking user status:", error);
+      const errorMsg = error.response?.data?.message || 
+                      error.response?.data?.error || 
+                      error.message || 
+                      "Failed to verify access. Please try again.";
+      setAccessError(errorMsg);
+    } finally {
+      setIsCheckingAccess(false);
+    }
   };
 
   const handleEditProfile = () => {
@@ -92,6 +183,18 @@ const SyndicateSuccess = () => {
           {/* Separator Line */}
           <div className="border-t border-gray-200 mb-6"></div>
 
+          {/* Error Message */}
+          {accessError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <p className="text-red-800 text-sm">{accessError}</p>
+              </div>
+            </div>
+          )}
+
           {/* Bottom Section - Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <button
@@ -102,12 +205,25 @@ const SyndicateSuccess = () => {
             </button>
             <button
               onClick={handleCreateDeal}
-              className="bg-[#CEC6FF] hover:scale-102 text-black px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2 text-sm w-full sm:w-auto"
+              disabled={isCheckingAccess}
+              className="bg-[#CEC6FF] hover:scale-102 text-black px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2 text-sm w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              <span>Create a Deal</span>
+              {isCheckingAccess ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Checking Access...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  <span>Create a Deal</span>
+                </>
+              )}
             </button>
           </div>
         </div>

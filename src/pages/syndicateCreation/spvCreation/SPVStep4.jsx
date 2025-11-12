@@ -35,7 +35,7 @@ const SPVStep4 = () => {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8 space-y-8">
       {/* Header */}
       <div className="space-y-2 text-center sm:text-left">
-        <h1 className="text-3xl font-bold text-gray-800">Fundraising & Jurisdiction Selection</h1>
+        <h1 className="text-3xl font-medium text-gray-800">Fundraising & Jurisdiction Selection</h1>
         <p className="text-gray-600">Select the jurisdiction for your SPV and review the legal structure.</p>
       </div>
 
@@ -43,7 +43,7 @@ const SPVStep4 = () => {
       <div className="space-y-6">
         {/* Jurisdiction for the deal */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-2">Jurisdiction for the deal</label>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Jurisdiction for the deal</label>
           <p className="text-sm text-gray-600 mb-4">This will appear on the cap table</p>
           <div className="relative">
             <select
@@ -66,7 +66,7 @@ const SPVStep4 = () => {
 
         {/* Entity Type */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-2">Entity Type</label>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Entity Type</label>
           <p className="text-sm text-gray-600 mb-4">Auto-selected based on jurisdiction</p>
           <div className="relative">
             <select
@@ -89,7 +89,7 @@ const SPVStep4 = () => {
 
         {/* Minimum LP Investment */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-2">Minimum LP Investment ($)</label>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Minimum LP Investment ($)</label>
           <input
             type="number"
             value={formData.minimumLPInvestment}
@@ -101,7 +101,7 @@ const SPVStep4 = () => {
 
         {/* Target Closing Date */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-2">Target Closing Date</label>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Target Closing Date</label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,7 +119,7 @@ const SPVStep4 = () => {
 
         {/* Total Carry */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-2">Total Carry (%)</label>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Total Carry (%)</label>
           <input
             type="number"
             value={formData.totalCarry}
@@ -131,7 +131,7 @@ const SPVStep4 = () => {
 
         {/* Carry Recipient */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-2">Carry Recipient</label>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Carry Recipient</label>
           <input
             type="text"
             value={formData.carryRecipient}
@@ -143,7 +143,7 @@ const SPVStep4 = () => {
 
         {/* GP Commitment */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-2">GP Commitment</label>
+          <label className="block text-lg font-medium text-gray-800 mb-2">GP Commitment</label>
           <input
             type="number"
             value={formData.gpCommitment}
@@ -155,7 +155,7 @@ const SPVStep4 = () => {
 
         {/* Deal Partners */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-2">Deal Partners</label>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Deal Partners</label>
           <div className="relative">
             <select
               value={formData.dealPartners}
@@ -176,7 +176,7 @@ const SPVStep4 = () => {
 
         {/* Deal name */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-2">Deal name</label>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Deal name</label>
           <input
             type="text"
             value={formData.dealName}
@@ -188,7 +188,7 @@ const SPVStep4 = () => {
 
         {/* Access Mode */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-4">Access Mode</label>
+            <label className="block text-lg font-medium text-gray-800 mb-4">Access Mode</label>
           <div className="flex flex-col sm:flex-row sm:space-x-4 gap-4">
             <div
               className={`flex-1 border rounded-lg p-4 cursor-pointer ${

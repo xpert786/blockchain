@@ -4,16 +4,13 @@ import { useNavigate } from "react-router-dom";
 const SPVStep1 = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    companyName: "",
-    companyDescription: "",
-    industry: "",
-    stage: "",
-    fundingGoal: "",
-    minimumInvestment: "",
-    maximumInvestment: "",
-    dealType: "",
-    investmentTerms: "",
-    additionalInfo: ""
+    portfolioCompany: "",
+    companyStage: "pre-seed",
+    countryOfIncorporation: "",
+    incorporationType: "",
+    founderEmail: "",
+    displayName: "",
+    pitchDeck: null
   });
 
   const handleInputChange = (field, value) => {
@@ -23,194 +20,179 @@ const SPVStep1 = () => {
     }));
   };
 
-  const handleNext = () => {
-    navigate("/syndicate-creation/spv-creation/step2");
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        pitchDeck: file
+      }));
+    }
   };
 
-  const handlePrevious = () => {
-    navigate("/syndicate-creation/success");
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && (file.type === "application/pdf" || file.type === "application/vnd.ms-powerpoint" || file.type === "application/vnd.openxmlformats-officedocument.presentationml.presentation")) {
+      setFormData(prev => ({
+        ...prev,
+        pitchDeck: file
+      }));
+    }
+  };
+
+  const handleNext = () => {
+    navigate("/syndicate-creation/spv-creation/step2");
   };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8 space-y-8">
           {/* Header */}
           <div className="space-y-2 text-center sm:text-left">
-            <h1 className="text-3xl font-bold text-gray-800">Deal Information</h1>
-            <p className="text-gray-600">Provide basic information about the investment opportunity.</p>
+            <h1 className="text-3xl font-medium text-gray-800">Company Overview</h1>
+            <p className="text-gray-600">Let's start by gathering some basic information about the deal you're creating.</p>
           </div>
 
           {/* Form Fields */}
           <div className="space-y-6">
-            {/* Company Name */}
+            {/* Portfolio Company */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Company Name *
+                Portfolio Company
               </label>
               <input
                 type="text"
-                value={formData.companyName}
-                onChange={(e) => handleInputChange("companyName", e.target.value)}
-                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Enter company name"
-                required
+                value={formData.portfolioCompany}
+                onChange={(e) => handleInputChange("portfolioCompany", e.target.value)}
+                className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="Enter company"
               />
             </div>
 
-            {/* Company Description */}
+            {/* Company Stage */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Company Description *
-              </label>
-              <textarea
-                value={formData.companyDescription}
-                onChange={(e) => handleInputChange("companyDescription", e.target.value)}
-                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent h-24"
-                placeholder="Describe the company and its business model"
-                required
-              />
-            </div>
-
-            {/* Industry and Stage */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Industry *
-                </label>
-                <select
-                  value={formData.industry}
-                  onChange={(e) => handleInputChange("industry", e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select industry</option>
-                  <option value="fintech">Fintech</option>
-                  <option value="healthcare">Healthcare</option>
-                  <option value="technology">Technology</option>
-                  <option value="saas">SaaS</option>
-                  <option value="ai-ml">AI/ML</option>
-                  <option value="ecommerce">E-commerce</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Stage *
-                </label>
-                <select
-                  value={formData.stage}
-                  onChange={(e) => handleInputChange("stage", e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select stage</option>
-                  <option value="pre-seed">Pre-seed</option>
-                  <option value="seed">Seed</option>
-                  <option value="series-a">Series A</option>
-                  <option value="series-b">Series B</option>
-                  <option value="growth">Growth</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Funding Goal */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Funding Goal *
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                <input
-                  type="number"
-                  value={formData.fundingGoal}
-                  onChange={(e) => handleInputChange("fundingGoal", e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-3 pl-8 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Enter funding goal"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Investment Range */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Minimum Investment *
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                  <input
-                    type="number"
-                    value={formData.minimumInvestment}
-                    onChange={(e) => handleInputChange("minimumInvestment", e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg p-3 pl-8 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Minimum investment amount"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Maximum Investment *
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                  <input
-                    type="number"
-                    value={formData.maximumInvestment}
-                    onChange={(e) => handleInputChange("maximumInvestment", e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg p-3 pl-8 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="Maximum investment amount"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Deal Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Deal Type *
+                Company stage
               </label>
               <select
-                value={formData.dealType}
-                onChange={(e) => handleInputChange("dealType", e.target.value)}
-                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                required
+                value={formData.companyStage}
+                onChange={(e) => handleInputChange("companyStage", e.target.value)}
+                className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
-                <option value="">Select deal type</option>
-                <option value="equity">Equity</option>
-                <option value="convertible-note">Convertible Note</option>
-                <option value="safe">SAFE</option>
-                <option value="revenue-share">Revenue Share</option>
+                <option value="pre-seed">Pre-seed</option>
+                <option value="seed">Seed</option>
+                <option value="series-a">Series A</option>
+                <option value="series-b">Series B</option>
+                <option value="growth">Growth</option>
               </select>
             </div>
 
-            {/* Investment Terms */}
+            {/* Country of Incorporation */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Investment Terms
+                Country of incorporation
               </label>
-              <textarea
-                value={formData.investmentTerms}
-                onChange={(e) => handleInputChange("investmentTerms", e.target.value)}
-                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent h-24"
-                placeholder="Describe key investment terms and conditions"
+              <select
+                value={formData.countryOfIncorporation}
+                onChange={(e) => handleInputChange("countryOfIncorporation", e.target.value)}
+                className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              >
+                <option value="">Choose county of incorporation</option>
+                <option value="us">United States</option>
+                <option value="uk">United Kingdom</option>
+                <option value="ca">Canada</option>
+                <option value="au">Australia</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            {/* Incorporation Type */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Incorporation type
+              </label>
+              <select
+                value={formData.incorporationType}
+                onChange={(e) => handleInputChange("incorporationType", e.target.value)}
+                className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              >
+                <option value="">Choose incorporation type</option>
+                <option value="llc">LLC</option>
+                <option value="corporation">Corporation</option>
+                <option value="c-corp">C-Corp</option>
+                <option value="s-corp">S-Corp</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            {/* Founder Email */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Founder email
+                <span className="ml-2 relative inline-block group">
+                  <svg className="w-4 h-4 text-gray-400 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                  </svg>
+                  <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-72 p-3 bg-yellow-100 text-xs text-gray-700 rounded-lg border border-yellow-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none z-10 transition-all shadow-lg">
+                    Our platform will reach out to this contact to validate the deal.
+                  </span>
+                </span>
+              </label>
+              <input
+                type="email"
+                value={formData.founderEmail}
+                onChange={(e) => handleInputChange("founderEmail", e.target.value)}
+                className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="Enter founder email"
               />
             </div>
 
-            {/* Additional Information */}
+            {/* Display Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Additional Information
+                Display name
               </label>
-              <textarea
-                value={formData.additionalInfo}
-                onChange={(e) => handleInputChange("additionalInfo", e.target.value)}
-                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent h-24"
-                placeholder="Any additional details about the investment opportunity"
+              <input
+                type="text"
+                value={formData.displayName}
+                onChange={(e) => handleInputChange("displayName", e.target.value)}
+                className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="Display name for SPV"
               />
+            </div>
+
+            {/* Upload Pitch Deck */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload Pitch Deck
+              </label>
+              <input
+                type="file"
+                accept=".pdf,.ppt,.pptx"
+                onChange={handleFileChange}
+                className="hidden"
+                id="pitch-deck-upload"
+              />
+              <label
+                htmlFor="pitch-deck-upload"
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                className="w-full border-1  bg-[#F4F6F5] border-[#0A2A2E] rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors block"
+              >
+                <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p className="text-sm text-gray-600">
+                  Drag and drop or click to upload pitch deck (PDF, PPT, PPTX)
+                </p>
+                {formData.pitchDeck && (
+                  <p className="text-sm text-gray-500 mt-2">{formData.pitchDeck.name}</p>
+                )}
+              </label>
             </div>
           </div>
 

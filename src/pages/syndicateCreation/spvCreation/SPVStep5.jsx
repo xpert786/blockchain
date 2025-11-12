@@ -32,7 +32,7 @@ const SPVStep5 = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="space-y-2 text-center sm:text-left">
-          <h1 className="text-3xl font-bold text-gray-800">Invite LPs</h1>
+            <h1 className="text-3xl font-medium text-gray-800">Invite LPs</h1>
           <p className="text-gray-600">
             Configure how your SPV will appear to investors and control access settings.
           </p>

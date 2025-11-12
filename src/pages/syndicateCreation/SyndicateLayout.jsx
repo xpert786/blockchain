@@ -8,6 +8,48 @@ const SyndicateLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Additional protection check - verify user is authenticated and is a syndicate
+  useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken");
+    const userDataStr = localStorage.getItem("userData");
+    
+    if (!accessToken) {
+      console.log("⚠️ SyndicateLayout: No access token, redirecting to login");
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    if (userDataStr) {
+      try {
+        const userData = JSON.parse(userDataStr);
+        const userRole = userData?.role?.toLowerCase()?.trim();
+        const isSyndicate = userRole && (
+          userRole === "syndicate" || 
+          userRole === "syndicate_manager" || 
+          userRole.includes("syndicate")
+        );
+        
+        if (!isSyndicate) {
+          console.log("⚠️ SyndicateLayout: User is not a syndicate, redirecting");
+          if (userRole === "investor") {
+            navigate("/investor-panel/dashboard", { replace: true });
+          } else {
+            navigate("/login", { replace: true });
+          }
+          return;
+        }
+      } catch (error) {
+        console.error("⚠️ SyndicateLayout: Error parsing user data:", error);
+        navigate("/login", { replace: true });
+        return;
+      }
+    } else {
+      console.log("⚠️ SyndicateLayout: No user data found, redirecting to login");
+      navigate("/login", { replace: true });
+      return;
+    }
+  }, [navigate]);
+
   const steps = [
     { id: "lead-info", name: "Lead Info", path: "/syndicate-creation/lead-info" },
     { id: "entity-profile", name: "Entity Profile", path: "/syndicate-creation/entity-profile" },

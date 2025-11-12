@@ -54,7 +54,7 @@ const SPVStep6 = () => {
     <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 lg:p-8 space-y-8">
       {/* Header */}
       <div className="space-y-2 text-center sm:text-left">
-        <h1 className="text-3xl font-bold text-gray-800">Additional Information</h1>
+            <h1 className="text-3xl font-medium text-gray-800">Additional Information</h1>
         <p className="text-gray-600">Configure how your SPV will appear to investors and control access settings.</p>
       </div>
 
@@ -62,7 +62,7 @@ const SPVStep6 = () => {
       <div className="space-y-6">
         {/* Deal name */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-2">Deal name</label>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Deal name</label>
           <input
             type="text"
             value={formData.dealName}
@@ -74,7 +74,7 @@ const SPVStep6 = () => {
 
         {/* Access Mode */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-4">Access Mode</label>
+          <label className="block text-lg font-medium text-gray-800 mb-4">Access Mode</label>
           <div className="flex flex-col sm:flex-row sm:space-x-4 gap-4">
             <div
               className={`flex-1 border rounded-lg p-4 cursor-pointer ${
@@ -139,7 +139,7 @@ const SPVStep6 = () => {
 
         {/* Tags */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-2">Tags</label>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Tags</label>
             <div className="flex flex-wrap gap-2 p-3 border border-[#0A2A2E] rounded-lg bg-[#F4F6F5] min-h-[50px]">
             {formData.tags.map((tag, index) => (
               <span
@@ -163,7 +163,7 @@ const SPVStep6 = () => {
 
         {/* Syndicate selector */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-2">Syndicate selector</label>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Syndicate selector</label>
           <div className="relative">
             <select
               value={formData.syndicateSelector}
@@ -185,7 +185,7 @@ const SPVStep6 = () => {
 
         {/* Deal Memo */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-2">Deal Memo</label>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Deal Memo</label>
           <div className="relative">
             <textarea
               value={formData.dealMemo}
@@ -198,7 +198,7 @@ const SPVStep6 = () => {
               <button
                 type="button"
                 onClick={handleGenerateAI}
-                className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors border border-[#0A2A2E]"
+                className="px-4 py-2 text-sm bg-[#F4F6F5] hover:bg-gray-200 text-gray-700 rounded-lg transition-colors border border-[#0A2A2E]"
               >
                 Generate with AI
               </button>
@@ -215,8 +215,8 @@ const SPVStep6 = () => {
 
         {/* Upload a Document */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-2">Upload a Document</label>
-            <div className="border-1  border-[#0A2A2E] rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+          <label className="block text-lg font-medium text-gray-800 mb-2">Upload a Document</label>
+            <div className="border-1  bg-[#F4F6F5] border-[#0A2A2E] rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
             <input
               type="file"
               accept=".pdf,.docx"

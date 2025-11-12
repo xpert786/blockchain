@@ -28,7 +28,7 @@ const SPVStep3 = () => {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8 space-y-8">
       {/* Header */}
       <div className="space-y-2 text-center sm:text-left">
-        <h1 className="text-3xl font-bold text-gray-800">Adviser & Legal Structure</h1>
+        <h1 className="text-3xl font-medium text-gray-800">Adviser & Legal Structure</h1>
         <p className="text-gray-600">Configure the legal and advisory structure for your SPV.</p>
       </div>
 
@@ -36,7 +36,7 @@ const SPVStep3 = () => {
       <div className="space-y-8">
         {/* Adviser Entity */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Adviser Entity</h2>
+          <h2 className="text-lg font-medium text-gray-800 mb-4">Adviser Entity</h2>
           <div className="flex flex-col sm:flex-row sm:space-x-4 gap-4">
             <div
               className={`flex-1 border rounded-lg p-4 cursor-pointer ${
@@ -90,7 +90,7 @@ const SPVStep3 = () => {
 
         {/* Master Partnership Entity */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Master Partnership Entity</h2>
+          <h2 className="text-lg font-medium text-gray-800 mb-2">Master Partnership Entity</h2>
           <p className="text-sm text-gray-600 mb-4">This will appear on the cap table</p>
           <select
             value={formData.masterPartnershipEntity}
@@ -106,7 +106,7 @@ const SPVStep3 = () => {
 
         {/* Fund Lead */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Fund Lead</h2>
+                <h2 className="text-lg font-medium text-gray-800 mb-2">Fund Lead</h2>
           <p className="text-sm text-gray-600 mb-4">This person will be designated in fund documentation</p>
           <select
             value={formData.fundLead}

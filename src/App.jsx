@@ -1,6 +1,7 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
 import HomeMain from "./pages/home/HomeMain";
 
 // Solutions pages
@@ -104,8 +105,15 @@ const App = () => {
       <Route path="/otp-verification" element={<OTPVerification />} />
       <Route path="/set-new-password" element={<SetNewPassword />} />
 
-      {/* Syndicate Creation Routes (with Layout) */}
-      <Route path="/syndicate-creation" element={<SyndicateLayout />}>
+      {/* Syndicate Creation Routes (with Layout) - Protected */}
+      <Route
+        path="/syndicate-creation"
+        element={
+          <ProtectedRoute requiredRole="syndicate">
+            <SyndicateLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<LeadInfo />} />
         <Route path="lead-info" element={<LeadInfo />} />
         <Route path="entity-profile" element={<EntityProfile />} />
@@ -114,11 +122,25 @@ const App = () => {
         <Route path="final-review" element={<FinalReview />} />
       </Route>
 
-      {/* Syndicate Success Route (without sidebar) */}
-      <Route path="/syndicate-creation/success" element={<SyndicateSuccess />} />
+      {/* Syndicate Success Route (without sidebar) - Protected */}
+      <Route
+        path="/syndicate-creation/success"
+        element={
+          <ProtectedRoute requiredRole="syndicate">
+            <SyndicateSuccess />
+          </ProtectedRoute>
+        }
+      />
 
-      {/* SPV Creation Routes (with Layout) */}
-      <Route path="/syndicate-creation/spv-creation" element={<SPVLayout />}>
+      {/* SPV Creation Routes (with Layout) - Protected */}
+      <Route
+        path="/syndicate-creation/spv-creation"
+        element={
+          <ProtectedRoute requiredRole="syndicate">
+            <SPVLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<Navigate to="step1" replace />} />
         <Route path="step1" element={<SPVStep1 />} />
         <Route path="step2" element={<SPVStep2 />} />

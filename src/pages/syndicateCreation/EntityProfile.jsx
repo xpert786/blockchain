@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {LeadIcon, RightsIcon} from "../../components/Icons";
 import axios from "axios";
@@ -11,8 +11,11 @@ const EntityProfile = () => {
     logo: null
   });
   const [logoPreview, setLogoPreview] = useState(null);
+  const [logoUrl, setLogoUrl] = useState(null); // Store logo URL from API
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [hasExistingData, setHasExistingData] = useState(false);
+  const [isLoadingExistingData, setIsLoadingExistingData] = useState(true);
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [teamData, setTeamData] = useState({
     name: "",
@@ -42,6 +45,9 @@ const EntityProfile = () => {
         logo: file
       }));
       
+      // Clear logo URL when new file is selected
+      setLogoUrl(null);
+      
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -50,6 +56,139 @@ const EntityProfile = () => {
       reader.readAsDataURL(file);
     }
   };
+
+  // Fetch existing step2 data on mount
+  useEffect(() => {
+    const fetchExistingData = async () => {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          setIsLoadingExistingData(false);
+          return;
+        }
+
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const step2Url = `${API_URL.replace(/\/$/, "")}/syndicate/step2/`;
+
+        console.log("=== Fetching Step2 Data ===");
+        console.log("API URL:", step2Url);
+
+        try {
+          const step2Response = await axios.get(step2Url, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+
+          console.log("Step2 response:", step2Response.data);
+
+          if (step2Response.data && step2Response.status === 200) {
+            const responseData = step2Response.data;
+            
+            // Get step_data and profile (same structure as step1)
+            const stepData = responseData.step_data || {};
+            const profile = responseData.profile || {};
+            
+            console.log("✅ step_data:", stepData);
+            console.log("✅ profile:", profile);
+            
+            // Get firm_name from step_data or profile
+            const firmName = stepData.firm_name || profile.firm_name || "";
+            // Get description from step_data or profile
+            const description = stepData.description || profile.description || "";
+            // Get logo URL from step_data or profile
+            const logo = stepData.logo || profile.logo;
+            
+            console.log("✅ Firm Name:", firmName);
+            console.log("✅ Description:", description);
+            console.log("✅ Logo:", logo);
+            
+            if (firmName || description || logo) {
+              setHasExistingData(true);
+              
+              // Populate form with existing data
+              setFormData({
+                firmName: firmName,
+                description: description || "",
+                logo: null // Don't set logo file, just URL
+              });
+              
+              // If logo exists as URL, set it for preview
+              if (logo) {
+                let logoUrl;
+                const baseDomain = "http://168.231.121.7";
+                
+                console.log("🔍 Processing logo path:", logo);
+                
+                // Logo might be a full URL or a relative path
+                if (logo.startsWith('http://') || logo.startsWith('https://')) {
+                  // Already a full URL - use as is
+                  logoUrl = logo;
+                  console.log("✅ Logo is already a full URL");
+                } else if (logo.startsWith('/')) {
+                  // Relative path starting with /
+                  // API might return paths like:
+                  // - /blockchain-backend/media/... (correct)
+                  // - /api/blockchain-backend/media/... (has /api prefix - remove it)
+                  // - /media/... (needs /blockchain-backend prefix)
+                  
+                  if (logo.startsWith('/api/blockchain-backend/')) {
+                    // Path starts with /api/blockchain-backend/ - remove /api
+                    logoUrl = `${baseDomain}${logo.replace(/^\/api/, '')}`;
+                    console.log("✅ Removed /api prefix from logo path");
+                  } else if (logo.startsWith('/blockchain-backend/')) {
+                    // Path already includes /blockchain-backend, just prepend domain
+                    logoUrl = `${baseDomain}${logo}`;
+                    console.log("✅ Logo path already includes /blockchain-backend");
+                  } else if (logo.startsWith('/media/')) {
+                    // Path starts with /media/, prepend /blockchain-backend
+                    logoUrl = `${baseDomain}/blockchain-backend${logo}`;
+                    console.log("✅ Added /blockchain-backend prefix to /media path");
+                  } else {
+                    // Other paths - prepend /blockchain-backend
+                    logoUrl = `${baseDomain}/blockchain-backend${logo}`;
+                    console.log("✅ Added /blockchain-backend prefix to path");
+                  }
+                } else {
+                  // Relative path without leading / - prepend /blockchain-backend/
+                  logoUrl = `${baseDomain}/blockchain-backend/${logo}`;
+                  console.log("✅ Added /blockchain-backend/ prefix to relative path");
+                }
+                
+                setLogoUrl(logoUrl);
+                setLogoPreview(logoUrl);
+                console.log("✅ Final logo URL:", logoUrl);
+                console.log("✅ Original logo value from API:", logo);
+              }
+              
+              console.log("✅ Form populated with existing data");
+            } else {
+              setHasExistingData(false);
+            }
+          } else {
+            setHasExistingData(false);
+          }
+        } catch (step2Err) {
+          // If step2 data doesn't exist (404), it's fine - user will create new
+          if (step2Err.response?.status === 404) {
+            console.log("No existing step2 data found - will create new");
+            setHasExistingData(false);
+          } else {
+            console.error("Error fetching existing step2 data:", step2Err);
+            console.error("Error details:", step2Err.response?.data);
+          }
+        }
+      } catch (err) {
+        console.error("Error in fetchExistingData:", err);
+      } finally {
+        setIsLoadingExistingData(false);
+      }
+    };
+
+    fetchExistingData();
+  }, []);
 
   const handleNext = async () => {
     setError("");
@@ -77,32 +216,58 @@ const EntityProfile = () => {
       formDataToSend.append("firm_name", formData.firmName);
       formDataToSend.append("description", formData.description || "");
       
-      // Append logo file if selected
+      // Append logo file only if a new file is selected
+      // For PATCH: If no new file, don't send logo field (keeps existing logo)
+      // For POST: Send empty string if no logo
       if (formData.logo) {
         formDataToSend.append("logo", formData.logo);
+        console.log("Logo file will be uploaded:", formData.logo.name);
+      } else if (!hasExistingData) {
+        // For new data, send empty string if no logo
+        formDataToSend.append("logo", "");
+        console.log("No logo file, sending empty string for new data");
       } else {
-        formDataToSend.append("logo", ""); // Send empty string if no logo
+        // For existing data, don't send logo field (keeps existing logo)
+        console.log("No new logo file, keeping existing logo");
       }
 
       console.log("=== EntityProfile API Call ===");
+      console.log("Has Existing Data:", hasExistingData);
       console.log("Firm Name:", formData.firmName);
       console.log("Description:", formData.description);
-      console.log("Logo:", formData.logo ? formData.logo.name : "No logo");
+      console.log("Logo:", formData.logo ? formData.logo.name : logoUrl || "No logo");
 
       const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
       const finalUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step2/`;
 
       console.log("Calling API:", finalUrl);
 
-      const response = await axios.post(finalUrl, formDataToSend, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'multipart/form-data',
-          'Accept': 'application/json'
-        }
-      });
-
-      console.log("EntityProfile submitted successfully:", response.data);
+      let response;
+      
+      // Use PATCH if data exists, POST if it's new
+      if (hasExistingData) {
+        console.log("🔄 Updating existing data with PATCH");
+        response = await axios.patch(finalUrl, formDataToSend, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json'
+          }
+        });
+        console.log("EntityProfile updated successfully:", response.data);
+      } else {
+        console.log("➕ Creating new data with POST");
+        response = await axios.post(finalUrl, formDataToSend, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'application/json'
+          }
+        });
+        console.log("EntityProfile created successfully:", response.data);
+        // Mark that data now exists for future updates
+        setHasExistingData(true);
+      }
 
       // Navigate to next step
       navigate("/syndicate-creation/kyb-verification");
@@ -226,6 +391,10 @@ const EntityProfile = () => {
                   src={logoPreview} 
                   alt="Logo preview" 
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    console.error("Logo image failed to load:", logoPreview);
+                    e.target.style.display = 'none';
+                  }}
                 />
               ) : (
                 <LeadIcon/>
@@ -245,14 +414,15 @@ const EntityProfile = () => {
                 htmlFor="logo-upload"
                 className="px-4 py-2 !border border-[#01373D] bg-[#F4F6F5] rounded-lg text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer inline-block"
               >
-                {formData.logo ? "Change File" : "Choose File"}
+                {(formData.logo || logoUrl) ? "Change File" : "Choose File"}
               </label>
-              {formData.logo && (
+              {(formData.logo || logoUrl) && (
                 <button
                   type="button"
                   onClick={() => {
                     setFormData(prev => ({ ...prev, logo: null }));
                     setLogoPreview(null);
+                    setLogoUrl(null);
                     // Reset file input
                     const fileInput = document.getElementById("logo-upload");
                     if (fileInput) fileInput.value = "";
@@ -266,6 +436,9 @@ const EntityProfile = () => {
           </div>
           {formData.logo && (
             <p className="text-xs text-gray-500 mt-2">Selected: {formData.logo.name}</p>
+          )}
+          {logoUrl && !formData.logo && (
+            <p className="text-xs text-gray-500 mt-2">Current logo loaded from server</p>
           )}
         </div>
 

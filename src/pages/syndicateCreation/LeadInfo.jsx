@@ -25,10 +25,33 @@ const LeadInfo = () => {
   const [showGeographyDropdown, setShowGeographyDropdown] = useState(false);
   const sectorDropdownRef = useRef(null);
   const geographyDropdownRef = useRef(null);
+  const [hasExistingData, setHasExistingData] = useState(false);
+  const [isLoadingExistingData, setIsLoadingExistingData] = useState(true);
+  const [fetchedStep1Data, setFetchedStep1Data] = useState(null);
 
-  // Fetch sectors and geographies on component mount
+  // Map LP base size to API format (ranges)
+  const mapLpBaseSizeToRange = (size) => {
+    if (size <= 10) return "1-10";
+    if (size <= 25) return "11-25";
+    if (size <= 50) return "26-50";
+    if (size <= 100) return "51-100";
+    return "100+";
+  };
+
+  // Map API range format back to a number (for form population)
+  const mapRangeToLpBaseSize = (range) => {
+    if (!range || range === "0") return 50; // default
+    if (range === "1-10") return 10;
+    if (range === "11-25") return 25;
+    if (range === "26-50") return 50;
+    if (range === "51-100") return 100;
+    if (range === "100+") return 150;
+    return 50; // default fallback
+  };
+
+  // Fetch existing step1 data and sectors/geographies on component mount
   useEffect(() => {
-    const fetchSectorsAndGeographies = async () => {
+    const fetchData = async () => {
       try {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
@@ -37,9 +60,10 @@ const LeadInfo = () => {
         }
 
         const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-        const finalUrl = `${API_URL.replace(/\/$/, "")}/syndicate/sectors-geographies/`;
 
-        const response = await axios.get(finalUrl, {
+        // Fetch sectors and geographies
+        const sectorsGeographiesUrl = `${API_URL.replace(/\/$/, "")}/syndicate/sectors-geographies/`;
+        const sectorsResponse = await axios.get(sectorsGeographiesUrl, {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
@@ -47,19 +71,254 @@ const LeadInfo = () => {
           }
         });
 
-        console.log("Sectors and Geographies fetched:", response.data);
-        setSectors(response.data.sectors || []);
-        setGeographies(response.data.geographies || []);
+        console.log("Sectors and Geographies fetched:", sectorsResponse.data);
+        const sectorsList = sectorsResponse.data.sectors || [];
+        const geographiesList = sectorsResponse.data.geographies || [];
+        console.log("Sectors list:", sectorsList);
+        console.log("Geographies list:", geographiesList);
+        
+        // Set sectors and geographies first
+        setSectors(sectorsList);
+        setGeographies(geographiesList);
+
+        // Try to fetch existing step1 data AFTER sectors/geographies are loaded
+        try {
+          const step1Url = `${API_URL.replace(/\/$/, "")}/syndicate/step1/`;
+          const step1Response = await axios.get(step1Url, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+
+          console.log("=== STEP1 DATA RESPONSE ===");
+          console.log("Full response:", step1Response);
+          console.log("Response data:", step1Response.data);
+          console.log("Response status:", step1Response.status);
+          console.log("Response data type:", typeof step1Response.data);
+          console.log("Is array:", Array.isArray(step1Response.data));
+          console.log("All response keys:", step1Response.data ? Object.keys(step1Response.data) : "No data");
+          
+          if (step1Response.data && step1Response.status === 200) {
+            const responseData = step1Response.data;
+            
+            console.log("📦 Response structure:", JSON.stringify(responseData, null, 2));
+            
+            // Get step_data for form fields
+            const stepData = responseData.step_data || {};
+            // Get profile for sectors and geographies
+            const profile = responseData.profile || {};
+            
+            console.log("✅ step_data:", stepData);
+            console.log("✅ profile:", profile);
+            console.log("✅ profile.sectors:", profile.sectors);
+            console.log("✅ profile.geographies:", profile.geographies);
+            
+            setHasExistingData(true);
+            
+            // Get accreditation from step_data or profile
+            const isAccredited = stepData.is_accredited || profile.is_accredited;
+            let accreditationValue = "";
+            if (isAccredited === "yes" || isAccredited === true) {
+              accreditationValue = "accredited";
+            } else if (isAccredited === "no" || isAccredited === false) {
+              accreditationValue = "not-accredited";
+            }
+            
+            // Get understand requirements from step_data or profile
+            const understandsRequirements = stepData.understands_regulatory_requirements || profile.understands_regulatory_requirements || false;
+            
+            // Get LP count from step_data or profile
+            const lpCount = stepData.existing_lp_count || profile.existing_lp_count;
+            const isLpNetworkYes = lpCount && lpCount !== "0" && lpCount !== 0;
+            
+            // Extract sector IDs from profile.sectors (array of objects)
+            const sectorIds = Array.isArray(profile.sectors) 
+              ? profile.sectors.map(sector => sector.id).filter(id => id != null)
+              : [];
+            
+            // Extract geography IDs from profile.geographies (array of objects)
+            const geographyIds = Array.isArray(profile.geographies)
+              ? profile.geographies.map(geography => geography.id).filter(id => id != null)
+              : [];
+            
+            // Get enable platform LP access from step_data or profile
+            const enablePlatformLpAccess = stepData.enable_platform_lp_access || profile.enable_platform_lp_access || false;
+            
+            console.log("✅ Extracted sector IDs:", sectorIds);
+            console.log("✅ Extracted geography IDs:", geographyIds);
+            console.log("✅ Accreditation:", accreditationValue);
+            console.log("✅ Understand Requirements:", understandsRequirements);
+            console.log("✅ LP Count:", lpCount, "Is Yes:", isLpNetworkYes);
+            console.log("✅ Enable Platform LP Access:", enablePlatformLpAccess);
+            
+            // Build new form data
+            const newFormData = {
+              accreditation: accreditationValue,
+              understandRequirements: understandsRequirements,
+              sectorFocus: sectorIds,
+              geographyFocus: geographyIds,
+              existingLpNetwork: isLpNetworkYes ? "Yes" : "No",
+              lpBaseSize: isLpNetworkYes && lpCount ? mapRangeToLpBaseSize(lpCount) : 50,
+              enablePlatformLpAccess: enablePlatformLpAccess
+            };
+            
+            console.log("🎯 Prepared form data:", JSON.stringify(newFormData, null, 2));
+            
+            // Store the fetched data - will populate form in useEffect
+            setFetchedStep1Data({
+              newFormData,
+              sectorIds,
+              geographyIds
+            });
+            
+            console.log("✅ Fetched data stored, will populate form");
+          } else {
+            console.log("⚠️ No valid existing data found");
+            setHasExistingData(false);
+            setFetchedStep1Data(null);
+          }
+        } catch (step1Err) {
+          // If step1 data doesn't exist (404 or other error), it's fine - user will create new
+          if (step1Err.response?.status === 404) {
+            console.log("No existing step1 data found - will create new");
+            setHasExistingData(false);
+            setFetchedStep1Data(null);
+          } else {
+            console.error("Error fetching existing step1 data:", step1Err);
+            console.error("Error details:", step1Err.response?.data);
+            console.error("Error status:", step1Err.response?.status);
+            // Don't show error for this - user can still proceed
+            setFetchedStep1Data(null);
+          }
+        }
       } catch (err) {
         console.error("Error fetching sectors and geographies:", err);
         setError("Failed to load sectors and geographies. Please refresh the page.");
       } finally {
         setLoadingData(false);
+        setIsLoadingExistingData(false);
       }
     };
 
-    fetchSectorsAndGeographies();
+    fetchData();
   }, []);
+
+  // Populate form when step1 data is fetched - populate immediately, re-verify when sectors/geographies load
+  useEffect(() => {
+    if (fetchedStep1Data && !loadingData) {
+      console.log("🚀 Populating form with fetched data");
+      console.log("🚀 Sectors loaded:", sectors.length);
+      console.log("🚀 Geographies loaded:", geographies.length);
+      console.log("🚀 Sector IDs from API:", fetchedStep1Data.sectorIds);
+      console.log("🚀 Geography IDs from API:", fetchedStep1Data.geographyIds);
+      
+      const { newFormData, sectorIds, geographyIds } = fetchedStep1Data;
+      
+      // Always use the IDs from the API, but verify them if sectors/geographies are loaded
+      let verifiedSectorIds = Array.isArray(sectorIds) ? [...sectorIds] : [];
+      let verifiedGeographyIds = Array.isArray(geographyIds) ? [...geographyIds] : [];
+      
+      // Verify IDs if sectors/geographies are loaded
+      if (sectors.length > 0 && verifiedSectorIds.length > 0) {
+        console.log("🔍 Verifying sector IDs against loaded sectors...");
+        const allSectorIds = sectors.map(s => s.id);
+        console.log("Available sector IDs:", allSectorIds);
+        verifiedSectorIds = verifiedSectorIds.filter(id => {
+          const numId = typeof id === 'number' ? id : parseInt(id);
+          const found = sectors.find(s => s.id === numId || s.id === id);
+          if (!found) {
+            console.log(`⚠️ Sector ID ${id} (${numId}) NOT found in sectors list`);
+            console.log(`   Available IDs: ${allSectorIds.join(', ')}`);
+          } else {
+            console.log(`✅ Sector ID ${id} (${numId}) found: ${found.name}`);
+          }
+          return found !== undefined;
+        });
+        console.log("✅ Final verified sector IDs:", verifiedSectorIds);
+      } else if (verifiedSectorIds.length > 0) {
+        console.log("⏳ Sectors not loaded yet, will use IDs as-is:", verifiedSectorIds);
+      }
+      
+      if (geographies.length > 0 && verifiedGeographyIds.length > 0) {
+        console.log("🔍 Verifying geography IDs against loaded geographies...");
+        const allGeographyIds = geographies.map(g => g.id);
+        console.log("Available geography IDs:", allGeographyIds);
+        verifiedGeographyIds = verifiedGeographyIds.filter(id => {
+          const numId = typeof id === 'number' ? id : parseInt(id);
+          const found = geographies.find(g => g.id === numId || g.id === id);
+          if (!found) {
+            console.log(`⚠️ Geography ID ${id} (${numId}) NOT found in geographies list`);
+            console.log(`   Available IDs: ${allGeographyIds.join(', ')}`);
+          } else {
+            console.log(`✅ Geography ID ${id} (${numId}) found: ${found.name}`);
+          }
+          return found !== undefined;
+        });
+        console.log("✅ Final verified geography IDs:", verifiedGeographyIds);
+      } else if (verifiedGeographyIds.length > 0) {
+        console.log("⏳ Geographies not loaded yet, will use IDs as-is:", verifiedGeographyIds);
+      }
+      
+      // Update form data - set IDs even if sectors/geographies aren't loaded yet
+      // The names will resolve when sectors/geographies load
+      const updatedFormData = {
+        accreditation: newFormData.accreditation || "",
+        understandRequirements: newFormData.understandRequirements === true || newFormData.understandRequirements === "true" || newFormData.understandRequirements === 1,
+        sectorFocus: verifiedSectorIds,
+        geographyFocus: verifiedGeographyIds,
+        existingLpNetwork: newFormData.existingLpNetwork || "No",
+        lpBaseSize: newFormData.lpBaseSize || 50,
+        enablePlatformLpAccess: newFormData.enablePlatformLpAccess === true || newFormData.enablePlatformLpAccess === "true" || newFormData.enablePlatformLpAccess === 1
+      };
+      
+      console.log("🔄 Setting form data to:", JSON.stringify(updatedFormData, null, 2));
+      console.log("🔄 Sector IDs to set:", updatedFormData.sectorFocus);
+      console.log("🔄 Geography IDs to set:", updatedFormData.geographyFocus);
+      
+      // Update form data
+      setFormData(prevData => {
+        // Only update if IDs have changed to avoid infinite loops
+        if (JSON.stringify(prevData.sectorFocus) !== JSON.stringify(updatedFormData.sectorFocus) ||
+            JSON.stringify(prevData.geographyFocus) !== JSON.stringify(updatedFormData.geographyFocus) ||
+            prevData.accreditation !== updatedFormData.accreditation ||
+            prevData.understandRequirements !== updatedFormData.understandRequirements) {
+          console.log("✅ Form data will be updated (changes detected)");
+          return updatedFormData;
+        } else {
+          console.log("⏭️ Form data unchanged, skipping update");
+          return prevData;
+        }
+      });
+      
+      console.log("✅ Form state update completed:", {
+        sectors: updatedFormData.sectorFocus.length,
+        geographies: updatedFormData.geographyFocus.length,
+        sectorIds: updatedFormData.sectorFocus,
+        geographyIds: updatedFormData.geographyFocus
+      });
+      
+      // Only clear fetched data if sectors and geographies are loaded
+      // This allows re-verification when they load
+      if (sectors.length > 0 && geographies.length > 0) {
+        console.log("✅ Sectors and geographies loaded, clearing fetched data");
+        setFetchedStep1Data(null);
+      } else {
+        console.log("⏳ Keeping fetched data for re-verification when sectors/geographies load");
+      }
+    }
+  }, [fetchedStep1Data, loadingData, sectors, geographies]);
+
+  // Debug: Log formData whenever it changes
+  useEffect(() => {
+    console.log("📋 Current formData state:", formData);
+    console.log("📋 Accreditation:", formData.accreditation);
+    console.log("📋 Understand Requirements:", formData.understandRequirements);
+    console.log("📋 Sector Focus:", formData.sectorFocus);
+    console.log("📋 Geography Focus:", formData.geographyFocus);
+    console.log("📋 LP Network:", formData.existingLpNetwork);
+  }, [formData]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -131,15 +390,6 @@ const LeadInfo = () => {
     return geography ? geography.name : `Geography ${geographyId}`;
   };
 
-  // Map LP base size to API format (ranges)
-  const mapLpBaseSizeToRange = (size) => {
-    if (size <= 10) return "1-10";
-    if (size <= 25) return "11-25";
-    if (size <= 50) return "26-50";
-    if (size <= 100) return "51-100";
-    return "100+";
-  };
-
   // Get available sectors (not already selected)
   const getAvailableSectors = () => {
     return sectors.filter(sector => !formData.sectorFocus.includes(sector.id));
@@ -201,22 +451,38 @@ const LeadInfo = () => {
       };
 
       console.log("=== LeadInfo API Call ===");
+      console.log("Has existing data:", hasExistingData);
       console.log("Payload:", payload);
 
       const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
       const finalUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step1/`;
 
-      console.log("Calling API:", finalUrl);
-
-      const response = await axios.post(finalUrl, payload, {
+      let response;
+      
+      // Use PATCH if data exists, POST if it's new
+      if (hasExistingData) {
+        console.log("🔄 Updating existing data with PATCH");
+        response = await axios.patch(finalUrl, payload, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+        console.log("LeadInfo updated successfully:", response.data);
+      } else {
+        console.log("➕ Creating new data with POST");
+        response = await axios.post(finalUrl, payload, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         }
       });
-
-      console.log("LeadInfo submitted successfully:", response.data);
+        console.log("LeadInfo created successfully:", response.data);
+        // Mark that data now exists for future updates
+        setHasExistingData(true);
+      }
 
       // Navigate to next step
       navigate("/syndicate-creation/entity-profile");
@@ -254,6 +520,17 @@ const LeadInfo = () => {
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
           {error}
+        </div>
+      )}
+
+      {/* Debug Info - Remove in production */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-xs">
+          <p><strong>Debug:</strong> Accreditation: "{formData.accreditation}" | 
+          Understand: {formData.understandRequirements ? 'true' : 'false'} | 
+          Sectors: {formData.sectorFocus.length} | 
+          Geographies: {formData.geographyFocus.length} | 
+          LP Network: {formData.existingLpNetwork}</p>
         </div>
       )}
 
