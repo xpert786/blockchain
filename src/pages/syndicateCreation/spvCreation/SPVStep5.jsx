@@ -28,7 +28,7 @@ const SPVStep5 = () => {
   });
 
   const handleNext = () => {
-    navigate("/syndicate-creation/spv-creation/step7");
+    navigate("/syndicate-creation/spv-creation/step6");
   };
 
   const handlePrevious = () => {
@@ -36,7 +36,7 @@ const SPVStep5 = () => {
   };
 
   const handleSkip = () => {
-    navigate("/syndicate-creation/spv-creation/step7");
+    navigate("/syndicate-creation/spv-creation/step6");
   };
 
   // Fetch existing SPV step5 data on mount
