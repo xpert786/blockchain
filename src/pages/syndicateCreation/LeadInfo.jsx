@@ -523,16 +523,7 @@ const LeadInfo = () => {
         </div>
       )}
 
-      {/* Debug Info - Remove in production */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-xs">
-          <p><strong>Debug:</strong> Accreditation: "{formData.accreditation}" | 
-          Understand: {formData.understandRequirements ? 'true' : 'false'} | 
-          Sectors: {formData.sectorFocus.length} | 
-          Geographies: {formData.geographyFocus.length} | 
-          LP Network: {formData.existingLpNetwork}</p>
-        </div>
-      )}
+ 
 
       {/* Accreditation Section */}
       <div className="space-y-4">

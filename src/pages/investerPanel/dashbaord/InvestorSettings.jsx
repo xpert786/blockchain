@@ -207,7 +207,7 @@ const InvestorSettings = () => {
                   <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
-              <img src={logoImage} alt="Unlocksley Logo" className="h-10 w-auto object-contain" />
+              <img src={logoImage} alt="Unlocksley Logo" className="h-20 w-20 object-contain" />
             </div>
             <div className="flex items-center gap-3">
               <button

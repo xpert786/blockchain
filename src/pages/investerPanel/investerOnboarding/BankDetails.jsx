@@ -74,7 +74,7 @@ const BankDetails = () => {
               <img
                 src={logoImage}
                 alt="Unlocksley Logo"
-                className="h-16 sm:h-20 w-auto object-contain"
+                className="h-20 w-20 object-contain"
               />
             </div>
             {/* Right Side - Application Title */}

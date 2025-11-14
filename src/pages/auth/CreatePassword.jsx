@@ -46,6 +46,40 @@ const CreatePassword = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const resumePendingTwoFactor = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const finalUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/choose_verification_method/`;
+
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        setError("We found an account with this email. Please log in to continue your verification.");
+        setShowErrorPopup(true);
+        return;
+      }
+
+      await axios.post(
+        finalUrl,
+        { method: "email" },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
+
+      navigate("/secure-account-2fa");
+    } catch (twoFaError) {
+      console.error("Failed to resume 2FA:", twoFaError);
+      const backendData = twoFaError.response?.data;
+      const message = backendData ? formatBackendError(backendData) : twoFaError.message;
+      setError(message || "We couldn't resume your verification. Please try again.");
+      setShowErrorPopup(true);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -137,6 +171,13 @@ const CreatePassword = () => {
       console.error("Error creating account:", err);
       const backendData = err.response?.data;
       const message = backendData ? formatBackendError(backendData) : err.message;
+      const normalizedMessage = (message || "").toLowerCase();
+
+      if (normalizedMessage.includes("already exists")) {
+        await resumePendingTwoFactor();
+        return;
+      }
+
       setError(message || "Failed to create account.");
       setShowErrorPopup(true);
     }

@@ -78,13 +78,13 @@ const SyndicateLayout = () => {
     <div className="min-h-screen bg-[#F4F6F5] px-4 sm:px-6 lg:px-8 pt-4">
       {/* Fixed Header */}
       <header className="fixed top-4 left-4 right-4 sm:left-6 sm:right-6 lg:left-8 lg:right-8 bg-white z-50 shadow-sm rounded-lg">
-        <div className="px-4 sm:px-6 py-4 flex items-center gap-4">
+        <div className="px-3 sm:px-5 py-3 flex items-center gap-4">
           {/* Left side - Logo */}
           <div className="flex items-center gap-3">
             <img
               src={unlockLogo}
               alt="UNLOCKSLEY Logo"
-              className="h-12 w-auto object-contain"
+              className="h-20 w-20 object-contain"
             />
           </div>
 

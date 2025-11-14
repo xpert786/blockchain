@@ -26,11 +26,9 @@ const Header = () => {
             <img
               src={logoImage}
               alt="Unlocksley Logo"
-              className="h-12 w-12 object-contain"
+              className="h-20 w-20 object-contain"
             />
-            <span className="hidden sm:inline text-lg font-semibold text-white">
-              Unlocksley
-            </span>
+            
           </button>
 
           <div className="hidden md:flex items-center gap-6">
@@ -57,9 +55,15 @@ const Header = () => {
 
         {/* Desktop Buttons */}
         <div className="hidden sm:flex items-center gap-3">
+        <Link
+            to="/signup"
+            className="rounded-lg bg-white px-4 py-1 text-sm font-medium text-[#0A2A2E] transition hover:bg-white/90"
+          >
+            Sign Up
+          </Link>
           <Link
             to="/login"
-            className="rounded-lg border border-white px-4 py-1 text-sm font-medium text-white transition hover:bg-white/10"
+            className="rounded-lg bg-white px-4 py-1 text-sm font-medium text-[#0A2A2E] transition hover:bg-white/90"
           >
             Log In
           </Link>
@@ -104,7 +108,7 @@ const Header = () => {
           </button>
         </div>
         <div className="space-y-4 px-4 py-2">
-          <div className="flex flex-col gap-2 rounded-lg border border-white/20 bg-[#0A2A2E] p-2">
+          <div className="flex flex-col gap-2 rounded-lg border border-white/20 bg-[#112830] p-2">
             <button
               onClick={() => handleTabClick("syndicate")}
               className={`rounded-md px-3 py-2 text-left text-sm font-medium transition ${
@@ -123,10 +127,18 @@ const Header = () => {
             </button>
           </div>
           <div className="flex flex-col gap-2">
+
+            <Link
+              to="/signup"
+              onClick={() => setIsMenuOpen(false)}
+              className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-[#0A2A2E]"
+            >
+              Sign Up
+            </Link>
             <Link
               to="/login"
               onClick={() => setIsMenuOpen(false)}
-              className="rounded-lg border border-white/40 px-4 py-2 text-sm font-medium text-white"
+              className="rounded-lg bg-[#F2E0C9] px-4 py-2 text-sm font-medium text-[#0A2A2E]"
             >
               Log In
             </Link>

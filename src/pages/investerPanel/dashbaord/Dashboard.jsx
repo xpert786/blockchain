@@ -208,7 +208,7 @@ const Dashboard = () => {
               <img
                 src={logoImage}
                 alt="Unlocksley Logo"
-                className="h-10 w-auto object-contain"
+                className="h-20 w-20 object-contain"
               />
             </div>
             <div className="flex items-center gap-3">

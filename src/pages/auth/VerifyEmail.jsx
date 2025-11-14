@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import bgImage from "../../assets/img/bg-images.png";
@@ -9,9 +9,40 @@ const VerifyEmail = () => {
   const navigate = useNavigate();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [showPopup, setShowPopup] = useState(false);
-  const [email] = useState("john@gmail.com");
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const resolveEmail = () => {
+      const storedUserData = localStorage.getItem("userData");
+      const storedTempData = localStorage.getItem("tempUserData");
+
+      let detectedEmail =
+        (storedUserData && (() => {
+          try {
+            return JSON.parse(storedUserData)?.email;
+          } catch {
+            return null;
+          }
+        })()) ||
+        (storedTempData && (() => {
+          try {
+            return JSON.parse(storedTempData)?.email;
+          } catch {
+            return null;
+          }
+        })());
+
+      if (!detectedEmail || typeof detectedEmail !== "string") {
+        detectedEmail = "your email";
+      }
+
+      setEmail(detectedEmail);
+    };
+
+    resolveEmail();
+  }, []);
 
   const handleInputChange = (index, value) => {
     if (value.length <= 1 && /^\d*$/.test(value)) {
@@ -121,7 +152,7 @@ const VerifyEmail = () => {
             <div className="mb-8 text-center md:text-left">
               <h1 className="text-3xl text-[#001D21] mb-4">Verify Your Email</h1>
               <p className="text-[#0A2A2E] font-poppins-custom">
-                A verification code has been sent to <span className="text-[#9889FF] font-semibold">**{email}**</span>. Please check your email and enter the code below to activate your account.
+                A verification code has been sent to <span className="text-[#9889FF] font-semibold">{email}</span>. Please check your email and enter the code below to activate your account.
               </p>
             </div>
 

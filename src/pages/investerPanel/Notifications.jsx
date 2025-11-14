@@ -148,7 +148,7 @@ const Notifications = () => {
             <img
               src={logoImage}
               alt="Unlocksley Logo"
-              className="h-10 sm:h-12 w-auto object-contain"
+              className="h-20 w-20 object-contain"
             />
           </div>
 
