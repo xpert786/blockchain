@@ -1,10 +1,59 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
-const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState("my-spvs");
-  const [viewMode, setViewMode] = useState("grid");
+const formatCurrency = (value) => {
+  if (value === undefined || value === null) return "$0";
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000_000) return `${value < 0 ? "-" : ""}$${(abs / 1_000_000_000).toFixed(1)}B`;
+  if (abs >= 1_000_000) return `${value < 0 ? "-" : ""}$${(abs / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1_000) return `${value < 0 ? "-" : ""}$${(abs / 1_000).toFixed(1)}K`;
+  return `${value < 0 ? "-" : ""}$${abs.toFixed(0)}`;
+};
 
-  const metrics = [
+const formatNumber = (value, fallback = "0") => {
+  if (value === undefined || value === null) return fallback;
+  return value.toLocaleString();
+};
+
+const formatRelativeTime = (timestamp) => {
+  if (!timestamp) return "Just now";
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return "Just now";
+
+  const diffMs = Date.now() - date.getTime();
+  const diffSeconds = Math.floor(diffMs / 1000);
+  if (diffSeconds < 60) return `${diffSeconds}s ago`;
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
+};
+
+const getStatusBadgeColor = (status = "") => {
+  const normalized = status.toLowerCase();
+  if (normalized.includes("draft")) return "bg-gray-200 text-gray-800";
+  if (normalized.includes("raising")) return "bg-[#22C55E] text-white";
+  if (normalized.includes("ready")) return "bg-[#FFD97A] text-white";
+  if (normalized.includes("closing")) return "bg-[#ED1C24] text-white";
+  return "bg-gray-200 text-gray-800";
+};
+
+const getPendingStatusDot = (status = "") => {
+  const normalized = status.toLowerCase();
+  if (normalized.includes("kyc")) return "bg-[#9FD2FF]";
+  if (normalized.includes("closing")) return "bg-[#82EEAA]";
+  if (normalized.includes("document")) return "bg-[#FFD97A]";
+  return "bg-[#E2E2FB]";
+};
+
+const getBreakdownColor = (index) => {
+  const palette = ["bg-[#9FD2FF]", "bg-[#FFD97A]", "bg-[#82EEAA]", "bg-[#FFB6C1]", "bg-[#D1FADF]"];
+  return palette[index % palette.length];
+};
+
+const fallbackMetrics = [
     {
       title: "My SPVs",
       value: "8",
@@ -58,7 +107,7 @@ const Dashboard = () => {
     }
   ];
 
-  const spvs = [
+const fallbackSpvs = [
     {
       id: "SPV-001",
       name: "Tech Startup Fund Q4",
@@ -95,7 +144,7 @@ const Dashboard = () => {
     }
   ];
 
-  const pendingActions = [
+const fallbackPendingActions = [
     {
       id: "PA-001",
       type: "Transfer Request",
@@ -128,54 +177,150 @@ const Dashboard = () => {
     }
   ];
 
-  const getIcon = (iconName) => {
-    const iconProps = { className: "w-6 h-6", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24" };
-    
-    switch (iconName) {
-      case "documents":
-        return (
-          <svg {...iconProps}>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-        );
-      case "dollar":
-        return (
-          <svg {...iconProps}>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-          </svg>
-        );
-      case "users":
-        return (
-          <svg {...iconProps}>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-          </svg>
-        );
-      case "chart":
-        return (
-          <svg {...iconProps}>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-        );
-      default:
-        return null;
-    }
-  };
+const fallbackAnalytics = {
+  performance_overview: {
+    total_funds_raised: 8700000,
+    total_target: 12000000,
+    average_progress_percent: 75,
+    success_rate_percent: 85
+  },
+  status_breakdown: [
+    { status: "raising", label: "Raising", count: 3, total_allocation: 6500000 },
+    { status: "closing", label: "Closing", count: 1, total_allocation: 1200000 }
+  ],
+  active_investors: 156
+};
 
-  const getProgressColor = (status) => {
-    switch (status) {
-      case "Raising":
-        return "bg-[#22C55E]"; // Green
-      case "Ready to Launch":
-        return "bg-[#FFD97A]"; // Yellow
-      case "Closing":
-        return "bg-[#ED1C24]"; // Red
-      default:
-        return "bg-green-500";
-    }
+const Dashboard = () => {
+  const [activeTab, setActiveTab] = useState("my-spvs");
+  const [viewMode, setViewMode] = useState("grid");
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+          throw new Error("Please log in to view your dashboard.");
+        }
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const finalUrl = `${API_URL.replace(/\/$/, "")}/spv/dashboard/`;
+        const response = await fetch(finalUrl, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) {
+          throw new Error("Failed to fetch dashboard data.");
+        }
+        const data = await response.json();
+        setDashboardData(data);
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+        setError(err.message || "Unable to load dashboard data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboard();
+  }, []);
+
+  const summary = dashboardData?.summary;
+
+  const metrics = useMemo(() => {
+    if (!summary) return fallbackMetrics;
+
+    return [
+      {
+        ...fallbackMetrics[0],
+        value: formatNumber(summary.my_spvs_count || 0),
+        change: `Target ${formatCurrency(summary.total_target || 0)}`
+      },
+      {
+        ...fallbackMetrics[1],
+        value: formatCurrency(summary.total_aum || 0),
+        change: `Goal ${formatCurrency(summary.total_target || 0)}`
+      },
+      {
+        ...fallbackMetrics[2],
+        value: formatNumber(summary.active_investors || 0),
+        change: "Active investors"
+      },
+      {
+        ...fallbackMetrics[3],
+        value: formatCurrency(summary.average_investment || 0),
+        change: summary.last_updated
+          ? `Updated ${new Date(summary.last_updated).toLocaleDateString()}`
+          : fallbackMetrics[3].change
+      }
+    ];
+  }, [summary]);
+
+  const mappedSpvs =
+    dashboardData?.sections?.my_spvs?.map((spv) => ({
+      id: spv.code || spv.id || "SPV",
+      name: spv.name,
+      created: spv.created_at ? new Date(spv.created_at).toLocaleDateString() : spv.created,
+      current: formatCurrency(spv.my_commitment ?? spv.current ?? 0),
+      target: `${formatCurrency(spv.target_amount ?? spv.target ?? 0)}${spv.target_currency ? ` ${spv.target_currency}` : ""}`,
+      investors: spv.investor_count ?? spv.investors ?? 0,
+      progress: Math.round(spv.progress_percent ?? spv.progress ?? 0),
+      status: spv.status_label || spv.status,
+      statusColor: getStatusBadgeColor(spv.status_label || spv.status)
+    })) ?? null;
+
+  const spvs = mappedSpvs && mappedSpvs.length > 0 ? mappedSpvs : fallbackSpvs;
+
+  const mappedPendingActions =
+    dashboardData?.sections?.pending_actions?.map((action) => ({
+      id: action.id,
+      type: action.title,
+      user: action.user || action.action_required?.replace(/_/g, " "),
+      project: action.spv_id ? `SPV-${action.spv_id}` : "",
+      amount: action.description,
+      description: action.description,
+      timeAgo: formatRelativeTime(action.updated_at),
+      statusDot: getPendingStatusDot(action.status)
+    })) ?? null;
+
+  const pendingActions =
+    mappedPendingActions && mappedPendingActions.length > 0 ? mappedPendingActions : fallbackPendingActions;
+
+  const analyticsData = dashboardData?.sections?.analytics ?? fallbackAnalytics;
+  const totalFundsRaised = analyticsData?.performance_overview?.total_funds_raised ?? 0;
+  const totalTargetAmount = analyticsData?.performance_overview?.total_target ?? 0;
+  const averageProgressPercent = analyticsData?.performance_overview?.average_progress_percent ?? 0;
+  const successRatePercent = analyticsData?.performance_overview?.success_rate_percent ?? 0;
+  const statusBreakdown = analyticsData?.status_breakdown ?? fallbackAnalytics.status_breakdown;
+  const analyticsActiveInvestors = analyticsData?.active_investors ?? fallbackAnalytics.active_investors;
+  const progressCircumference = 2 * Math.PI * 40;
+  const progressOffset =
+    progressCircumference * (1 - Math.min(Math.max(averageProgressPercent, 0), 100) / 100);
+
+  const getProgressColor = (status = "") => {
+    const normalized = status.toLowerCase();
+    if (normalized.includes("draft")) return "bg-gray-400";
+    if (normalized.includes("raising")) return "bg-[#22C55E]";
+    if (normalized.includes("ready")) return "bg-[#FFD97A]";
+    if (normalized.includes("closing")) return "bg-[#ED1C24]";
+    return "bg-green-500";
   };
 
   return (
     <div className="min-h-screen bg-[#F4F6F5] px-4 py-6 sm:px-6 lg:px-0 lg:mt-10 space-y-6">
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+      {loading && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+          Loading latest dashboard data...
+        </div>
+      )}
       {/* Business Verification Banner */}
       <div className="bg-[#D7F8F0] border border-green-200 rounded-lg p-4 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -481,7 +626,9 @@ const Dashboard = () => {
                     <div>
                       <h3 className="font-semibold text-gray-900">{action.type}</h3>
                       <p className="text-sm text-gray-600">
-                        {action.user} • {action.project} • {action.amount}
+                        {[action.user, action.project, action.amount].filter(Boolean).join(" • ") ||
+                          action.description ||
+                          "Pending action"}
                       </p>
                       <div className="flex items-center space-x-1 mt-1">
                         <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -533,34 +680,45 @@ const Dashboard = () => {
                       stroke="#00F0C3"
                       strokeWidth="8"
                       fill="none"
-                      strokeDasharray={`${2 * Math.PI * 40}`}
-                      strokeDashoffset={`${2 * Math.PI * 40 * (1 - 0.75)}`}
+                      strokeDasharray={progressCircumference}
+                      strokeDashoffset={progressOffset}
                       strokeLinecap="round"
                     />
                   </svg>
                   {/* Center text */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-3xl font-bold text-gray-900">$8.7M</span>
+                    <div className="text-center">
+                      <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                        {formatCurrency(totalFundsRaised)}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        of {formatCurrency(totalTargetAmount)} target
+                      </p>
+                    </div>
                   </div>
                 </div>
 
                 {/* Key Metrics List */}
                 <div className="flex-1 space-y-3">
-                  <div className="flex items-center space-x-3 bg-[#F9F8FF] rounded-lg p-2 border border-[#E2E2FB]">
-                    <div className="w-4 h-4 rounded-full bg-[#9FD2FF]"></div>
-                    <span className="text-gray-900 font-medium">Total Funds Raised</span>
+                  {statusBreakdown.map((item, index) => (
+                    <div
+                      key={`${item.status}-${index}`}
+                      className="flex items-center space-x-3 bg-[#F9F8FF] rounded-lg p-3 border border-[#E2E2FB]"
+                    >
+                      <div className={`w-2 h-2 rounded-full ${getBreakdownColor(index)}`}></div>
+                      <div className="flex-1">
+                        <span className="text-gray-900 font-medium">{item.status}</span>
+                        <p className="text-xs text-gray-500">
+                          {formatNumber(item.count || 0)} SPVs • {formatCurrency(item.total_allocation || 0)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="rounded-lg border border-[#E2E2FB] p-2 text-sm text-gray-700">
+                    Success Rate: <span className="font-semibold">{successRatePercent}%</span>
                   </div>
-                  <div className="flex items-center space-x-3 rounded-lg p-2 border border-[#E2E2FB]">
-                    <div className="w-4 h-4 rounded-full bg-[#FFD97A]"></div>
-                    <span className="text-gray-900 font-medium">Average Time To Close</span>
-                  </div>
-                  <div className="flex items-center space-x-3  rounded-lg p-2 border border-[#E2E2FB]">
-                    <div className="w-4 h-4 rounded-full bg-[#82EEAA]"></div>
-                    <span className="text-gray-900 font-medium">Investor Retention</span>
-                  </div>
-                  <div className="flex items-center space-x-3  rounded-lg p-2 border border-[#E2E2FB]">
-                    <div className="w-4 h-4 rounded-full bg-[#FFB6C1]"></div>
-                    <span className="text-gray-900 font-medium">Success Rate</span>
+                  <div className="rounded-lg border border-[#E2E2FB] p-2 text-sm text-gray-700">
+                    Active Investors: <span className="font-semibold">{formatNumber(analyticsActiveInvestors)}</span>
                   </div>
                 </div>
               </div>
@@ -572,42 +730,23 @@ const Dashboard = () => {
               <p className="text-gray-600 mb-6">Items requiring your review and approval</p>
               
               <div className="space-y-4">
-                {/* Action Item 1 */}
-                <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center space-x-4">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M18.3337 9.23355V10.0002C18.3326 11.7972 17.7507 13.5458 16.6748 14.9851C15.5988 16.4244 14.0864 17.4773 12.3631 17.9868C10.6399 18.4963 8.79804 18.4351 7.11238 17.8124C5.42673 17.1896 3.98754 16.0386 3.00946 14.5311C2.03138 13.0236 1.56682 11.2403 1.68506 9.44714C1.80329 7.65402 2.498 5.94715 3.66556 4.58111C4.83312 3.21506 6.41098 2.26303 8.16382 1.867C9.91665 1.47097 11.7505 1.65216 13.392 2.38355M7.50033 9.16688L10.0003 11.6669L18.3337 3.33355" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">SPV-002 Reached 60% Funding</h3>
-                    <p className="text-sm text-gray-500">2 days ago</p>
+                {pendingActions.slice(0, 3).map((action) => (
+                  <div key={action.id} className="bg-white border border-gray-200 rounded-lg p-4 flex items-center space-x-4">
+                    <div className={`w-3 h-3 rounded-full ${action.statusDot || "bg-[#E2E2FB]"}`}></div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900">{action.type}</h3>
+                      <p className="text-sm text-gray-600">
+                        {[action.user, action.project, action.amount].filter(Boolean).join(" • ") ||
+                          action.description ||
+                          "Pending action"}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">{action.timeAgo}</p>
+                    </div>
                   </div>
-                </div>
-
-                {/* Action Item 2 */}
-                <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center space-x-4">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M18.3337 9.23355V10.0002C18.3326 11.7972 17.7507 13.5458 16.6748 14.9851C15.5988 16.4244 14.0864 17.4773 12.3631 17.9868C10.6399 18.4963 8.79804 18.4351 7.11238 17.8124C5.42673 17.1896 3.98754 16.0386 3.00946 14.5311C2.03138 13.0236 1.56682 11.2403 1.68506 9.44714C1.80329 7.65402 2.498 5.94715 3.66556 4.58111C4.83312 3.21506 6.41098 2.26303 8.16382 1.867C9.91665 1.47097 11.7505 1.65216 13.392 2.38355M7.50033 9.16688L10.0003 11.6669L18.3337 3.33355" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">New Investor Onboarded</h3>
-                    <p className="text-sm text-gray-500">1 week ago</p>
-                  </div>
-                </div>
-
-                {/* Action Item 3 */}
-                <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center space-x-4">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M10.0003 18.3337C14.6027 18.3337 18.3337 14.6027 18.3337 10.0003C18.3337 5.39795 14.6027 1.66699 10.0003 1.66699C5.39795 1.66699 1.66699 5.39795 1.66699 10.0003C1.66699 14.6027 5.39795 18.3337 10.0003 18.3337Z" stroke="#F6BE56" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M10 6.66699V10.0003M10 13.3337H10.0083" stroke="#F6BE56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">Document Review Pending</h3>
-                    <p className="text-sm text-gray-500">3 days ago</p>
-                  </div>
-                </div>
+                ))}
+                {pendingActions.length === 0 && (
+                  <p className="text-sm text-gray-500">You’re all caught up! No pending items right now.</p>
+                )}
               </div>
             </div>
           </div>

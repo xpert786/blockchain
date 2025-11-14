@@ -8,6 +8,91 @@ const ManagerLayout = () => {
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [menuOpen, setMenuOpen] = useState(false);
 
+  useEffect(() => {
+    const completedStatuses = ["submitted", "approved", "completed", "accepted"];
+
+    const checkManagerAccess = async () => {
+      const token = localStorage.getItem("accessToken");
+      const rawUser = localStorage.getItem("userData");
+
+      if (!token) {
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      if (!rawUser) {
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      let parsedUser;
+      try {
+        parsedUser = JSON.parse(rawUser);
+      } catch (error) {
+        console.error("ManagerLayout: unable to parse user data:", error);
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      const role = parsedUser?.role?.toLowerCase() || "";
+      if (!role.includes("syndicate")) {
+        navigate("/syndicate-creation/lead-info", { replace: true });
+        return;
+      }
+
+      const normalizeStatus = (value) => (value || "").toString().toLowerCase().trim();
+
+      let currentStatus = normalizeStatus(parsedUser?.application_status);
+      let isCompleted =
+        !!parsedUser?.syndicate_profile_completed || completedStatuses.includes(currentStatus);
+
+      if (!isCompleted) {
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+          const finalUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step4/`;
+
+          const response = await fetch(finalUrl, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+              Accept: "application/json"
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const latestStatus = normalizeStatus(
+              data?.application_status ||
+                data?.profile?.application_status ||
+                data?.step_data?.application_status
+            );
+
+            if (latestStatus) {
+              currentStatus = latestStatus;
+              if (completedStatuses.includes(latestStatus)) {
+                isCompleted = true;
+                const updatedUser = {
+                  ...parsedUser,
+                  application_status: latestStatus,
+                  syndicate_profile_completed: true
+                };
+                localStorage.setItem("userData", JSON.stringify(updatedUser));
+              }
+            }
+          }
+        } catch (error) {
+          console.error("ManagerLayout: failed to fetch syndicate status:", error);
+        }
+      }
+
+      if (!isCompleted) {
+        navigate("/syndicate-creation/lead-info", { replace: true });
+      }
+    };
+
+    checkManagerAccess();
+  }, [navigate]);
+
   // Update active menu based on current location
   useEffect(() => {
     const path = location.pathname;
@@ -47,6 +132,37 @@ const ManagerLayout = () => {
     setActiveMenu(item.id);
     navigate(item.path);
   };
+
+  const handleLogout = () => {
+    ["accessToken", "refreshToken", "userData", "tempUserData"].forEach((key) => localStorage.removeItem(key));
+    navigate("/login", { replace: true });
+  };
+
+  const renderLogoutButton = (className = "") => (
+    <button
+      type="button"
+      onClick={handleLogout}
+      className={`mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-white/60 bg-transparent px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10 ${className}`}
+    >
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M11.25 4.16666H15C16.3807 4.16666 17.5 5.28595 17.5 6.66666V13.3333C17.5 14.714 16.3807 15.8333 15 15.8333H11.25"
+          stroke="white"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M3.33301 10H12.4997M3.33301 10L6.24967 6.66666M3.33301 10L6.24967 13.3333"
+          stroke="white"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      Logout
+    </button>
+  );
 
   const getIcon = (iconName) => {
     const iconProps = { className: "w-5 h-5", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24" };
@@ -256,6 +372,7 @@ const ManagerLayout = () => {
                   <p className="text-gray-400 text-sm">Manager</p>
                 </div>
               </div>
+              {renderLogoutButton("mt-6")}
             </div>
           </aside>
         </div>
@@ -293,6 +410,7 @@ const ManagerLayout = () => {
                 <p className="text-gray-400 text-sm">Manager</p>
               </div>
             </div>
+            {renderLogoutButton("mt-6")}
           </div>
         </aside>
 

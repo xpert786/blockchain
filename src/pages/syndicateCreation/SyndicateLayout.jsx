@@ -10,44 +10,97 @@ const SyndicateLayout = () => {
 
   // Additional protection check - verify user is authenticated and is a syndicate
   useEffect(() => {
-    const accessToken = localStorage.getItem("accessToken");
-    const userDataStr = localStorage.getItem("userData");
-    
-    if (!accessToken) {
-      console.log("⚠️ SyndicateLayout: No access token, redirecting to login");
-      navigate("/login", { replace: true });
-      return;
-    }
+    const completedStatuses = ["submitted", "approved", "completed", "accepted"];
+    const normalizeStatus = (value) => (value || "").toString().toLowerCase().trim();
 
-    if (userDataStr) {
-      try {
-        const userData = JSON.parse(userDataStr);
-        const userRole = userData?.role?.toLowerCase()?.trim();
-        const isSyndicate = userRole && (
-          userRole === "syndicate" || 
-          userRole === "syndicate_manager" || 
-          userRole.includes("syndicate")
-        );
-        
-        if (!isSyndicate) {
-          console.log("⚠️ SyndicateLayout: User is not a syndicate, redirecting");
-          if (userRole === "investor") {
-            navigate("/investor-panel/dashboard", { replace: true });
-          } else {
-            navigate("/login", { replace: true });
-          }
-          return;
-        }
-      } catch (error) {
-        console.error("⚠️ SyndicateLayout: Error parsing user data:", error);
+    const verifySyndicateUser = async () => {
+      const accessToken = localStorage.getItem("accessToken");
+      const userDataStr = localStorage.getItem("userData");
+      
+      if (!accessToken) {
         navigate("/login", { replace: true });
         return;
       }
-    } else {
-      console.log("⚠️ SyndicateLayout: No user data found, redirecting to login");
-      navigate("/login", { replace: true });
-      return;
-    }
+
+      if (!userDataStr) {
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      let userData;
+      try {
+        userData = JSON.parse(userDataStr);
+      } catch (error) {
+        console.error("SyndicateLayout: unable to parse user data:", error);
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      const userRole = userData?.role?.toLowerCase()?.trim();
+      const isSyndicate = userRole && (
+        userRole === "syndicate" || 
+        userRole === "syndicate_manager" || 
+        userRole.includes("syndicate")
+      );
+
+      if (!isSyndicate) {
+        if (userRole === "investor") {
+          navigate("/investor-panel/dashboard", { replace: true });
+        } else {
+          navigate("/login", { replace: true });
+        }
+        return;
+      }
+
+      let status = normalizeStatus(userData?.application_status);
+      let isCompleted =
+        !!userData?.syndicate_profile_completed || completedStatuses.includes(status);
+
+      if (!isCompleted) {
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+          const finalUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step4/`;
+
+          const response = await fetch(finalUrl, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+              Accept: "application/json"
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const latestStatus = normalizeStatus(
+              data?.application_status ||
+              data?.profile?.application_status ||
+              data?.step_data?.application_status
+            );
+
+            if (latestStatus) {
+              status = latestStatus;
+              if (completedStatuses.includes(latestStatus)) {
+                isCompleted = true;
+                const updatedUser = {
+                  ...userData,
+                  application_status: latestStatus,
+                  syndicate_profile_completed: true
+                };
+                localStorage.setItem("userData", JSON.stringify(updatedUser));
+              }
+            }
+          }
+        } catch (error) {
+          console.error("SyndicateLayout: failed to fetch syndicate status:", error);
+        }
+      }
+
+      if (isCompleted) {
+        navigate("/manager-panel/dashboard", { replace: true });
+      }
+    };
+
+    verifySyndicateUser();
   }, [navigate]);
 
   const steps = [
@@ -57,6 +110,37 @@ const SyndicateLayout = () => {
     { id: "compliance-attestation", name: "Compliance & Attestation", path: "/syndicate-creation/compliance-attestation" },
     { id: "final-review", name: "Final Review & Submit", path: "/syndicate-creation/final-review" }
   ];
+
+  const handleLogout = () => {
+    ["accessToken", "refreshToken", "userData", "tempUserData"].forEach((key) => localStorage.removeItem(key));
+    navigate("/login", { replace: true });
+  };
+
+  const LogoutButton = ({ className = "" }) => (
+    <button
+      type="button"
+      onClick={handleLogout}
+      className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-black bg-transparent px-4 py-2 text-sm font-medium text-black transition hover:bg-black/10 ${className}`}
+    >
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M11.25 4.16666H15C16.3807 4.16666 17.5 5.28595 17.5 6.66666V13.3333C17.5 14.714 16.3807 15.8333 15 15.8333H11.25"
+          stroke="white"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M3.33301 10H12.4997M3.33301 10L6.24967 6.66666M3.33301 10L6.24967 13.3333"
+          stroke="white"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      Logout
+    </button>
+  );
 
   
   useEffect(() => {
@@ -149,6 +233,7 @@ const SyndicateLayout = () => {
                 </button>
               ))}
             </nav>
+            <LogoutButton />
           </aside>
         </div>
       )}
@@ -171,6 +256,7 @@ const SyndicateLayout = () => {
               </button>
             ))}
           </nav>
+          <LogoutButton />
         </aside>
 
         {/* Main Content Area */}
