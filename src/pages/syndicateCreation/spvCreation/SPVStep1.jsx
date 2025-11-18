@@ -102,7 +102,7 @@ const SPVStep1 = () => {
         let step1Data = null;
         let currentSpvId = null;
 
-        // Try to get SPV list first to find existing SPV ID
+        // Try to get SPV list first to find existing SPV ID that hasn't been finalized
         try {
           // Try to get user's SPVs
           const spvListUrl = `${API_URL.replace(/\/$/, "")}/spv/`;
@@ -119,72 +119,158 @@ const SPVStep1 = () => {
           // Handle paginated response or direct array
           const spvData = spvListResponse.data?.results || spvListResponse.data;
 
-          // If we get a list, use the first SPV or most recent one
+          // Check if SPV has been finalized by checking spv_status from final_review API
+          // Only "draft" status means we can use the same SPV, all other statuses mean start new
+          const checkIfSPVFinalized = async (spvId, spvStatus = null) => {
+            // First, check the final_review endpoint to get the actual spv_status
+            try {
+              const finalReviewUrl = `${API_URL.replace(/\/$/, "")}/spv/${spvId}/final_review/`;
+              const finalReviewResponse = await axios.get(finalReviewUrl, {
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`,
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                }
+              });
+              
+              // Get spv_status from the final_review response
+              const reviewData = finalReviewResponse.data;
+              const finalReviewStatus = reviewData?.spv_status || reviewData?.status;
+              
+              if (finalReviewStatus) {
+                const normalizedStatus = finalReviewStatus.toLowerCase();
+                if (normalizedStatus === 'draft') {
+                  console.log("✅ SPV", spvId, "has draft status in final_review - can use same SPV");
+                  return false; // Not finalized, can use this SPV
+                } else {
+                  console.log("⚠️ SPV", spvId, "has status:", finalReviewStatus, "in final_review - will create new SPV");
+                  return true; // Finalized (not draft), start new SPV
+                }
+              }
+              
+              // If no spv_status found in final_review, check other indicators
+              const fullSpvData = reviewData?.full_spv_data || reviewData;
+              if (fullSpvData?.submitted_at || fullSpvData?.final_submitted) {
+                console.log("⚠️ SPV", spvId, "has been submitted (found submitted_at/final_submitted) - will create new SPV");
+                return true;
+              }
+              
+              // If final_review exists but no clear status, assume not draft (start new)
+              console.log("⚠️ SPV", spvId, "final_review exists but no draft status - will create new SPV");
+              return true;
+            } catch (err) {
+              // If we can't access final_review (404), check the status from the list
+              if (err.response?.status === 404) {
+                console.log("⚠️ SPV", spvId, "final_review not found (404) - checking list status");
+                // No final review data - check status from list
+                if (spvStatus) {
+                  const normalizedStatus = spvStatus.toLowerCase();
+                  if (normalizedStatus === 'draft') {
+                    console.log("✅ SPV", spvId, "has draft status in list - can use same SPV");
+                    return false; // Draft status, can use this SPV
+                  } else {
+                    console.log("⚠️ SPV", spvId, "has status:", spvStatus, "in list - will create new SPV");
+                    return true; // Not draft, start new SPV
+                  }
+                }
+                // If no status from list either, assume not finalized (can use this SPV)
+                console.log("⚠️ SPV", spvId, "no final_review and no list status - assuming can use same SPV");
+                return false;
+              }
+              // For other errors, assume finalized to be safe (start new)
+              console.log("⚠️ Error checking SPV", spvId, "status - will create new SPV");
+              return true;
+            }
+          };
+
+          // If we get a list, find the most recent SPV that hasn't been finalized
           if (Array.isArray(spvData) && spvData.length > 0) {
-            // Sort by id (highest first) or created_at to get most recent
+            // Sort by id (highest first) or created_at to get most recent first
             const sortedSpvs = [...spvData].sort((a, b) => {
               if (a.created_at && b.created_at) {
                 return new Date(b.created_at) - new Date(a.created_at);
               }
               return (b.id || 0) - (a.id || 0);
             });
-            currentSpvId = sortedSpvs[0].id;
-            console.log("✅ Found existing SPV ID:", currentSpvId);
+
+            // Check each SPV starting from most recent to find one that's not finalized
+            for (const spv of sortedSpvs) {
+              const isFinalized = await checkIfSPVFinalized(spv.id, spv.status);
+              if (!isFinalized) {
+                currentSpvId = spv.id;
+                console.log("✅ Found unfinalized SPV ID:", currentSpvId);
+                break;
+              } else {
+                console.log("⚠️ SPV", spv.id, "has been finalized, checking next...");
+              }
+            }
+
+            // If all SPVs are finalized, we'll start a new one (currentSpvId will remain null)
+            if (!currentSpvId) {
+              console.log("ℹ️ All existing SPVs have been finalized. Starting new SPV creation.");
+            }
           } else if (spvData && spvData.id) {
-            // Single SPV object
-            currentSpvId = spvData.id;
-            console.log("✅ Found SPV ID from single object:", currentSpvId);
+            // Single SPV object - check if it's finalized
+            const isFinalized = await checkIfSPVFinalized(spvData.id, spvData.status);
+            if (!isFinalized) {
+              currentSpvId = spvData.id;
+              console.log("✅ Found unfinalized SPV ID from single object:", currentSpvId);
+            } else {
+              console.log("⚠️ SPV has been finalized. Starting new SPV creation.");
+            }
           }
         } catch (spvListError) {
           console.log("⚠️ Could not get SPV list:", spvListError.response?.status, spvListError.response?.data);
           // If we can't get SPV list, we'll try to get step1 data with default ID 1
         }
 
-        // If we have an SPV ID, try to get step1 data
-        // Otherwise, try with default ID 1 to see if it exists
-        const testSpvId = currentSpvId || 1;
-        const step1Url = `${API_URL.replace(/\/$/, "")}/spv/${testSpvId}/update_step1/`;
-        
-        try {
-          console.log("🔍 Fetching step1 data from:", step1Url);
-          const step1Response = await axios.get(step1Url, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
+        // If we have an unfinalized SPV ID, try to get step1 data
+        // Only fetch step1 data if we have a valid unfinalized SPV ID
+        if (currentSpvId) {
+          const step1Url = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/update_step1/`;
+          
+          try {
+            console.log("🔍 Fetching step1 data from:", step1Url);
+            const step1Response = await axios.get(step1Url, {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              }
+            });
+
+            console.log("✅ Step1 GET response:", step1Response.data);
+
+            if (step1Response.data && step1Response.status === 200) {
+              step1Data = step1Response.data;
+              console.log("✅ Found step1 data for SPV ID:", currentSpvId);
             }
-          });
-
-          console.log("✅ Step1 GET response:", step1Response.data);
-
-          if (step1Response.data && step1Response.status === 200) {
-            step1Data = step1Response.data;
-            // If we didn't have an SPV ID before, use the one we just tested
-            if (!currentSpvId) {
-              currentSpvId = testSpvId;
-              console.log("✅ Found SPV ID from step1 data:", currentSpvId);
+          } catch (getError) {
+            if (getError.response?.status === 404) {
+              console.log("⚠️ No step1 data found for SPV ID", currentSpvId, "(this is normal for new SPVs)");
+              // SPV exists but step1 hasn't been filled yet - this is fine, we'll use this SPV
+            } else {
+              console.error("❌ Error fetching step1 data:", getError.response?.status, getError.response?.data);
             }
           }
-        } catch (getError) {
-          if (getError.response?.status === 404) {
-            console.log("⚠️ No step1 data found for SPV ID", testSpvId, "(this is normal for new SPVs)");
-            // If we got 404 and don't have an SPV ID, we'll use the test ID (1) when submitting
-            if (!currentSpvId) {
-              currentSpvId = testSpvId;
-              console.log("ℹ️ Will use SPV ID", testSpvId, "for new submission");
-            }
-          } else {
-            console.error("❌ Error fetching step1 data:", getError.response?.status, getError.response?.data);
-          }
+        } else {
+          // No unfinalized SPV found - we'll start fresh
+          // Don't set a default SPV ID here, let the submission create a new one
+          console.log("ℹ️ No unfinalized SPV found. Will create new SPV on submission.");
         }
 
-        // Set SPV ID if we found one
+        // Set SPV ID only if we found an unfinalized one
+        // If all SPVs are finalized, currentSpvId will be null and we'll start fresh
         if (currentSpvId) {
           setSpvId(currentSpvId);
+        } else {
+          // Clear SPV ID to start fresh
+          setSpvId(null);
+          console.log("🆕 Starting fresh SPV creation (all existing SPVs are finalized)");
         }
 
         // If we got step1 data, populate the form
-        if (step1Data) {
+        if (step1Data && currentSpvId) {
           // Handle different response structures
           const responseData = step1Data.step_data || step1Data.data || step1Data;
           
@@ -251,12 +337,12 @@ const SPVStep1 = () => {
           setHasExistingData(true);
           console.log("✅ Form populated with existing step1 data:", mappedData);
         } else if (currentSpvId) {
-          // If we have an SPV ID but no step1 data, it means the SPV exists but step1 hasn't been filled yet
-          setSpvId(currentSpvId);
+          // If we have an unfinalized SPV ID but no step1 data, it means the SPV exists but step1 hasn't been filled yet
           setHasExistingData(false);
-          console.log("✅ SPV ID found but no step1 data yet:", currentSpvId);
+          console.log("✅ Unfinalized SPV ID found but no step1 data yet:", currentSpvId);
         } else {
-          console.log("⚠️ No existing SPV or step1 data found");
+          // No unfinalized SPV found - start fresh
+          console.log("🆕 Starting new SPV creation (no unfinalized SPV found)");
           setHasExistingData(false);
         }
       } catch (err) {
@@ -595,9 +681,12 @@ const SPVStep1 = () => {
                 onDrop={handleDrop}
                 className="w-full border-1 bg-[#F4F6F5] border-[#0A2A2E] rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors block"
               >
-                <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
+               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M17 8L12 3L7 8" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M12 3V15" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
                 <p className="text-sm text-gray-600">
                   Drag and drop or click to upload pitch deck (PDF, PPT, PPTX)
                 </p>

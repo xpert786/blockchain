@@ -20,8 +20,32 @@ const SPVStep6 = () => {
   const [spvId, setSpvId] = useState(null);
   const [tagInput, setTagInput] = useState("");
   const [showTagDropdown, setShowTagDropdown] = useState(false);
+  const [supportingDocumentUrl, setSupportingDocumentUrl] = useState(null);
 
   const commonTags = ["Fintech", "Healthcare", "Technology", "North America", "Europe", "Asia", "SaaS", "E-commerce", "AI/ML", "Blockchain"];
+
+  // Helper function to construct file URL from API response
+  const constructFileUrl = (filePath) => {
+    if (!filePath) return null;
+    
+    const baseDomain = "http://168.231.121.7";
+    
+    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+      return filePath;
+    } else if (filePath.startsWith('/')) {
+      if (filePath.startsWith('/api/blockchain-backend/')) {
+        return `${baseDomain}${filePath.replace(/^\/api/, '')}`;
+      } else if (filePath.startsWith('/blockchain-backend/')) {
+        return `${baseDomain}${filePath}`;
+      } else if (filePath.startsWith('/media/')) {
+        return `${baseDomain}/blockchain-backend${filePath}`;
+      } else {
+        return `${baseDomain}/blockchain-backend${filePath}`;
+      }
+    } else {
+      return `${baseDomain}/blockchain-backend/${filePath}`;
+    }
+  };
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -71,10 +95,14 @@ const SPVStep6 = () => {
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
-    setFormData(prev => ({
-      ...prev,
-      document: file
-    }));
+    if (file) {
+      setFormData(prev => ({
+        ...prev,
+        document: file
+      }));
+      // Clear existing URL when new file is selected
+      setSupportingDocumentUrl(null);
+    }
   };
 
 
@@ -202,8 +230,16 @@ const SPVStep6 = () => {
               ? responseData.deal_tags 
               : (responseData.deal_tags ? [responseData.deal_tags] : []),
             syndicateSelector: responseData.syndicate_selection || "",
-            dealMemo: responseData.deal_memo || ""
+            dealMemo: responseData.deal_memo || "",
+            document: null // Don't set file object, just URL
           };
+
+          // Handle supporting document URL
+          if (responseData.supporting_document) {
+            const documentUrl = constructFileUrl(responseData.supporting_document);
+            setSupportingDocumentUrl(documentUrl);
+            console.log("✅ Supporting document URL found:", documentUrl);
+          }
 
           setFormData(prev => ({ ...prev, ...mappedData }));
           setHasExistingData(true);
@@ -336,22 +372,88 @@ const SPVStep6 = () => {
         }
       }
 
-      // Prepare data for API - merge step6 fields with existing step5 fields
-      // Include all fields as shown in the curl command
-      const dataToSend = {
-        lp_invite_emails: existingStep5Data.lp_invite_emails,
-        lp_invite_message: existingStep5Data.lp_invite_message,
-        lead_carry_percentage: existingStep5Data.lead_carry_percentage || "",
-        investment_visibility: investmentVisibilityMap[formData.accessMode] || "hidden",
-        auto_invite_active_spvs: existingStep5Data.auto_invite_active_spvs,
-        invite_private_note: existingStep5Data.invite_private_note,
-        invite_tags: existingStep5Data.invite_tags,
-        deal_tags: formData.tags && formData.tags.length > 0 ? formData.tags : [],
-        syndicate_selection: formData.syndicateSelector || "",
-        deal_memo: formData.dealMemo || ""
-      };
+      // Check if we need to upload a document
+      const hasDocument = formData.document && formData.document instanceof File;
 
-      console.log("📤 Prepared step6 data (merged with step5):", dataToSend);
+      // Prepare data for API - merge step6 fields with existing step5 fields
+      // Use FormData if we have a document to upload, otherwise use JSON
+      let dataToSend;
+      let headers;
+
+      if (hasDocument) {
+        // Use FormData for file upload
+        dataToSend = new FormData();
+        
+        // Add all text fields
+        if (existingStep5Data.lp_invite_emails && existingStep5Data.lp_invite_emails.length > 0) {
+          existingStep5Data.lp_invite_emails.forEach(email => {
+            dataToSend.append("lp_invite_emails", email);
+          });
+        }
+        if (existingStep5Data.lp_invite_message) {
+          dataToSend.append("lp_invite_message", existingStep5Data.lp_invite_message);
+        }
+        if (existingStep5Data.lead_carry_percentage) {
+          dataToSend.append("lead_carry_percentage", existingStep5Data.lead_carry_percentage);
+        }
+        dataToSend.append("investment_visibility", investmentVisibilityMap[formData.accessMode] || "hidden");
+        dataToSend.append("auto_invite_active_spvs", existingStep5Data.auto_invite_active_spvs);
+        if (existingStep5Data.invite_private_note) {
+          dataToSend.append("invite_private_note", existingStep5Data.invite_private_note);
+        }
+        if (existingStep5Data.invite_tags && existingStep5Data.invite_tags.length > 0) {
+          existingStep5Data.invite_tags.forEach(tag => {
+            dataToSend.append("invite_tags", tag);
+          });
+        }
+        if (formData.tags && formData.tags.length > 0) {
+          formData.tags.forEach(tag => {
+            dataToSend.append("deal_tags", tag);
+          });
+        }
+        if (formData.syndicateSelector) {
+          dataToSend.append("syndicate_selection", formData.syndicateSelector);
+        }
+        if (formData.dealMemo) {
+          dataToSend.append("deal_memo", formData.dealMemo);
+        }
+        if (formData.dealName) {
+          dataToSend.append("deal_name", formData.dealName);
+        }
+
+        // Add supporting document file
+        dataToSend.append("supporting_document", formData.document);
+        console.log("📎 Supporting document will be uploaded:", formData.document.name);
+
+        // Don't set Content-Type header, let browser set it with boundary for FormData
+        headers = {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json'
+        };
+      } else {
+        // Use JSON if no file upload
+        dataToSend = {
+          lp_invite_emails: existingStep5Data.lp_invite_emails,
+          lp_invite_message: existingStep5Data.lp_invite_message,
+          lead_carry_percentage: existingStep5Data.lead_carry_percentage || "",
+          investment_visibility: investmentVisibilityMap[formData.accessMode] || "hidden",
+          auto_invite_active_spvs: existingStep5Data.auto_invite_active_spvs,
+          invite_private_note: existingStep5Data.invite_private_note,
+          invite_tags: existingStep5Data.invite_tags,
+          deal_tags: formData.tags && formData.tags.length > 0 ? formData.tags : [],
+          syndicate_selection: formData.syndicateSelector || "",
+          deal_memo: formData.dealMemo || "",
+          deal_name: formData.dealName || ""
+        };
+
+        headers = {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        };
+      }
+
+      console.log("📤 Prepared step6 data (merged with step5):", hasDocument ? "FormData with file" : dataToSend);
 
       let response;
 
@@ -359,21 +461,13 @@ const SPVStep6 = () => {
       if (hasExistingData && currentSpvId) {
         console.log("🔄 Attempting to update existing SPV step5 data with PATCH");
         response = await axios.patch(step5Url, dataToSend, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
+          headers: headers
         });
         console.log("✅ SPV step5 updated successfully with PATCH:", response.data);
       } else {
         console.log("➕ Creating new SPV step5 data with POST");
         response = await axios.post(step5Url, dataToSend, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
+          headers: headers
         });
         console.log("✅ SPV step5 created successfully with POST:", response.data);
         
@@ -383,6 +477,16 @@ const SPVStep6 = () => {
           console.log("✅ Stored SPV ID:", newSpvId);
         }
         setHasExistingData(true);
+      }
+
+      // Update supporting document URL if response includes it
+      if (response?.data) {
+        const responseData = response.data.step_data || response.data.data || response.data;
+        if (responseData.supporting_document) {
+          const documentUrl = constructFileUrl(responseData.supporting_document);
+          setSupportingDocumentUrl(documentUrl);
+          console.log("✅ Supporting document URL updated:", documentUrl);
+        }
       }
 
       // Navigate to next step on success
@@ -458,17 +562,7 @@ const SPVStep6 = () => {
 
       {/* Form Fields */}
       <div className="space-y-6">
-        {/* Deal name */}
-        <div>
-          <label className="block text-lg font-medium text-gray-800 mb-2">Deal name</label>
-          <input
-            type="text"
-            value={formData.dealName}
-            onChange={(e) => handleInputChange("dealName", e.target.value)}
-            className="w-full border border-[#0A2A2E]    rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-[#F4F6F5]"
-            placeholder="Enter your deal name"
-          />
-        </div>
+      
 
         {/* Access Mode */}
         <div>
@@ -662,7 +756,7 @@ const SPVStep6 = () => {
         <div>
           <label className="block text-lg font-medium text-gray-800 mb-2">Upload a Document</label>
           <div className={`border border-[#0A2A2E] rounded-lg p-8 text-center hover:border-gray-400 transition-colors ${
-            formData.document ? "bg-green-50 border-green-500" : "bg-[#F4F6F5]"
+            (formData.document || supportingDocumentUrl) ? "bg-green-50 border-green-500" : "bg-[#F4F6F5]"
           }`}>
             <input
               type="file"
@@ -674,9 +768,12 @@ const SPVStep6 = () => {
             {formData.document ? (
               <div className="space-y-3">
                 <div className="flex items-center justify-center">
-                  <svg className="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M17 8L12 3L7 8" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M12 3V15" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
                 </div>
                 <div className="space-y-2">
                   <p className="text-green-700 font-medium">Document uploaded successfully</p>
@@ -694,7 +791,51 @@ const SPVStep6 = () => {
                   </label>
                   <button
                     type="button"
-                    onClick={() => handleInputChange("document", null)}
+                    onClick={() => {
+                      handleInputChange("document", null);
+                      setSupportingDocumentUrl(null);
+                    }}
+                    className="px-4 py-2 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors border border-[#0A2A2E]"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ) : supportingDocumentUrl ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-center">
+                  <svg className="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-blue-700 font-medium">Document loaded from server</p>
+                  <p className="text-sm text-gray-600">
+                    {supportingDocumentUrl.split('/').pop() || "Supporting Document"}
+                  </p>
+                  <a 
+                    href={supportingDocumentUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-500 text-xs underline mt-1 inline-block hover:text-blue-700"
+                  >
+                    View existing file
+                  </a>
+                </div>
+                <div className="flex items-center justify-center gap-3 mt-4">
+                  <label
+                    htmlFor="document-upload"
+                    className="cursor-pointer px-4 py-2 text-sm bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors border border-[#0A2A2E]"
+                  >
+                    Change File
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSupportingDocumentUrl(null);
+                      const fileInput = document.getElementById("document-upload");
+                      if (fileInput) fileInput.value = "";
+                    }}
                     className="px-4 py-2 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors border border-[#0A2A2E]"
                   >
                     Remove

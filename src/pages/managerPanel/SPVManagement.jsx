@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const SPVManagement = () => {
   const [activeTab, setActiveTab] = useState("all");
@@ -7,25 +8,136 @@ const SPVManagement = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  
+  // API data states
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [summary, setSummary] = useState(null);
+  const [tabs, setTabs] = useState([]);
+  const [spvs, setSpvs] = useState([]);
 
-  // Close dropdown when clicking outside
+  // Fetch SPV data from API
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setOpenDropdown(null);
+    const fetchSPVData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const accessToken = localStorage.getItem("accessToken");
+
+        if (!accessToken) {
+          throw new Error("No access token found. Please login again.");
+        }
+
+        const response = await axios.get(`${API_URL.replace(/\/$/, "")}/spv/management/`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+
+        const data = response.data;
+
+        // Set summary data
+        setSummary(data.summary);
+
+        // Map tabs from API response
+        const mappedTabs = data.filters.available_statuses.map(status => ({
+          id: status.key === "ready_to_launch" ? "ready" : status.key === "fundraising" ? "fundraising" : status.key,
+          label: status.label,
+          count: status.count
+        }));
+        setTabs(mappedTabs);
+
+        // Map SPVs from API response
+        const mappedSPVs = data.spvs.map(spv => {
+          // Format date
+          const createdDate = new Date(spv.created_at);
+          const formattedDate = createdDate.toLocaleDateString('en-US', { 
+            month: 'numeric', 
+            day: 'numeric', 
+            year: 'numeric' 
+          });
+
+          // Format currency
+          const formatCurrency = (value) => {
+            if (value >= 1000000) {
+              return `$${(value / 1000000).toFixed(1)}M`;
+            } else if (value >= 1000) {
+              return `$${(value / 1000).toFixed(1)}K`;
+            }
+            return `$${value.toFixed(0)}`;
+          };
+
+          // Map status
+          const getStatusInfo = (status, statusLabel) => {
+            switch (status?.toLowerCase()) {
+              case "active":
+              case "fundraising":
+                return { label: "Raising", color: "bg-[#22C55E] text-white" };
+              case "ready_to_launch":
+                return { label: "Ready to Launch", color: "bg-[#FFD97A] text-white" };
+              case "closed":
+              case "closing":
+                return { label: "Closing", color: "bg-[#ED1C24] text-white" };
+              default:
+                return { label: statusLabel || "Active", color: "bg-[#22C55E] text-white" };
+            }
+          };
+
+          const statusInfo = getStatusInfo(spv.status, spv.status_label);
+          const raised = spv.my_commitment || 0;
+          const target = spv.target_amount || 0;
+          const progress = target > 0 ? Math.round((raised / target) * 100) : 0;
+
+          return {
+            id: spv.code || `SPV-${spv.id}`,
+            name: spv.name,
+            location: spv.jurisdiction || "N/A",
+            created: formattedDate,
+            category: spv.sector || spv.industry_tags?.[0] || "N/A",
+            status: statusInfo.label,
+            statusColor: statusInfo.color,
+            raised: formatCurrency(raised),
+            target: formatCurrency(target),
+            investors: spv.investor_count?.toString() || "0",
+            minInvestment: formatCurrency(spv.minimum_investment || 0),
+            progress: progress,
+            progressColor: getProgressColor(statusInfo.label),
+            rawData: spv // Keep raw data for navigation
+          };
+        });
+
+        setSpvs(mappedSPVs);
+      } catch (err) {
+        console.error("Error fetching SPV data:", err);
+        setError(err.response?.data?.detail || err.message || "Failed to fetch SPV data");
+      } finally {
+        setLoading(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+    fetchSPVData();
+  }, [activeTab]);
 
-  const metrics = [
+  // Format currency helper
+  const formatCurrency = (value) => {
+    if (!value) return "$0";
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`;
+    } else if (value >= 1000) {
+      return `$${(value / 1000).toFixed(1)}K`;
+    }
+    return `$${value.toFixed(0)}`;
+  };
+
+  // Metrics derived from summary
+  const metrics = summary ? [
     {
       title: "Total SPVs",
-      value: "12",
+      value: summary.total_spvs?.toString() || "0",
       change: "+2 this month",
       bgColor: "bg-[#D6EEF9]",
       iconColor: "text-[#01373D]",
@@ -37,19 +149,19 @@ const SPVManagement = () => {
     },
     {
       title: "Total AUM",
-      value: "$8.7M",
+      value: formatCurrency(summary.total_aum || 0),
       change: "+15.2%",
       bgColor: "bg-[#D7F8F0]",
       iconColor: "text-[#01373D]",
       icon: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 1V23M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6312 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 11.6312 16.9749 10.9749C17.6312 10.3185 18 9.42826 18 8.5C18 7.57174 17.6312 6.6815 16.9749 6.02513C16.3185 5.36875 15.4283 5 14.5 5H17Z" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="#01373D" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       )
     },
     {
       title: "Active Investors",
-      value: "74",
+      value: summary.active_investors?.toString() || "0",
       change: "+23 new",
       bgColor: "bg-[#E2E2FB]",
       iconColor: "text-[#01373D]",
@@ -61,7 +173,7 @@ const SPVManagement = () => {
     },
     {
       title: "Success Rate",
-      value: "87%",
+      value: `${summary.success_rate_percent?.toFixed(0) || 0}%`,
       change: "+5% this quarter",
       bgColor: "bg-[#FFEFE8]",
       iconColor: "text-[#01373D]",
@@ -71,77 +183,7 @@ const SPVManagement = () => {
         </svg>
       )
     }
-  ];
-
-  const tabs = [
-    { id: "all", label: "All", count: 4 },
-    { id: "ready", label: "Ready to launch", count: 1 },
-    { id: "fundraising", label: "Fundraising", count: 1 },
-    { id: "closed", label: "Closed", count: 1 }
-  ];
-
-  const spvs = [
-    {
-      id: "SPV-001",
-      name: "Tech Startup Fund Q4 2024",
-      location: "Delaware",
-      created: "1/15/2024",
-      category: "Technology",
-      status: "Raising",
-      statusColor: "bg-[#22C55E] text-white",
-      raised: "$2.4M",
-      target: "$5.0M",
-      investors: "24",
-      minInvestment: "$25,000",
-      progress: 48,
-      progressColor: "bg-[#22C55E]"
-    },
-    {
-      id: "SPV-002",
-      name: "Real Estate Opportunity Fund",
-      location: "Cayman Islands",
-      created: "1/15/2024",
-      category: "Technology",
-      status: "Ready to Launch",
-      statusColor: "bg-[#FFD97A] text-white",
-      raised: "$1.8M",
-      target: "$3.0M",
-      investors: "18",
-      minInvestment: "$50,000",
-      progress: 60,
-      progressColor: "bg-[#FFD97A]"
-    },
-    {
-      id: "SPV-003",
-      name: "Healthcare Innovation Series A",
-      location: "Singapore",
-      created: "1/15/2024",
-      category: "Technology",
-      status: "Closing",
-      statusColor: "bg-[#ED1C24] text-white",
-      raised: "$4.5M",
-      target: "$4.5M",
-      investors: "32",
-      minInvestment: "$75,000",
-      progress: 100,
-      progressColor: "bg-[#ED1C24]"
-    },
-    {
-      id: "SPV-004",
-      name: "Green Energy Infrastructure",
-      location: "Luxembourg",
-      created: "1/15/2024",
-      category: "Technology",
-      status: "Raising",
-      statusColor: "bg-[#22C55E] text-white",
-      raised: "$0.0M",
-      target: "$8.0M",
-      investors: "0",
-      minInvestment: "$100,000",
-      progress: 0,
-      progressColor: "bg-[#22C55E]"
-    }
-  ];
+  ] : [];
 
   const getProgressColor = (status) => {
     switch (status) {
@@ -163,17 +205,73 @@ const SPVManagement = () => {
     // Close dropdown menu
     setOpenDropdown(null);
     
-    // Navigate to SPV details page
+    // Navigate to SPV details page with SPV data
     console.log('Navigating to SPV Details...');
-    navigate('/manager-panel/spv-details');
+    navigate('/manager-panel/spv-details', { state: { spv: spv.rawData || spv } });
     console.log('Navigation completed!');
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Filter SPVs based on active tab
+  const filteredSPVs = spvs.filter(spv => {
+    if (activeTab === "all") return true;
+    if (activeTab === "ready") return spv.status === "Ready to Launch";
+    if (activeTab === "fundraising") return spv.status === "Raising";
+    if (activeTab === "closed") return spv.status === "Closing";
+    return true;
+  });
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F4F6F5] px-4 py-6 sm:px-6 lg:px-0 lg:mt-10 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00F0C3] mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading SPV data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#F4F6F5] px-4 py-6 sm:px-6 lg:px-0 lg:mt-10 flex items-center justify-center">
+        <div className="bg-white rounded-lg p-6 max-w-md">
+          <div className="text-red-600 mb-4">
+            <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Data</h3>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-[#00F0C3] hover:bg-[#00D4A3] text-black px-4 py-2 rounded-lg font-medium transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F4F6F5] px-4 py-6 sm:px-6 lg:px-0 lg:mt-10 space-y-6">
       {/* Header Section */}
       <div className="bg-white rounded-lg p-4 sm:p-6">
-        <h3 className="text-xl sm:text-2xl font-medium text-gray-600 mb-2">SPV Management</h3>
+        <h3 className="text-xl sm:text-2xl font-medium text-gray-600 mb-2"><span className="text-[#9889FF]">SPV</span> Management</h3>
         <p className="text-sm sm:text-base text-gray-600">Create and manage your Special Purpose Vehicles</p>
       </div>
 
@@ -199,23 +297,25 @@ const SPVManagement = () => {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-lg p-3 sm:p-4">
-        <div className="flex flex-wrap gap-2">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === tab.id
-                  ? "bg-[#00F0C3] text-black"
-                  : "bg-[#F4F6F5] text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              {tab.label} ({tab.count})
-            </button>
-          ))}
+      {tabs.length > 0 && (
+        <div className="bg-white rounded-lg p-3 sm:p-4">
+          <div className="flex flex-wrap gap-2">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === tab.id
+                    ? "bg-[#00F0C3] text-black"
+                    : "bg-[#F4F6F5] text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                {tab.label} ({tab.count})
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Search and View Controls */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -261,7 +361,12 @@ const SPVManagement = () => {
 
       {/* SPV Cards */}
       <div className="space-y-4">
-        {spvs.map((spv, index) => (
+        {filteredSPVs.length === 0 ? (
+          <div className="bg-white rounded-lg p-8 text-center">
+            <p className="text-gray-600">No SPVs found for the selected filter.</p>
+          </div>
+        ) : (
+          filteredSPVs.map((spv, index) => (
           <div key={index} className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
             {/* Header Section */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
@@ -402,7 +507,8 @@ const SPVManagement = () => {
               </div>
             </div>
           </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

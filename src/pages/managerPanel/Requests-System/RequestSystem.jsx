@@ -83,7 +83,7 @@ const RequestSystem = () => {
       {/* Header */}
       <div className="bg-white rounded-lg p-4 sm:p-6">
       <div className="mb-6">
-        <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 text-center sm:text-left">
+        <h3 className="text-xl sm:text-2xl font-medium text-gray-900 mb-2 text-center sm:text-left">
           <span className="text-[#9889FF]">Request</span> & Approval System
         </h3>
         <p className="text-sm sm:text-base text-gray-600 text-center sm:text-left">Manage approval workflows and requests</p>

@@ -525,7 +525,7 @@ const Dashboard = () => {
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Target</p>
-                      <p className="text-lg font-semibold text-gray-800">{spv.target}</p>
+                      <p className="text-xs text-gray-800">{spv.target}</p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Investors</p>

@@ -1,13 +1,121 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
 const SPVStep7 = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     legalReviewConfirmed: false,
     termsAccepted: false,
     electronicSignature: false
   });
+  const [spvData, setSpvData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [spvId, setSpvId] = useState(null);
+
+  // Helper function to construct file URL from API response
+  const constructFileUrl = (filePath) => {
+    if (!filePath) return null;
+    
+    const baseDomain = "http://168.231.121.7";
+    
+    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+      return filePath;
+    } else if (filePath.startsWith('/')) {
+      if (filePath.startsWith('/api/blockchain-backend/')) {
+        return `${baseDomain}${filePath.replace(/^\/api/, '')}`;
+      } else if (filePath.startsWith('/blockchain-backend/')) {
+        return `${baseDomain}${filePath}`;
+      } else if (filePath.startsWith('/media/')) {
+        return `${baseDomain}/blockchain-backend${filePath}`;
+      } else {
+        return `${baseDomain}/blockchain-backend${filePath}`;
+      }
+    } else {
+      return `${baseDomain}/blockchain-backend/${filePath}`;
+    }
+  };
+
+  // Fetch SPV final review data
+  useEffect(() => {
+    const fetchFinalReviewData = async () => {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          setError("No access token found. Please login again.");
+          setIsLoading(false);
+          return;
+        }
+
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        let currentSpvId = null;
+
+        // Try to get SPV ID from SPV list
+        try {
+          const spvListUrl = `${API_URL.replace(/\/$/, "")}/spv/`;
+          const spvListResponse = await axios.get(spvListUrl, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+
+          const spvData = spvListResponse.data?.results || spvListResponse.data;
+
+          if (Array.isArray(spvData) && spvData.length > 0) {
+            const sortedSpvs = [...spvData].sort((a, b) => {
+              if (a.created_at && b.created_at) {
+                return new Date(b.created_at) - new Date(a.created_at);
+              }
+              return (b.id || 0) - (a.id || 0);
+            });
+            currentSpvId = sortedSpvs[0].id;
+          } else if (spvData && spvData.id) {
+            currentSpvId = spvData.id;
+          }
+        } catch (spvListError) {
+          console.log("⚠️ Could not get SPV list:", spvListError.response?.status);
+        }
+
+        // If still no SPV ID, use 1 as default
+        if (!currentSpvId) {
+          currentSpvId = 1;
+        }
+
+        setSpvId(currentSpvId);
+
+        // Fetch final review data
+        const finalReviewUrl = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/final_review/`;
+        console.log("🔍 Fetching final review data from:", finalReviewUrl);
+
+        const response = await axios.get(finalReviewUrl, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+
+        console.log("✅ Final review response:", response.data);
+
+        if (response.data && response.status === 200) {
+          setSpvData(response.data);
+        }
+      } catch (err) {
+        console.error("Error fetching final review data:", err);
+        setError(err.response?.data?.message || err.message || "Failed to load SPV data. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFinalReviewData();
+  }, [location.pathname]);
+  
 
   const handleCheckboxChange = (field) => {
     setFormData(prev => ({
@@ -20,14 +128,167 @@ const SPVStep7 = () => {
     navigate("/syndicate-creation/spv-creation/step6");
   };
 
-  const handleSubmit = () => {
-    console.log("SPV submitted for review");
-    // Navigate to success page or next step
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      if (!spvId) {
+        throw new Error("SPV ID not found. Please try again.");
+      }
+
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      // API endpoint: /api/spv/{id}/final_submit/
+      const finalSubmitUrl = `${API_URL.replace(/\/$/, "")}/spv/${spvId}/final_submit/`;
+
+      console.log("=== SPV Final Submit API Call ===");
+      console.log("SPV ID:", spvId);
+      console.log("API URL:", finalSubmitUrl);
+      console.log("Form Data:", formData);
+
+      // Payload structure matching the API requirements
+      const dataToSend = {
+        legal_review_confirmed: formData.legalReviewConfirmed,
+        terms_accepted: formData.termsAccepted,
+        electronic_signature_confirmed: formData.electronicSignature
+      };
+
+      console.log("Request payload:", JSON.stringify(dataToSend, null, 2));
+
+      const response = await axios.post(finalSubmitUrl, dataToSend, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+
+      console.log("✅ SPV final submit successful:", response.data);
+
+      // Navigate to success page on success
+      if (response.data && response.status >= 200 && response.status < 300) {
+        navigate("/syndicate-creation/success");
+      }
+    } catch (err) {
+      console.error("SPV final submit error:", err);
+      console.error("Error response:", err.response);
+      console.error("Error status:", err.response?.status);
+      console.error("Error data:", err.response?.data);
+
+      const backendData = err.response?.data;
+
+      if (backendData) {
+        if (typeof backendData === "object") {
+          // Handle specific field errors
+          let errorMessages = [];
+
+          Object.keys(backendData).forEach(key => {
+            if (Array.isArray(backendData[key])) {
+              errorMessages.push(...backendData[key]);
+            } else if (backendData[key]) {
+              errorMessages.push(`${key}: ${backendData[key]}`);
+            }
+          });
+
+          if (errorMessages.length > 0) {
+            setError(errorMessages.join(" "));
+          } else {
+            setError("Failed to submit SPV for review. Please check your input.");
+          }
+        } else {
+          setError(String(backendData));
+        }
+      } else if (err.response?.status === 401) {
+        setError("Unauthorized. Please login again.");
+      } else if (err.response?.status === 404) {
+        setError("SPV not found. Please start from step 1.");
+      } else {
+        setError(err.message || "Failed to submit SPV for review. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handlePreview = (documentType) => {
     console.log(`Preview ${documentType} clicked`);
+    // TODO: Implement document preview functionality
   };
+
+  // Helper functions to format data for display
+  const formatCurrency = (value) => {
+    if (!value) return "N/A";
+    const num = parseFloat(value);
+    if (isNaN(num)) return value;
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(num);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  const formatPercentage = (value) => {
+    if (!value) return "N/A";
+    const num = parseFloat(value);
+    if (isNaN(num)) return value;
+    return `${num}%`;
+  };
+
+  // Get data from full_spv_data or steps
+  const getData = () => {
+    if (!spvData) return null;
+    return spvData.full_spv_data || spvData;
+  };
+
+  const data = getData();
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 lg:p-8 space-y-8">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <svg className="animate-spin w-12 h-12 text-purple-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p className="text-gray-600">Loading SPV data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 lg:p-8 space-y-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 lg:p-8 space-y-8">
@@ -36,6 +297,13 @@ const SPVStep7 = () => {
         <h1 className="text-3xl font-bold text-gray-800">Final Summary & Review</h1>
         <p className="text-gray-600">Review and approve the automatically generated legal documents for your SPV.</p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-600 text-sm">{error}</p>
+        </div>
+      )}
 
       {/* Documents Generated Successfully Banner */}
       <div className="bg-green-50 rounded-lg p-4"
@@ -188,37 +456,37 @@ const SPVStep7 = () => {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Deal Name:</span>
-                <span className="text-gray-800 font-medium">Series A Investment in TechCorp</span>
+                <span className="text-gray-800 font-medium">{data?.deal_name || "N/A"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Transaction Type:</span>
-                <span className="text-gray-800 font-medium">Primary</span>
+                <span className="text-gray-800 font-medium capitalize">{data?.transaction_type || "N/A"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Minimum Check Size:</span>
-                <span className="text-gray-800 font-medium">$10,000</span>
+                <span className="text-gray-800 font-medium">{formatCurrency(data?.minimum_lp_investment)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Management Fee:</span>
-                <span className="text-gray-800 font-medium">2%</span>
+                <span className="text-gray-600">Round Size:</span>
+                <span className="text-gray-800 font-medium">{formatCurrency(data?.round_size)}</span>
               </div>
             </div>
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Target Company:</span>
-                <span className="text-gray-800 font-medium">TechCorp Inc.</span>
+                <span className="text-gray-800 font-medium">{data?.portfolio_company_name || data?.company_name || "N/A"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Instrument Type:</span>
-                <span className="text-gray-800 font-medium">SAFE</span>
+                <span className="text-gray-800 font-medium">{data?.instrument_type_detail?.name || data?.instrument_type || "N/A"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Carry:</span>
-                <span className="text-gray-800 font-medium">15%</span>
+                <span className="text-gray-800 font-medium">{formatPercentage(data?.total_carry_percentage)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Target Close Date:</span>
-                <span className="text-gray-800 font-medium">August 15, 2025</span>
+                <span className="text-gray-800 font-medium">{formatDate(data?.target_closing_date)}</span>
               </div>
             </div>
           </div>
@@ -240,21 +508,28 @@ const SPVStep7 = () => {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Adviser Entity:</span>
-                <span className="text-gray-800 font-medium">Platform Advisers LLC</span>
+                <span className="text-gray-800 font-medium">
+                  {data?.adviser_entity === "platform_advisers" ? "Platform Advisers LLC" : 
+                   data?.adviser_entity === "self_advised" ? "Self-Advised Entity" : 
+                   data?.adviser_entity || "N/A"}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Jurisdiction:</span>
-                <span className="text-gray-800 font-medium">Delaware</span>
+                <span className="text-gray-800 font-medium">{data?.jurisdiction || "N/A"}</span>
               </div>
             </div>
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Master Partnership:</span>
-                <span className="text-gray-800 font-medium">Frontier Syndicate LP</span>
+                <span className="text-gray-800 font-medium">
+                  {data?.master_partnership_entity_detail?.name || 
+                   data?.master_partnership_entity || "N/A"}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Entity Type:</span>
-                <span className="text-gray-800 font-medium">Series LLC</span>
+                <span className="text-gray-800 font-medium">{data?.entity_type || "N/A"}</span>
               </div>
             </div>
           </div>
@@ -276,21 +551,33 @@ const SPVStep7 = () => {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Access Mode:</span>
-                <span className="text-gray-800 font-medium">Private</span>
+                <span className="text-gray-800 font-medium capitalize">
+                  {data?.access_mode === "private" ? "Private" : 
+                   data?.access_mode === "public" ? "Public" : 
+                   data?.access_mode || "N/A"}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Sectors:</span>
-                <span className="text-gray-800 font-medium">SaaS, AI, Enterprise</span>
+                <span className="text-gray-600">Tags:</span>
+                <span className="text-gray-800 font-medium">
+                  {data?.deal_tags && Array.isArray(data.deal_tags) 
+                    ? data.deal_tags.join(", ") 
+                    : data?.deal_tags || "N/A"}
+                </span>
               </div>
             </div>
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Deal Stage:</span>
-                <span className="text-gray-800 font-medium">Series A</span>
+                <span className="text-gray-800 font-medium">
+                  {data?.company_stage_detail?.name || 
+                   data?.round_detail?.name || 
+                   "N/A"}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Regions:</span>
-                <span className="text-gray-800 font-medium">North America, Europe</span>
+                <span className="text-gray-600">Country of Incorporation:</span>
+                <span className="text-gray-800 font-medium uppercase">{data?.country_of_incorporation || "N/A"}</span>
               </div>
             </div>
           </div>
@@ -366,6 +653,7 @@ const SPVStep7 = () => {
             </li>
           </ul>
         </div>
+        </div>
       </div>
 
       {/* Navigation Buttons */}
@@ -382,16 +670,28 @@ const SPVStep7 = () => {
         </button>
         <button
           onClick={handleSubmit}
-          className="bg-[#00F0C3] hover:scale-102 text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+          disabled={!formData.legalReviewConfirmed || !formData.termsAccepted || !formData.electronicSignature || isSubmitting}
+          className="bg-[#00F0C3] hover:scale-102 text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-          </svg>
-          Submit for Review
+          {isSubmitting ? (
+            <>
+              <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Submitting...
+            </>
+          ) : (
+            <>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+              Submit for Review
+            </>
+          )}
         </button>
       </div>
     </div>
-    </div> 
   );
 };
 

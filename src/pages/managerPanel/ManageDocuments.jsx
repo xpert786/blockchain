@@ -101,14 +101,17 @@ const ManageDocuments = () => {
       <div className="bg-white rounded-lg p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+            <h3 className="text-xl sm:text-2xl font-medium text-gray-900 mb-2">
               Manage <span className="text-[#9889FF]">Documents</span>
             </h3>
             <p className="text-sm sm:text-base text-gray-600">
               Manage investment documents and agreements
             </p>
           </div>
-          <button className="bg-[#00F0C3] hover:bg-[#00D4A3] text-black px-4 py-3 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
+          <button 
+            onClick={() => navigate('/manager-panel/document-template-engine')}
+            className="bg-[#00F0C3] hover:bg-[#00D4A3] text-black px-4 py-3 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+          >
             <svg
               className="w-5 h-5"
               fill="none"
