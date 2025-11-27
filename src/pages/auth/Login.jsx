@@ -99,8 +99,84 @@ const Login = () => {
         console.log("✅ Redirecting to syndicate creation (LeadInfo)");
         navigate("/syndicate-creation/lead-info");
       } else if (normalizedRole === "investor") {
-        console.log("✅ Redirecting to investor onboarding");
-        navigate("/investor-onboarding/basic-info");
+        console.log("✅ Investor role detected, checking onboarding status...");
+        
+        // Check investor profile to see if all onboarding steps are completed
+        try {
+          const accessToken = localStorage.getItem("accessToken");
+          if (!accessToken) {
+            console.log("⚠️ No access token found, redirecting to onboarding");
+            navigate("/investor-onboarding/basic-info");
+            return;
+          }
+
+          const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+          const profileUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
+          
+          console.log("Fetching investor profile from:", profileUrl);
+          
+          const profileResponse = await axios.get(profileUrl, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+
+          console.log("Profile response:", profileResponse.data);
+
+          // Handle different response formats
+          let profileData = null;
+          if (profileResponse.data?.results && Array.isArray(profileResponse.data.results) && profileResponse.data.results.length > 0) {
+            profileData = profileResponse.data.results[0];
+          } else if (profileResponse.data && typeof profileResponse.data === 'object' && !Array.isArray(profileResponse.data)) {
+            profileData = profileResponse.data;
+          } else if (Array.isArray(profileResponse.data) && profileResponse.data.length > 0) {
+            profileData = profileResponse.data[0];
+          }
+
+          if (profileData) {
+            console.log("Profile data found:", profileData);
+            
+            // Check if all 6 steps are completed
+            const stepsCompleted = [
+              profileData.step1_completed,
+              profileData.step2_completed,
+              profileData.step3_completed,
+              profileData.step4_completed,
+              profileData.step5_completed,
+              profileData.step6_completed
+            ];
+
+            const allStepsCompleted = stepsCompleted.every(step => step === true);
+            
+            console.log("Step completion status:", {
+              step1: profileData.step1_completed,
+              step2: profileData.step2_completed,
+              step3: profileData.step3_completed,
+              step4: profileData.step4_completed,
+              step5: profileData.step5_completed,
+              step6: profileData.step6_completed,
+              allCompleted: allStepsCompleted
+            });
+
+            if (allStepsCompleted) {
+              console.log("✅ All onboarding steps completed, redirecting to dashboard");
+              navigate("/investor-panel/dashboard");
+            } else {
+              console.log("⚠️ Onboarding incomplete, redirecting to onboarding");
+              navigate("/investor-onboarding/basic-info");
+            }
+          } else {
+            console.log("⚠️ No profile data found, redirecting to onboarding");
+            navigate("/investor-onboarding/basic-info");
+          }
+        } catch (profileError) {
+          console.error("Error fetching investor profile:", profileError);
+          // If profile check fails, default to onboarding
+          console.log("⚠️ Profile check failed, redirecting to onboarding");
+          navigate("/investor-onboarding/basic-info");
+        }
       } else {
         console.log("⚠️ Unknown role, defaulting to home page");
         console.log("Role value was:", normalizedRole);
