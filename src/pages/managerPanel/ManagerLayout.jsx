@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 import logoImage from "../../assets/img/image 5746.png";
 
 const ManagerLayout = () => {
@@ -110,6 +111,8 @@ const ManagerLayout = () => {
       setActiveMenu("transfers");
     } else if (path.includes("requests-system")) {
       setActiveMenu("requests-system");
+    } else if (path.includes("messages")) {
+      setActiveMenu("messages");
     } else if (path.includes("dashboard")) {
       setActiveMenu("dashboard");
     } else if (path.includes("notifications")) {
@@ -125,6 +128,7 @@ const ManagerLayout = () => {
     { id: "documents", name: "Documents", icon: "documents", path: "/manager-panel/documents" },
     { id: "transfers", name: "Transfers", icon: "transfers", path: "/manager-panel/transfers" },
     { id: "requests-system", name: "Requests System", icon: "requests", path: "/manager-panel/requests-system" },
+    { id: "messages", name: "Messages", icon: "messages", path: "/manager-panel/messages" },
     { id: "settings", name: "Settings", icon: "settings", path: "/manager-panel/settings" }
   ];
 
@@ -224,6 +228,13 @@ const ManagerLayout = () => {
           </svg>
             
         );
+      case "messages":
+        return (
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.5 12.5C17.5 12.942 17.3244 13.366 17.0118 13.6785C16.6993 13.9911 16.2754 14.1667 15.8333 14.1667H5.83333L2.5 17.5V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H15.8333C16.2754 2.5 16.6993 2.67559 17.0118 2.98816C17.3244 3.30072 17.5 3.72464 17.5 4.16667V12.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+            
+        );
       case "analytics":
         return (
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -290,7 +301,105 @@ const ManagerLayout = () => {
           {/* Actions */}
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate("/syndicate-creation/spv-creation/step1")}
+              onClick={async () => {
+                try {
+                  const accessToken = localStorage.getItem("accessToken");
+                  if (!accessToken) {
+                    navigate("/login", { replace: true });
+                    return;
+                  }
+
+                  const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+                  
+                  // Get user's SPVs to check status
+                  try {
+                    const spvListUrl = `${API_URL.replace(/\/$/, "")}/spv/`;
+                    const spvListResponse = await axios.get(spvListUrl, {
+                      headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                      }
+                    });
+
+                    const spvData = spvListResponse.data?.results || spvListResponse.data;
+                    let mostRecentSpv = null;
+
+                    if (Array.isArray(spvData) && spvData.length > 0) {
+                      // Sort by most recent first
+                      const sortedSpvs = [...spvData].sort((a, b) => {
+                        if (a.created_at && b.created_at) {
+                          return new Date(b.created_at) - new Date(a.created_at);
+                        }
+                        return (b.id || 0) - (a.id || 0);
+                      });
+                      mostRecentSpv = sortedSpvs[0];
+                    } else if (spvData && spvData.id) {
+                      mostRecentSpv = spvData;
+                    }
+
+                    // Check status of most recent SPV
+                    if (mostRecentSpv) {
+                      // Check final_review to get spv_status
+                      try {
+                        const finalReviewUrl = `${API_URL.replace(/\/$/, "")}/spv/${mostRecentSpv.id}/final_review/`;
+                        const finalReviewResponse = await axios.get(finalReviewUrl, {
+                          headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                          }
+                        });
+
+                        const reviewData = finalReviewResponse.data;
+                        const spvStatus = reviewData?.spv_status || reviewData?.status || mostRecentSpv.status;
+                        const normalizedStatus = (spvStatus || "").toLowerCase();
+
+                        if (normalizedStatus === 'draft') {
+                          // Status is draft - navigate to existing SPV
+                          console.log("✅ Found draft SPV, loading existing:", mostRecentSpv.id);
+                          navigate("/syndicate-creation/spv-creation/step1", { 
+                            state: { spvId: mostRecentSpv.id } 
+                          });
+                          return;
+                        } else {
+                          // Status is pending_review, submitted, or other - create new SPV
+                          console.log("⚠️ SPV status is", spvStatus, "- creating new SPV");
+                          navigate("/syndicate-creation/spv-creation/step1");
+                          return;
+                        }
+                      } catch (reviewError) {
+                        // If final_review doesn't exist (404), check list status
+                        if (reviewError.response?.status === 404) {
+                          const listStatus = (mostRecentSpv.status || "").toLowerCase();
+                          if (listStatus === 'draft') {
+                            console.log("✅ Found draft SPV in list, loading existing:", mostRecentSpv.id);
+                            navigate("/syndicate-creation/spv-creation/step1", { 
+                              state: { spvId: mostRecentSpv.id } 
+                            });
+                            return;
+                          }
+                        }
+                        // If error or status not draft, create new
+                        console.log("⚠️ Error checking status or status not draft - creating new SPV");
+                        navigate("/syndicate-creation/spv-creation/step1");
+                        return;
+                      }
+                    } else {
+                      // No SPV found - create newapi/spv
+                      console.log("ℹ️ No existing SPV found - creating new SPV");
+                      navigate("/syndicate-creation/spv-creation/step1");
+                    }
+                  } catch (error) {
+                    console.error("Error checking SPV status:", error);
+                    // On error, just navigate to create new SPV
+                    navigate("/syndicate-creation/spv-creation/step1");
+                  }
+                } catch (error) {
+                  console.error("Error in Create New SPV handler:", error);
+                  navigate("/syndicate-creation/spv-creation/step1");
+                }
+              }}
               className="hidden sm:inline-flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

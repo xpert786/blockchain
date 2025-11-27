@@ -53,7 +53,9 @@ import TransferTemp from "./pages/managerPanel/Transfer/TransferTemp";
 import RequestSystem from "./pages/managerPanel/Requests-System/RequestSystem";
 import RequestDetails from "./pages/managerPanel/Requests-System/RequestDetails";
 import SettingsLayout from "./pages/managerPanel/Settings/SettingsLayout";
+import ManagerMessages from "./pages/managerPanel/Messages/messages";
 import InvestorLayout from "./pages/investerPanel/InvestorLayout";
+import InvestorDashboardLayout from "./pages/investerPanel/dashbaord/InvestorDashboardLayout";
 import Welcome from "./pages/investerPanel/Welcome";
 import Accreditation from "./pages/investerPanel/Accreditation";
 import InvestmentGoals from "./pages/investerPanel/InvestmentGoals";
@@ -167,11 +169,41 @@ const App = () => {
                 <Route path="transfers" element={<TransferTemp />} />
                 <Route path="requests-system" element={<RequestSystem />} />
                 <Route path="request-details" element={<RequestDetails />} />
+                <Route path="messages" element={<ManagerMessages />} />
                 <Route path="settings/*" element={<SettingsLayout />} />
       </Route>
 
-      {/* Investor Panel Routes (with Layout) */}
-      <Route path="/investor-panel" element={<InvestorLayout />}>
+      {/* Investor Dashboard Routes (with InvestorDashboardLayout) - Protected */}
+      <Route
+        path="/investor-panel"
+        element={
+          <ProtectedRoute requiredRole="investor">
+            <InvestorDashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="dashboard" element={<InvestorDashboard />} />
+        <Route path="notifications" element={<InvestorNotifications />} />
+        <Route path="invest" element={<Invest />} />
+        <Route path="invites" element={<Invites />} />
+        <Route path="top-syndicates" element={<TopSyndicates />} />
+        <Route path="wishlist" element={<Wishlist />} />
+        <Route path="portfolio" element={<Portfolio />} />
+        <Route path="tax-documents" element={<TaxDocuments />} />
+        <Route path="tax-documents/:documentId" element={<TaxDocumentDetail />} />
+        <Route path="messages" element={<Messages />} />
+        <Route path="settings" element={<InvestorSettings />} />
+      </Route>
+
+      {/* Investor Panel Routes (with Layout) - Onboarding - Protected */}
+      <Route
+        path="/investor-panel"
+        element={
+          <ProtectedRoute requiredRole="investor">
+            <InvestorLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<Welcome />} />
         <Route path="welcome" element={<Welcome />} />
         <Route path="accreditation" element={<Accreditation />} />
@@ -179,30 +211,73 @@ const App = () => {
         <Route path="past-experience" element={<PastExperience />} />
       </Route>
 
-      {/* Thank You Page (without sidebar layout) */}
-      <Route path="/investor-panel/thank-you" element={<ThankYou />} />
+      {/* Thank You Page (without sidebar layout) - Protected */}
+      <Route
+        path="/investor-panel/thank-you"
+        element={
+          <ProtectedRoute requiredRole="investor">
+            <ThankYou />
+          </ProtectedRoute>
+        }
+      />
 
-      {/* Investor Dashboard (standalone, has own header and navigation) */}
-      <Route path="/investor-panel/dashboard" element={<InvestorDashboard />} />
-      <Route path="/investor-panel/notifications" element={<InvestorNotifications />} />
-      <Route path="/investor-panel/invest" element={<Invest />} />
-      <Route path="/investor-panel/invites" element={<Invites />} />
-      <Route path="/investor-panel/top-syndicates" element={<TopSyndicates />} />
-      <Route path="/investor-panel/wishlist" element={<Wishlist />} />
-      <Route path="/investor-panel/portfolio" element={<Portfolio />} />
-      <Route path="/investor-panel/tax-documents" element={<TaxDocuments />} />
-      <Route path="/investor-panel/tax-documents/:documentId" element={<TaxDocumentDetail />} />
-      <Route path="/investor-panel/messages" element={<Messages />} />
-      <Route path="/investor-panel/settings" element={<InvestorSettings />} />
-
-      {/* Investor Onboarding Routes (without sidebar layout, has own header) */}
-      <Route path="/investor-onboarding/basic-info" element={<BasicInfo />} />
-      <Route path="/investor-onboarding/kyc-verification" element={<KYCVerification />} />
-      <Route path="/investor-onboarding/bank-details" element={<BankDetails />} />
-      <Route path="/investor-onboarding/accreditation" element={<AccreditationOnboarding />} />
-      <Route path="/investor-onboarding/agreements" element={<AcceptAgreements />} />
-      <Route path="/investor-onboarding/final-review" element={<InvestorFinalReview />} />
-      <Route path="/investor-onboarding/confirmation" element={<Confirmation />} />
+      {/* Investor Onboarding Routes (without sidebar layout, has own header) - Protected */}
+      <Route
+        path="/investor-onboarding/basic-info"
+        element={
+          <ProtectedRoute requiredRole="investor">
+            <BasicInfo />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/investor-onboarding/kyc-verification"
+        element={
+          <ProtectedRoute requiredRole="investor">
+            <KYCVerification />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/investor-onboarding/bank-details"
+        element={
+          <ProtectedRoute requiredRole="investor">
+            <BankDetails />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/investor-onboarding/accreditation"
+        element={
+          <ProtectedRoute requiredRole="investor">
+            <AccreditationOnboarding />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/investor-onboarding/agreements"
+        element={
+          <ProtectedRoute requiredRole="investor">
+            <AcceptAgreements />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/investor-onboarding/final-review"
+        element={
+          <ProtectedRoute requiredRole="investor">
+            <InvestorFinalReview />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/investor-onboarding/confirmation"
+        element={
+          <ProtectedRoute requiredRole="investor">
+            <Confirmation />
+          </ProtectedRoute>
+        }
+      />
 
     </Routes>
   );

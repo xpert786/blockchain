@@ -1,11 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import logoImage from "../../../assets/img/logo.png";
 
 const KYCVerification = () => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState("KYC / Identity Verification");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
+  const [error, setError] = useState("");
+  const [profileId, setProfileId] = useState(null);
+  const [existingGovernmentId, setExistingGovernmentId] = useState(null); // Store existing file URL/path
   const [formData, setFormData] = useState({
     idFile: null,
     birthMonth: "",
@@ -28,12 +34,308 @@ const KYCVerification = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      console.log("File selected:", file.name, "Size:", file.size, "Type:", file.type);
+      
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (file.size > maxSize) {
+        setError(`File size exceeds 5MB limit. Selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+        e.target.value = ""; // Clear the input
+        return;
+      }
+
+      // Validate file type
+      const allowedTypes = [".pdf", ".ppt", ".pptx", ".jpg", ".jpeg", ".png"];
+      const fileExtension = "." + file.name.split(".").pop().toLowerCase();
+      if (!allowedTypes.includes(fileExtension)) {
+        setError(`File type not allowed. Please upload PDF, PPT, PPTX, JPG, JPEG, or PNG files.`);
+        e.target.value = ""; // Clear the input
+        return;
+      }
+
+      // Clear any previous errors
+      setError("");
+      
+      // Update form data with file
       handleInputChange("idFile", file);
+      console.log("File stored in formData:", file.name);
+    } else {
+      console.log("No file selected");
     }
   };
 
-  const handleContinue = () => {
+  // Fetch existing profile data on component mount
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        // Get access token from localStorage
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          console.log("No access token found, skipping profile fetch");
+          setFetching(false);
+          return;
+        }
+
+        // Get API URL from environment variable
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const finalUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
+
+        console.log("Fetching profile data from:", finalUrl);
+
+        // Make GET request to fetch profile
+        const response = await axios.get(finalUrl, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        });
+
+        console.log("Profile data fetched:", response.data);
+
+        // Check if profile data exists - API returns paginated response with results array
+        if (response.data && response.data.results && response.data.results.length > 0) {
+          const profileData = response.data.results[0]; // Get first profile from results array
+          setProfileId(profileData.id); // Store profile ID for PATCH request
+
+          console.log("Profile data to populate:", profileData);
+
+          // Check if government_id exists (could be URL, file path, or file object)
+          if (profileData.government_id) {
+            // Store the existing government ID (could be a URL string or file path)
+            const govtId = profileData.government_id;
+            setExistingGovernmentId(govtId);
+            console.log("Existing government ID found:", govtId);
+            console.log("Government ID type:", typeof govtId);
+          } else {
+            console.log("No existing government ID found in profile data");
+          }
+
+          // Parse date of birth from "2001-09-26" format to month, day, year
+          let birthMonth = "";
+          let birthDay = "";
+          let birthYear = "";
+          if (profileData.date_of_birth) {
+            const dateParts = profileData.date_of_birth.split("-");
+            if (dateParts.length === 3) {
+              birthYear = dateParts[0]; // "2001"
+              birthMonth = dateParts[1]; // "09"
+              birthDay = dateParts[2]; // "26"
+              
+              // Convert month number to month name
+              const monthNames = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+              ];
+              const monthIndex = parseInt(birthMonth) - 1;
+              if (monthIndex >= 0 && monthIndex < 12) {
+                birthMonth = monthNames[monthIndex];
+              }
+            }
+          }
+
+          // Update form data with fetched values
+          setFormData({
+            idFile: null, // New file upload (if user wants to change)
+            birthMonth: birthMonth,
+            birthDay: birthDay,
+            birthYear: birthYear,
+            streetAddress: profileData.street_address || "",
+            city: profileData.city || "",
+            state: profileData.state_province || "",
+            zipCode: profileData.zip_postal_code || "",
+            country: profileData.country || "",
+          });
+
+          console.log("Form data updated with KYC data");
+        } else {
+          // If no profile exists, we still need to get profile ID from basic info
+          // For now, we'll get it when user submits
+          console.log("No profile data found in response");
+        }
+      } catch (err) {
+        // If profile doesn't exist (404), that's okay - just don't populate
+        if (err.response?.status === 404) {
+          console.log("Profile not found, starting with empty form");
+        } else {
+          console.error("Error fetching profile:", err);
+        }
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
+
+  const handleContinue = async () => {
+    // Validate form data
+   
+    // Validate file: either new file selected OR existing file exists
+    if (!formData.idFile && !existingGovernmentId) {
+      setError("Please upload a government-issued ID");
+      return;
+    }
+    
+    if (!formData.birthMonth || !formData.birthDay || !formData.birthYear) {
+      setError("Date of birth is required");
+      return;
+    }
+    if (!formData.streetAddress.trim()) {
+      setError("Street address is required");
+      return;
+    }
+    if (!formData.city.trim()) {
+      setError("City is required");
+      return;
+    }
+    if (!formData.state.trim()) {
+      setError("State/Province is required");
+      return;
+    }
+    if (!formData.zipCode.trim()) {
+      setError("ZIP/Postal code is required");
+      return;
+    }
+    if (!formData.country) {
+      setError("Country is required");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      // Get access token from localStorage
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        setError("Authentication token not found. Please login again.");
+        setLoading(false);
+        return;
+      }
+
+      // Get profile ID if not already set
+      let currentProfileId = profileId;
+      if (!currentProfileId) {
+        // Fetch profile to get ID
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const profilesUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
+        const profileResponse = await axios.get(profilesUrl, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        });
+        
+        if (profileResponse.data?.results?.length > 0) {
+          currentProfileId = profileResponse.data.results[0].id;
+          setProfileId(currentProfileId);
+        } else {
+          setError("Profile not found. Please complete basic info first.");
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Convert month name to number (e.g., "September" -> "09")
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      const monthIndex = monthNames.indexOf(formData.birthMonth);
+      const monthNumber = monthIndex >= 0 ? String(monthIndex + 1).padStart(2, "0") : "";
+
+      // Format date of birth as "YYYY-MM-DD"
+      const dateOfBirth = `${formData.birthYear}-${monthNumber}-${String(formData.birthDay).padStart(2, "0")}`;
+
+      // Prepare FormData for multipart/form-data request
+      const formDataToSend = new FormData();
+      
+      // Only append file if a new file is selected (user wants to update/replace existing file)
+      if (formData.idFile) {
+        console.log("File to upload:", formData.idFile.name, "Size:", formData.idFile.size, "Type:", formData.idFile.type);
+        formDataToSend.append("government_id", formData.idFile);
+      } else {
+        console.log("No new file selected, keeping existing government_id");
+      }
+      
+      formDataToSend.append("date_of_birth", dateOfBirth);
+      formDataToSend.append("street_address", formData.streetAddress.trim());
+      formDataToSend.append("city", formData.city.trim());
+      formDataToSend.append("state_province", formData.state.trim());
+      formDataToSend.append("zip_postal_code", formData.zipCode.trim());
+      formDataToSend.append("country", formData.country);
+
+      // Log FormData contents (for debugging)
+      console.log("FormData contents:");
+      for (let pair of formDataToSend.entries()) {
+        if (pair[1] instanceof File) {
+          console.log(`${pair[0]}: File(${pair[1].name}, ${pair[1].size} bytes)`);
+        } else {
+          console.log(`${pair[0]}: ${pair[1]}`);
+        }
+      }
+
+      // Get API URL from environment variable
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const finalUrl = `${API_URL.replace(/\/$/, "")}/profiles/${currentProfileId}/update_step2/`;
+
+      console.log("Sending KYC data to:", finalUrl);
+      console.log("Profile ID:", currentProfileId);
+      console.log("Date of birth:", dateOfBirth);
+
+      // Make PATCH request
+      const response = await axios.patch(finalUrl, formDataToSend, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      console.log("KYC data updated successfully:", response.data);
+
+      // Navigate to next step on success
     navigate("/investor-onboarding/bank-details");
+    } catch (err) {
+      console.error("Error updating KYC data:", err);
+      console.error("Error response:", err.response);
+
+      // Handle error messages
+      const backendData = err.response?.data;
+      if (backendData) {
+        if (typeof backendData === "object") {
+          // Handle specific field errors
+          if (backendData.non_field_errors) {
+            setError(backendData.non_field_errors[0]);
+          } else if (backendData.government_id) {
+            setError(backendData.government_id[0] || "Invalid government ID file");
+          } else if (backendData.date_of_birth) {
+            setError(backendData.date_of_birth[0] || "Invalid date of birth");
+          } else if (backendData.street_address) {
+            setError(backendData.street_address[0] || "Invalid street address");
+          } else if (backendData.city) {
+            setError(backendData.city[0] || "Invalid city");
+          } else if (backendData.state_province) {
+            setError(backendData.state_province[0] || "Invalid state/province");
+          } else if (backendData.zip_postal_code) {
+            setError(backendData.zip_postal_code[0] || "Invalid ZIP/postal code");
+          } else if (backendData.country) {
+            setError(backendData.country[0] || "Invalid country");
+          } else if (backendData.detail) {
+            setError(backendData.detail);
+          } else {
+            setError(JSON.stringify(backendData));
+          }
+        } else {
+          setError(String(backendData));
+        }
+      } else {
+        setError(err.message || "Failed to save KYC data. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePrevious = () => {
@@ -86,7 +388,7 @@ const KYCVerification = () => {
               <img
                 src={logoImage}
                 alt="Unlocksley Logo"
-                className="h-16 sm:h-20 w-auto object-contain"
+                className="h-20 w-20 object-contain"
               />
             </div>
             {/* Right Side - Application Title */}
@@ -142,6 +444,20 @@ const KYCVerification = () => {
               Help us verify your identity to meet compliance and protect your investment account.
             </p>
 
+            {/* Loading indicator while fetching data */}
+            {fetching && (
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-blue-600 text-sm font-poppins-custom">Loading your KYC data...</p>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600 text-sm font-poppins-custom">{error}</p>
+              </div>
+            )}
+
             {/* Accepted IDs Highlight */}
             <div className="bg-yellow-100 border border-yellow-300 rounded-lg px-4 py-2 mb-8 inline-block text-center sm:text-left">
               <span className="text-sm text-[#0A2A2E] font-poppins-custom">
@@ -160,7 +476,22 @@ const KYCVerification = () => {
                     <path d="M8 5V8M8 11H8.01" stroke="#748A91" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
                 </label>
-                <div className="border-2 bg-[#F4F6F5] rounded-lg p-8 text-center cursor-pointer hover:border-[#9889FF] transition-colors" style={{ border: "0.5px solid #0A2A2E" }}>
+                <div 
+                  className={`border-2 rounded-lg p-8 text-center cursor-pointer transition-colors ${
+                    formData.idFile 
+                      ? "bg-green-50 border-green-400" 
+                      : existingGovernmentId
+                      ? "bg-blue-50 border-blue-400"
+                      : "bg-[#F4F6F5] hover:border-[#9889FF]"
+                  }`}
+                  style={{ 
+                    border: formData.idFile 
+                      ? "2px solid #10B981" 
+                      : existingGovernmentId
+                      ? "2px solid #3B82F6"
+                      : "0.5px solid #0A2A2E" 
+                  }}
+                >
                   <input
                     type="file"
                     id="idUpload"
@@ -168,25 +499,81 @@ const KYCVerification = () => {
                     accept=".pdf,.ppt,.pptx,.jpg,.jpeg,.png"
                     className="hidden"
                   />
-                  <label htmlFor="idUpload" className="cursor-pointer">
+                  <label htmlFor="idUpload" className="cursor-pointer block">
                     <div className="mb-4 flex justify-center"> 
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M17 8L12 3L7 8" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M12 3V15" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+                      {formData.idFile ? (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="12" cy="12" r="10" stroke="#10B981" strokeWidth="2" fill="none"/>
+                          <path d="M8 12L11 15L16 9" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      ) : existingGovernmentId ? (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M9 12L11 14L15 10" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#3B82F6" strokeWidth="2"/>
+                        </svg>
+                      ) : (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M17 8L12 3L7 8" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M12 3V15" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
                     </div>
-                    <p className="text-[#748A91] font-poppins-custom mb-2">
-                    Drag and drop or click to upload pitch deck (PDF, PPT, PPTX)
-                    </p>
-                    <p className="text-[#748A91] font-poppins-custom mb-2">Front and back in a single file, max 5MB</p>
+                    {formData.idFile ? (
+                      <>
+                        <p className="text-green-600 font-poppins-custom mb-2 font-semibold">
+                          ✓ New File Selected
+                        </p>
+                        <p className="text-[#0A2A2E] font-poppins-custom mb-2 font-medium">
+                          {formData.idFile.name}
+                        </p>
+                        <p className="text-sm text-[#748A91] font-poppins-custom">
+                          Size: {(formData.idFile.size / (1024 * 1024)).toFixed(2)} MB
+                        </p>
+                        <p className="text-sm text-[#748A91] font-poppins-custom mt-2">
+                          Click to change file
+                        </p>
+                      </>
+                    ) : existingGovernmentId ? (
+                      <>
+                        <p className="text-blue-600 font-poppins-custom mb-2 font-semibold">
+                          ✓ Government ID Already Uploaded
+                        </p>
+                        <p className="text-[#0A2A2E] font-poppins-custom mb-2 font-medium">
+                          {typeof existingGovernmentId === 'string' && existingGovernmentId.includes('/') 
+                            ? existingGovernmentId.split('/').pop() 
+                            : 'Government ID File'}
+                        </p>
+                        {typeof existingGovernmentId === 'string' && (existingGovernmentId.startsWith('http://') || existingGovernmentId.startsWith('https://')) && (
+                          <a 
+                            href={existingGovernmentId} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 underline text-sm font-poppins-custom mb-2 inline-block"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            View/Download File
+                          </a>
+                        )}
+                        <p className="text-sm text-[#748A91] font-poppins-custom mt-2">
+                          Click to upload a new file
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-[#748A91] font-poppins-custom mb-2">
+                          Drag and drop or click to upload Government ID
+                        </p>
+                        <p className="text-[#748A91] font-poppins-custom mb-2">
+                          Accepted: PDF, PPT, PPTX, JPG, JPEG, PNG (max 5MB)
+                        </p>
+                        <p className="text-[#748A91] font-poppins-custom text-sm">
+                          Front and back in a single file
+                        </p>
+                      </>
+                    )}
                   </label>
                 </div>
-                {formData.idFile && (
-                  <p className="text-sm text-[#748A91] mt-2 font-poppins-custom">
-                    Selected: {formData.idFile.name}
-                  </p>
-                )}
               </div>
 
               {/* Date of Birth */}
@@ -339,9 +726,10 @@ const KYCVerification = () => {
               </button>
               <button
                 onClick={handleContinue}
-                className="w-full sm:w-auto px-6 py-3 bg-[#00F0C3] text-black rounded-xl hover:bg-[#00C4B3] transition-colors font-medium font-poppins-custom flex items-center justify-center gap-2"
+                disabled={loading}
+                className="w-full sm:w-auto px-6 py-3 bg-[#00F0C3] text-black rounded-xl hover:bg-[#00C4B3] transition-colors font-medium font-poppins-custom flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Continue <span>→</span>
+                {loading ? "Saving..." : "Continue"} <span>→</span>
               </button>
             </div>
           </div>

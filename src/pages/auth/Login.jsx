@@ -99,8 +99,8 @@ const Login = () => {
         console.log("✅ Redirecting to syndicate creation (LeadInfo)");
         navigate("/syndicate-creation/lead-info");
       } else if (normalizedRole === "investor") {
-        console.log("✅ Redirecting to investor dashboard");
-        navigate("/investor-panel/dashboard");
+        console.log("✅ Redirecting to investor onboarding");
+        navigate("/investor-onboarding/basic-info");
       } else {
         console.log("⚠️ Unknown role, defaulting to home page");
         console.log("Role value was:", normalizedRole);

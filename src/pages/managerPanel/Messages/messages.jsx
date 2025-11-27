@@ -1,17 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import {
-  HomeIcon,
-  InvitesIcon,
-  PortfolioIcon,
-  TaxesIcon,
-  MessagesIcon,
-  SettingsIcon,
-  ShareIcon as ShareIconComponent,
-  SendIcon as SendIconComponent,
-  AlertsIcon
-} from "./icon.jsx";
 
 const ShareIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -816,7 +805,7 @@ const Messages = () => {
         <div className="mb-6 sm:mb-8 mt-5">
           <h1 className="text-2xl sm:text-3xl font-medium text-[#0A2A2E] font-poppins-custom">Messages</h1>
           <p className="text-sm text-[#748A91] font-poppins-custom">
-            Communicate with syndicate leads and support team
+            Communicate with investors and support team
           </p>
         </div>
 
@@ -856,7 +845,7 @@ const Messages = () => {
                 <div className="text-sm text-[#748A91] font-poppins-custom">No conversations found</div>
               </div>
             ) : (
-            <div className="space-y-3">
+              <div className="space-y-3">
                 {conversations.map((conversation) => {
                   // The conversation ID is at the top level: conversation.id
                   const conversationId = conversation.id;
@@ -870,20 +859,20 @@ const Messages = () => {
                   const lastMessage = conversation.last_message || {};
                   const initials = participantInfo.initials || getInitials(name);
 
-                return (
-                  <button
+                  return (
+                    <button
                       key={conversationId || `conv-${Math.random()}`}
-                    onClick={() => handleConversationSelect(conversation)}
-                    className={`w-full text-left border rounded-2xl px-4 py-3 transition-colors ${
-                      isActive ? "border-[#00F0C3] bg-[#F4FFFB]" : "border-[#E5E7EB] bg-white hover:bg-[#F9FAFB]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 flex-shrink-0 rounded-full bg-[#E5F1F0] flex items-center justify-center text-sm font-medium text-[#0A2A2E]">
-                        {initials}
-                      </div>
-                      <div className="flex-1 min-w-0 overflow-hidden">
-                        <div className="flex items-center justify-between gap-2">
+                      onClick={() => handleConversationSelect(conversation)}
+                      className={`w-full text-left border rounded-2xl px-4 py-3 transition-colors ${
+                        isActive ? "border-[#00F0C3] bg-[#F4FFFB]" : "border-[#E5E7EB] bg-white hover:bg-[#F9FAFB]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 flex-shrink-0 rounded-full bg-[#E5F1F0] flex items-center justify-center text-sm font-medium text-[#0A2A2E]">
+                          {initials}
+                        </div>
+                        <div className="flex-1 min-w-0 overflow-hidden">
+                          <div className="flex items-center justify-between gap-2">
                             <p className="text-sm font-medium text-[#0A2A2E] font-poppins-custom truncate">{name}</p>
                             {conversation.unread_count > 0 && (
                               <span className="flex-shrink-0 bg-[#00F0C3] text-[#0A2A2E] text-xs font-semibold rounded-full px-2 py-0.5">
@@ -901,12 +890,12 @@ const Messages = () => {
                               {lastMessage.content}
                             </p>
                           )}
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+                    </button>
+                  );
+                })}
+              </div>
             )}
           </aside>
 
@@ -918,20 +907,20 @@ const Messages = () => {
               </div>
             ) : (
               <>
-            {/* Mobile Back Button */}
-            <button
-              onClick={() => setShowMessageView(false)}
-              className="lg:hidden flex items-center gap-2 mb-4 text-sm text-[#0A2A2E] font-poppins-custom hover:text-[#01373D]"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              Back to Conversations
-            </button>
+                {/* Mobile Back Button */}
+                <button
+                  onClick={() => setShowMessageView(false)}
+                  className="lg:hidden flex items-center gap-2 mb-4 text-sm text-[#0A2A2E] font-poppins-custom hover:text-[#01373D]"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Back to Conversations
+                </button>
 
                 {/* Header */}
-            <header className="flex items-center justify-between border-b border-[#E5E7EB] pb-4 mb-4 gap-4">
-              <div className="flex-1 min-w-0">
+                <header className="flex items-center justify-between border-b border-[#E5E7EB] pb-4 mb-4 gap-4">
+                  <div className="flex-1 min-w-0">
                     {(() => {
                       const participantInfo = selectedConversation.participant_info || selectedConversation.other_participant || {};
                       const name = participantInfo.name || participantInfo.first_name || "Unknown";
@@ -948,8 +937,8 @@ const Messages = () => {
                         </>
                       );
                     })()}
-              </div>
-            </header>
+                  </div>
+                </header>
 
                 {/* Messages */}
                 <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-4 pr-2 max-h-[calc(70vh-200px)] min-h-0" style={{ overflowX: 'hidden' }}>
@@ -968,13 +957,13 @@ const Messages = () => {
                       const senderName = message.sender_name || message.sender?.name || 
                                         `${message.sender?.first_name || ""} ${message.sender?.last_name || ""}`.trim() || "Unknown";
                       
-                return (
-                  <div key={message.id} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
-                    <div
-                      className={`max-w-[85%] sm:max-w-lg rounded-2xl px-4 py-3 text-sm font-poppins-custom shadow-sm break-words ${
-                        isOwn ? "bg-[#D7F8F0] text-[#0A2A2E]" : "bg-[#F4F6F5] text-[#0A2A2E]"
-                      }`}
-                    >
+                      return (
+                        <div key={message.id} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
+                          <div
+                            className={`max-w-[85%] sm:max-w-lg rounded-2xl px-4 py-3 text-sm font-poppins-custom shadow-sm break-words ${
+                              isOwn ? "bg-[#D7F8F0] text-[#0A2A2E]" : "bg-[#F4F6F5] text-[#0A2A2E]"
+                            }`}
+                          >
                             {!isOwn && (
                               <p className="text-xs font-semibold mb-1 text-[#0A2A2E]">{senderName}</p>
                             )}
@@ -984,9 +973,9 @@ const Messages = () => {
                             <span className="text-xs text-[#748A91] whitespace-nowrap">
                               {message.time_ago || formatTime(message.created_at)}
                             </span>
-                    </div>
-                  </div>
-                );
+                          </div>
+                        </div>
+                      );
                     })
                   )}
                   <div ref={messagesEndRef} />
@@ -1000,10 +989,10 @@ const Messages = () => {
                 )}
 
                 {/* Message Input */}
-            <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
-              <div className="flex items-center gap-3">
-                <div className="relative flex-1">
-                        <textarea
+                <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex-1">
+                      <textarea
                         rows={2}
                         value={messageDraft}
                         onChange={(e) => {
@@ -1020,20 +1009,20 @@ const Messages = () => {
                         disabled={sending}
                         className="w-full bg-[#F4F6F5] border border-gray-300 rounded-2xl pl-12 pr-4 flex-1 align-middle text-sm font-poppins-custom focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none disabled:opacity-50"
                       />
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                    <ShareIcon />
-                  </div>
-                </div>
-                <button
-                  type="button"
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                        <ShareIcon />
+                      </div>
+                    </div>
+                    <button
+                      type="button"
                       onClick={sendMessage}
                       disabled={sending || !messageDraft.trim()}
                       className="disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <SendIcon />
-                </button>
-              </div>
-            </div>
+                    >
+                      <SendIcon />
+                    </button>
+                  </div>
+                </div>
               </>
             )}
           </section>

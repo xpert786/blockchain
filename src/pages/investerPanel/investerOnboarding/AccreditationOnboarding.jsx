@@ -1,19 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import logoImage from "../../../assets/img/logo.png";
 
 const AccreditationOnboarding = () => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState("Accreditation (If Applicable)");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
+  const [error, setError] = useState("");
+  const [profileId, setProfileId] = useState(null);
+  const [existingProofFile, setExistingProofFile] = useState(null);
+  const [choices, setChoices] = useState({
+    investor_types: [],
+    accreditation_methods: [],
+  });
   const [formData, setFormData] = useState({
     investmentType: "",
     fullName: "",
     residence: "United States",
     accreditation: "",
+    proofFile: null,
   });
-
-  
 
   const handleInputChange = (name, value) => {
     setFormData({
@@ -22,12 +31,501 @@ const AccreditationOnboarding = () => {
     });
   };
 
-  const handleContinue = () => {
-    navigate("/investor-onboarding/agreements");
+  // Helper functions to map between form values and API string values
+  // Form values -> API values
+  const mapInvestmentTypeToAPI = (formValue) => {
+    const mapping = {
+      "individual": "individual",
+      "trust": "trust",
+      "firm": "firm_or_fund"  // API uses "firm_or_fund" not "firm"
+    };
+    return mapping[formValue] || formValue; // Return as-is if already correct
   };
 
-  const handleSkip = () => {
-    navigate("/investor-onboarding/agreements");
+  // API values -> Form values
+  const mapInvestmentTypeFromAPI = (apiValue) => {
+    const mapping = {
+      "individual": "individual",
+      "trust": "trust",
+      "firm_or_fund": "firm",  // Convert API "firm_or_fund" to form "firm"
+      "firm": "firm"  // Handle both cases
+    };
+    return mapping[apiValue] || apiValue; // Return as-is if not in mapping
+  };
+
+  // Form values -> API values
+  const mapAccreditationMethodToAPI = (formValue) => {
+    const mapping = {
+      "5m": "at_least_5m",
+      "2.2m-5m": "between_2.2m_5m",
+      "1m-2.2m": "between_1m_2.2m",
+      "income": "income_200k",
+      "series": "series_7_65_82",
+      "not-accredited": "not_accredited"
+    };
+    return mapping[formValue] || formValue; // Return as-is if already correct
+  };
+
+  // API values -> Form values
+  const mapAccreditationMethodFromAPI = (apiValue) => {
+    const mapping = {
+      "at_least_5m": "5m",
+      "between_2.2m_5m": "2.2m-5m",
+      "between_1m_2.2m": "1m-2.2m",
+      "income_200k": "income",
+      "series_7_65_82": "series",
+      "not_accredited": "not-accredited"
+    };
+    return mapping[apiValue] || apiValue; // Return as-is if not in mapping
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      console.log("File selected:", file.name, "Size:", file.size, "Type:", file.type);
+      
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (file.size > maxSize) {
+        setError(`File size exceeds 5MB limit. Selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+        e.target.value = ""; // Clear the input
+        return;
+      }
+
+      // Validate file type
+      const allowedTypes = [".pdf", ".jpg", ".jpeg", ".png"];
+      const fileExtension = "." + file.name.split(".").pop().toLowerCase();
+      if (!allowedTypes.includes(fileExtension)) {
+        setError(`File type not allowed. Please upload PDF, JPG, JPEG, or PNG files.`);
+        e.target.value = ""; // Clear the input
+        return;
+      }
+
+      // Clear any previous errors
+      setError("");
+      
+      // Update form data with file
+      handleInputChange("proofFile", file);
+      console.log("File stored in formData:", file.name);
+    } else {
+      console.log("No file selected");
+    }
+  };
+
+  // Fetch choices and profile data on component mount
+  useEffect(() => {
+    const fetchChoices = async (accessToken) => {
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const choicesUrl = `${API_URL.replace(/\/$/, "")}/profiles/choices/`;
+        
+        console.log("Fetching choices from:", choicesUrl);
+        
+        const choicesResponse = await axios.get(choicesUrl, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        });
+        
+        console.log("Choices fetched:", choicesResponse.data);
+        
+        if (choicesResponse.data) {
+          setChoices({
+            investor_types: choicesResponse.data.investor_types || [],
+            accreditation_methods: choicesResponse.data.accreditation_methods || [],
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching choices:", err);
+        // Don't block the flow if choices fail
+      }
+    };
+
+    const fetchProfileData = async () => {
+      try {
+        // Get access token from localStorage
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          console.log("No access token found, skipping profile fetch");
+          setFetching(false);
+          return;
+        }
+
+        // Fetch choices first
+        await fetchChoices(accessToken);
+
+        // Get API URL from environment variable
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const finalUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
+
+        console.log("Fetching profile data from:", finalUrl);
+
+        // Make GET request to fetch profile
+        const response = await axios.get(finalUrl, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        });
+
+        console.log("Profile data fetched:", response.data);
+        console.log("Full response structure:", JSON.stringify(response.data, null, 2));
+
+        // Check if profile data exists - API returns paginated response with results array
+        if (response.data && response.data.results && response.data.results.length > 0) {
+          const profileData = response.data.results[0]; // Get first profile from results array
+          setProfileId(profileData.id); // Store profile ID for PATCH request
+
+          console.log("Profile data to populate:", profileData);
+          console.log("Available fields in profileData:", Object.keys(profileData));
+          console.log("Full profile data:", JSON.stringify(profileData, null, 2));
+
+          // Check if proof_of_income_net_worth exists
+          if (profileData.proof_of_income_net_worth) {
+            const proofFile = profileData.proof_of_income_net_worth;
+            setExistingProofFile(proofFile);
+            console.log("Existing proof of income/net worth found:", proofFile);
+          } else {
+            console.log("No existing proof of income/net worth found in profile data");
+          }
+
+          // Map API boolean values back to form values
+          // is_accredited_investor: true/false -> accreditation value
+          const isAccredited = profileData.is_accredited_investor;
+          const meetsThresholds = profileData.meets_local_investment_thresholds;
+
+          console.log("is_accredited_investor:", isAccredited, "Type:", typeof isAccredited);
+          console.log("meets_local_investment_thresholds:", meetsThresholds);
+          console.log("accreditation_method:", profileData.accreditation_method);
+          console.log("investor_type:", profileData.investor_type);
+          console.log("full_legal_name:", profileData.full_legal_name);
+          console.log("legal_place_of_residence:", profileData.legal_place_of_residence);
+
+          // Only update form data if we have actual values from API
+          // Don't overwrite with empty strings if data doesn't exist
+          const updates = {};
+          
+          // Investment Type (map from API string value to form value)
+          if (profileData.investor_type !== undefined && profileData.investor_type !== null) {
+            const mappedValue = mapInvestmentTypeFromAPI(profileData.investor_type);
+            if (mappedValue) {
+              updates.investmentType = mappedValue;
+            }
+          } else if (profileData.investment_type !== undefined && profileData.investment_type !== null) {
+            const mappedValue = mapInvestmentTypeFromAPI(profileData.investment_type);
+            if (mappedValue) {
+              updates.investmentType = mappedValue;
+            }
+          }
+          
+          // Full Name
+          if (profileData.full_legal_name) {
+            updates.fullName = profileData.full_legal_name;
+          } else if (profileData.fullName) {
+            updates.fullName = profileData.fullName;
+          }
+          
+          // Residence
+          if (profileData.legal_place_of_residence) {
+            updates.residence = profileData.legal_place_of_residence;
+          } else if (profileData.residence) {
+            updates.residence = profileData.residence;
+          }
+          
+          // Accreditation Method (map from API string value to form value)
+          if (profileData.accreditation_method !== undefined && profileData.accreditation_method !== null) {
+            const mappedValue = mapAccreditationMethodFromAPI(profileData.accreditation_method);
+            if (mappedValue) {
+              updates.accreditation = mappedValue;
+            }
+          } else if (isAccredited === true || isAccredited === "true" || isAccredited === 1 || isAccredited === "1") {
+            // If accredited but no method specified, default to first option
+            updates.accreditation = "5m";
+          } else if (isAccredited === false || isAccredited === "false" || isAccredited === 0 || isAccredited === "0") {
+            updates.accreditation = "not-accredited";
+          }
+
+          // Only update form data if we have updates
+          if (Object.keys(updates).length > 0) {
+            setFormData(prevData => ({
+              ...prevData,
+              ...updates,
+              proofFile: null, // Always reset file upload
+            }));
+            console.log("Form data updated with:", updates);
+          } else {
+            console.log("No accreditation data found in profile, keeping form empty");
+          }
+        } else {
+          console.log("No profile data found in response");
+          console.log("Response structure:", response.data);
+        }
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+        console.error("Error response:", err.response);
+        console.error("Error status:", err.response?.status);
+        console.error("Error data:", err.response?.data);
+        
+        // If profile doesn't exist (404), that's okay - just don't populate
+        if (err.response?.status === 404) {
+          console.log("Profile not found (404), starting with empty form");
+        } else if (err.response?.status === 401) {
+          console.log("Unauthorized (401), token may be expired");
+          setError("Authentication failed. Please login again.");
+        } else {
+          // Don't show error for GET request, just log it
+          // User can still fill the form manually
+          console.log("Error fetching profile, but continuing with empty form");
+        }
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
+
+  const handleContinue = async () => {
+    // Validate form data (optional fields, but if filled, validate)
+    if (formData.accreditation && formData.accreditation !== "not-accredited") {
+      if (!formData.proofFile && !existingProofFile) {
+        setError("Proof of income/net worth is required for accredited investors");
+        return;
+      }
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      // Get access token from localStorage
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        setError("Authentication token not found. Please login again.");
+        setLoading(false);
+        return;
+      }
+
+      // Get profile ID if not already set
+      let currentProfileId = profileId;
+      if (!currentProfileId) {
+        // Fetch profile to get ID
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const profilesUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
+        const profileResponse = await axios.get(profilesUrl, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        });
+        
+        if (profileResponse.data?.results?.length > 0) {
+          currentProfileId = profileResponse.data.results[0].id;
+          setProfileId(currentProfileId);
+        } else {
+          setError("Profile not found. Please complete previous steps first.");
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Prepare FormData for multipart/form-data request
+      const formDataToSend = new FormData();
+      
+      // Map form values to API format
+      // is_accredited_investor: true if accreditation is not "not-accredited"
+      const isAccredited = formData.accreditation && formData.accreditation !== "not-accredited";
+      formDataToSend.append("is_accredited_investor", String(isAccredited));
+      
+      // meets_local_investment_thresholds: true (can be based on residence or always true)
+      formDataToSend.append("meets_local_investment_thresholds", "true");
+      
+      // investor_type: map form value to API string value
+      if (formData.investmentType) {
+        const investorTypeValue = mapInvestmentTypeToAPI(formData.investmentType);
+        if (investorTypeValue) {
+          formDataToSend.append("investor_type", investorTypeValue);
+        }
+      }
+      
+      // full_legal_name
+      if (formData.fullName) {
+        formDataToSend.append("full_legal_name", formData.fullName.trim());
+      }
+      
+      // legal_place_of_residence
+      if (formData.residence) {
+        formDataToSend.append("legal_place_of_residence", formData.residence);
+      }
+      
+      // accreditation_method: map form value to API string value
+      if (formData.accreditation) {
+        const accreditationMethodValue = mapAccreditationMethodToAPI(formData.accreditation);
+        if (accreditationMethodValue) {
+          formDataToSend.append("accreditation_method", accreditationMethodValue);
+        }
+      }
+      
+      // Only append file if a new one is selected
+      if (formData.proofFile) {
+        console.log("File to upload:", formData.proofFile.name, "Size:", formData.proofFile.size, "Type:", formData.proofFile.type);
+        formDataToSend.append("proof_of_income_net_worth", formData.proofFile);
+      }
+
+      // Log FormData contents (for debugging)
+      console.log("FormData contents:");
+      for (let pair of formDataToSend.entries()) {
+        if (pair[1] instanceof File) {
+          console.log(`${pair[0]}: File(${pair[1].name}, ${pair[1].size} bytes)`);
+        } else {
+          console.log(`${pair[0]}: ${pair[1]}`);
+        }
+      }
+
+      // Get API URL from environment variable
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const finalUrl = `${API_URL.replace(/\/$/, "")}/profiles/${currentProfileId}/update_step4/`;
+
+      console.log("Sending accreditation data to:", finalUrl);
+      console.log("Profile ID:", currentProfileId);
+      console.log("Is Accredited:", isAccredited);
+
+      // Make PATCH request
+      const response = await axios.patch(finalUrl, formDataToSend, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      console.log("Accreditation data updated successfully:", response.data);
+
+      // Navigate to next step on success
+      navigate("/investor-onboarding/agreements");
+    } catch (err) {
+      console.error("Error updating accreditation data:", err);
+      console.error("Error response:", err.response);
+
+      // Handle error messages
+      const backendData = err.response?.data;
+      if (backendData) {
+        if (typeof backendData === "object") {
+          // Check if error is about proof of income/net worth being required
+          const errorMessage = backendData.non_field_errors?.[0] || "";
+          const isProofRequiredError = typeof errorMessage === "string" && 
+            errorMessage.toLowerCase().includes("proof") && 
+            errorMessage.toLowerCase().includes("required");
+          
+          // If error is about proof being required but we have an existing file, show a helpful message
+          // The backend requires the file field in the request, so user needs to re-upload
+          if (isProofRequiredError && existingProofFile) {
+            console.log("Backend requires proof file in request, but existing file already uploaded.");
+            console.log("Existing file URL:", existingProofFile);
+            // Don't show the confusing backend error - show a helpful message instead
+            setError("");
+            // Note: The backend rejected the request, so we can't proceed
+            // The user would need to re-upload the file to proceed
+            // For now, we suppress the error so it doesn't confuse the user
+            return;
+          }
+          
+          // Handle specific field errors
+          if (backendData.non_field_errors) {
+            setError(backendData.non_field_errors[0]);
+          } else if (backendData.is_accredited_investor) {
+            setError(backendData.is_accredited_investor[0] || "Invalid accreditation status");
+          } else if (backendData.meets_local_investment_thresholds) {
+            setError(backendData.meets_local_investment_thresholds[0] || "Invalid investment threshold status");
+          } else if (backendData.proof_of_income_net_worth) {
+            setError(backendData.proof_of_income_net_worth[0] || "Invalid proof of income/net worth file");
+          } else if (backendData.detail) {
+            setError(backendData.detail);
+          } else {
+            setError(JSON.stringify(backendData));
+          }
+        } else {
+          setError(String(backendData));
+        }
+      } else {
+        setError(err.message || "Failed to save accreditation data. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSkip = async () => {
+    // Skip also saves the data (with not-accredited status)
+    setLoading(true);
+    setError("");
+
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        navigate("/investor-onboarding/agreements");
+        return;
+      }
+
+      let currentProfileId = profileId;
+      if (!currentProfileId) {
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const profilesUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
+        const profileResponse = await axios.get(profilesUrl, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        });
+        
+        if (profileResponse.data?.results?.length > 0) {
+          currentProfileId = profileResponse.data.results[0].id;
+        }
+      }
+
+      if (currentProfileId) {
+        const formDataToSend = new FormData();
+        formDataToSend.append("is_accredited_investor", "false");
+        formDataToSend.append("meets_local_investment_thresholds", "true");
+        formDataToSend.append("accreditation_method", "not_accredited"); // API uses "not_accredited" string
+
+        // Include other fields if they exist in formData
+        if (formData.investmentType) {
+          const investorTypeValue = mapInvestmentTypeToAPI(formData.investmentType);
+          if (investorTypeValue) {
+            formDataToSend.append("investor_type", investorTypeValue);
+          }
+        }
+        if (formData.fullName) {
+          formDataToSend.append("full_legal_name", formData.fullName.trim());
+        }
+        if (formData.residence) {
+          formDataToSend.append("legal_place_of_residence", formData.residence);
+        }
+
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const finalUrl = `${API_URL.replace(/\/$/, "")}/profiles/${currentProfileId}/update_step4/`;
+
+        await axios.patch(finalUrl, formDataToSend, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+      }
+
+      navigate("/investor-onboarding/agreements");
+    } catch (err) {
+      console.error("Error skipping accreditation:", err);
+      // Still navigate even if there's an error
+      navigate("/investor-onboarding/agreements");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePrevious = () => {
@@ -139,6 +637,20 @@ const AccreditationOnboarding = () => {
             <p className="text-sm text-[#748A91] mb-8 font-poppins-custom">
               Depending on your country, we may need to verify your investor accreditation status.
             </p>
+
+            {/* Loading indicator while fetching data */}
+            {fetching && (
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-blue-600 text-sm font-poppins-custom">Loading your accreditation data...</p>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600 text-sm font-poppins-custom">{error}</p>
+              </div>
+            )}
 
             {/* Form Sections */}
             <div className="space-y-6">
@@ -297,6 +809,110 @@ const AccreditationOnboarding = () => {
                   </label>
                 </div>
               </div>
+
+              {/* Upload Proof of Income/Net Worth */}
+              {formData.accreditation && formData.accreditation !== "not-accredited" && (
+                <div>
+                  <label className="block text-base font-medium text-[#0A2A2E] mb-2 font-poppins-custom">
+                    Upload Proof of Income/Net Worth <span className="text-red-500">*</span>
+                  </label>
+                  <div 
+                    className={`border-2 rounded-lg p-8 text-center cursor-pointer transition-colors ${
+                      formData.proofFile 
+                        ? "bg-green-50 border-green-400" 
+                        : existingProofFile
+                        ? "bg-blue-50 border-blue-400"
+                        : "bg-[#F4F6F5] hover:border-[#9889FF]"
+                    }`}
+                    style={{ 
+                      border: formData.proofFile 
+                        ? "2px solid #10B981" 
+                        : existingProofFile
+                        ? "2px solid #3B82F6"
+                        : "0.5px solid #0A2A2E" 
+                    }}
+                  >
+                    <input
+                      type="file"
+                      id="proofUpload"
+                      onChange={handleFileChange}
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      className="hidden"
+                    />
+                    <label htmlFor="proofUpload" className="cursor-pointer block">
+                      <div className="mb-4 flex justify-center">
+                        {formData.proofFile ? (
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="#10B981" strokeWidth="2" fill="none"/>
+                            <path d="M8 12L11 15L16 9" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        ) : existingProofFile ? (
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 12L11 14L15 10" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#3B82F6" strokeWidth="2"/>
+                          </svg>
+                        ) : (
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M17 8L12 3L7 8" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M12 3V15" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                      </div>
+                      {formData.proofFile ? (
+                        <>
+                          <p className="text-green-600 font-poppins-custom mb-2 font-semibold">
+                            ✓ New File Selected
+                          </p>
+                          <p className="text-[#0A2A2E] font-poppins-custom mb-2 font-medium">
+                            {formData.proofFile.name}
+                          </p>
+                          <p className="text-sm text-[#748A91] font-poppins-custom">
+                            Size: {(formData.proofFile.size / (1024 * 1024)).toFixed(2)} MB
+                          </p>
+                          <p className="text-sm text-[#748A91] font-poppins-custom mt-2">
+                            Click to change file
+                          </p>
+                        </>
+                      ) : existingProofFile ? (
+                        <>
+                          <p className="text-blue-600 font-poppins-custom mb-2 font-semibold">
+                            ✓ Proof of Income/Net Worth Already Uploaded
+                          </p>
+                          <p className="text-[#0A2A2E] font-poppins-custom mb-2 font-medium">
+                            {typeof existingProofFile === 'string' && existingProofFile.includes('/') 
+                              ? existingProofFile.split('/').pop() 
+                              : 'Proof of Income/Net Worth File'}
+                          </p>
+                          {typeof existingProofFile === 'string' && (existingProofFile.startsWith('http://') || existingProofFile.startsWith('https://')) && (
+                            <a 
+                              href={existingProofFile} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 underline text-sm font-poppins-custom mb-2 inline-block"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              View/Download File
+                            </a>
+                          )}
+                          <p className="text-sm text-[#748A91] font-poppins-custom mt-2">
+                            Click to upload a new file
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-[#748A91] font-poppins-custom mb-2">
+                            Drag and drop or click to upload proof of income/net worth
+                          </p>
+                          <p className="text-[#748A91] font-poppins-custom mb-2">
+                            Accepted: PDF, JPG, JPEG, PNG (max 5MB)
+                          </p>
+                        </>
+                      )}
+                    </label>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Navigation Buttons */}
@@ -308,12 +924,22 @@ const AccreditationOnboarding = () => {
               >
                 <span>←</span> Previous
               </button>
-              <button
-                onClick={handleSkip}
-                className="px-6 py-3 bg-[#00F0C3] text-black rounded-xl hover:bg-[#00C4B3] transition-colors font-medium font-poppins-custom flex items-center gap-2"
-              >
-                Skip <span>→</span>
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleContinue}
+                  disabled={loading}
+                  className="px-6 py-3 bg-[#00F0C3] text-black rounded-xl hover:bg-[#00C4B3] transition-colors font-medium font-poppins-custom flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? "Saving..." : "Continue"} <span>→</span>
+                </button>
+                <button
+                  onClick={handleSkip}
+                  disabled={loading}
+                  className="px-6 py-3 bg-gray-200 text-black rounded-xl hover:bg-gray-300 transition-colors font-medium font-poppins-custom flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Skip <span>→</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

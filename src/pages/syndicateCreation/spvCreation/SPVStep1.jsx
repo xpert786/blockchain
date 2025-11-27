@@ -96,14 +96,40 @@ const SPVStep1 = () => {
 
         const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
         
-        // First, try to get the user's SPV ID or create a new SPV
-        // We'll try to get existing SPV data - the endpoint might be different for GET
-        // Try multiple possible endpoints
+        // Check if SPV ID was passed from navigation (from ManagerLayout)
+        let currentSpvId = location.state?.spvId || null;
         let step1Data = null;
-        let currentSpvId = null;
 
-        // Try to get SPV list first to find existing SPV ID that hasn't been finalized
-        try {
+        // If SPV ID was passed from navigation, use it directly
+        if (currentSpvId) {
+          console.log("✅ Using SPV ID from navigation state:", currentSpvId);
+          setSpvId(currentSpvId);
+          
+          // Try to fetch step1 data for this SPV
+          try {
+            const step1Url = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/update_step1/`;
+            const step1Response = await axios.get(step1Url, {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              }
+            });
+
+            if (step1Response.data && step1Response.status === 200) {
+              step1Data = step1Response.data;
+              console.log("✅ Found step1 data for SPV ID from navigation:", currentSpvId);
+            }
+          } catch (getError) {
+            if (getError.response?.status === 404) {
+              console.log("⚠️ No step1 data found for SPV ID from navigation (this is normal for new SPVs)");
+            } else {
+              console.error("❌ Error fetching step1 data:", getError.response?.status, getError.response?.data);
+            }
+          }
+        } else {
+          // Try to get SPV list first to find existing SPV ID that hasn't been finalized
+          try {
           // Try to get user's SPVs
           const spvListUrl = `${API_URL.replace(/\/$/, "")}/spv/`;
           const spvListResponse = await axios.get(spvListUrl, {
@@ -226,7 +252,7 @@ const SPVStep1 = () => {
 
         // If we have an unfinalized SPV ID, try to get step1 data
         // Only fetch step1 data if we have a valid unfinalized SPV ID
-        if (currentSpvId) {
+        if (currentSpvId && !step1Data) {
           const step1Url = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/update_step1/`;
           
           try {
@@ -253,11 +279,12 @@ const SPVStep1 = () => {
               console.error("❌ Error fetching step1 data:", getError.response?.status, getError.response?.data);
             }
           }
-        } else {
+        } else if (!currentSpvId) {
           // No unfinalized SPV found - we'll start fresh
           // Don't set a default SPV ID here, let the submission create a new one
           console.log("ℹ️ No unfinalized SPV found. Will create new SPV on submission.");
         }
+      }
 
         // Set SPV ID only if we found an unfinalized one
         // If all SPVs are finalized, currentSpvId will be null and we'll start fresh
@@ -367,157 +394,212 @@ const SPVStep1 = () => {
 
       const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
 
-      // If we don't have an SPV ID yet, we need to create one first or use a default
-      // For now, we'll try to use SPV ID 1 if it doesn't exist, or create a new SPV
-      let currentSpvId = spvId;
+      // Get current SPV ID from state or location
+      let currentSpvId = spvId || location.state?.spvId || null;
 
-      // If no SPV ID, try to get or use default
-      if (!currentSpvId) {
-        // Use the SPV ID from state, or try to get from API, or default to 1
-        currentSpvId = spvId;
+      // If we have an SPV ID, use update endpoint (whether it has existing data or not)
+      // Otherwise, use create endpoint to create a new SPV
+      if (currentSpvId) {
+        // Update existing SPV
+        const step1Url = `${API_URL.replace(/\/$/, "")}/api/spv/${currentSpvId}/update_step1/`;
+
+        console.log("=== SPV Step1 Update API Call ===");
+        console.log("SPV ID:", currentSpvId);
+        console.log("API URL:", step1Url);
+
+        // Prepare JSON payload (as per curl example)
+        const payload = {};
+
+        // Add text fields
+        if (formData.displayName) {
+          payload.display_name = formData.displayName;
+        }
+        if (formData.portfolioCompany) {
+          // If we have an ID, send ID, otherwise send name
+          if (formData.portfolioCompanyId) {
+            payload.portfolio_company = formData.portfolioCompanyId;
+          }
+          payload.portfolio_company_name = formData.portfolioCompany;
+        }
+        if (formData.companyStageId) {
+          payload.company_stage = formData.companyStageId;
+        } else if (formData.companyStage) {
+          // Map stage names to IDs
+          const stageMap = {
+            "pre-seed": 1,
+            "seed": 2,
+            "series-a": 3,
+            "series-b": 4,
+            "growth": 5
+          };
+          payload.company_stage = stageMap[formData.companyStage] || 1;
+        }
+        if (formData.countryOfIncorporation) {
+          payload.country_of_incorporation = formData.countryOfIncorporation;
+        }
+        if (formData.incorporationTypeId) {
+          payload.incorporation_type = formData.incorporationTypeId;
+        } else if (formData.incorporationType) {
+          // Map incorporation types to IDs
+          const typeMap = {
+            "llc": 1,
+            "corporation": 2,
+            "c-corp": 3,
+            "s-corp": 4,
+            "other": 5
+          };
+          payload.incorporation_type = typeMap[formData.incorporationType] || 1;
+        }
+        if (formData.founderEmail) {
+          payload.founder_email = formData.founderEmail;
+        }
+
+        // Handle pitch deck - if new file selected, use FormData, otherwise send null in JSON
+        if (formData.pitchDeck) {
+          // If there's a file, we need to use FormData
+          console.log("Pitch deck file will be uploaded:", formData.pitchDeck.name);
+          const formDataToSend = new FormData();
+          Object.keys(payload).forEach(key => {
+            formDataToSend.append(key, payload[key]);
+          });
+          formDataToSend.append("pitch_deck", formData.pitchDeck);
+
+          // Update existing SPV with PATCH using FormData
+          console.log("🔄 Updating existing SPV step1 data with PATCH (FormData for file upload)");
+          const response = await axios.patch(step1Url, formDataToSend, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Accept': 'application/json'
+            }
+          });
+          console.log("✅ SPV step1 updated successfully:", response.data);
+        } else {
+          // No file - use JSON payload with null for pitch_deck
+          payload.pitch_deck = null;
+          console.log("No new pitch deck file, keeping existing file");
+
+          // Update existing SPV with PATCH using JSON
+          console.log("🔄 Updating existing SPV step1 data with PATCH (JSON)");
+          console.log("Payload:", payload);
+          const response = await axios.patch(step1Url, payload, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+          console.log("✅ SPV step1 updated successfully:", response.data);
+        }
         
-        if (!currentSpvId) {
-          try {
-            // Try to get user's SPVs
-            const spvListUrl = `${API_URL.replace(/\/$/, "")}/spv/`;
-            const spvListResponse = await axios.get(spvListUrl, {
+        // Navigate to next step on success
+        navigate("/syndicate-creation/spv-creation/step2");
+      } else {
+        // Create new SPV using the create_step1 endpoint
+        const createStep1Url = `${API_URL.replace(/\/$/, "")}/spv/create_step1/`;
+
+        console.log("=== SPV Step1 Create API Call ===");
+        console.log("API URL:", createStep1Url);
+
+        // Prepare JSON payload for create endpoint (not FormData)
+        const payload = {};
+
+        // Add text fields
+        if (formData.displayName) {
+          payload.display_name = formData.displayName;
+        }
+        if (formData.portfolioCompany) {
+          // If we have an ID, send ID, otherwise send name
+          if (formData.portfolioCompanyId) {
+            payload.portfolio_company = formData.portfolioCompanyId;
+          }
+          payload.portfolio_company_name = formData.portfolioCompany;
+        }
+        if (formData.companyStageId) {
+          payload.company_stage = formData.companyStageId;
+        } else if (formData.companyStage) {
+          // Map stage names to IDs
+          const stageMap = {
+            "pre-seed": 1,
+            "seed": 2,
+            "series-a": 3,
+            "series-b": 4,
+            "growth": 5
+          };
+          payload.company_stage = stageMap[formData.companyStage] || 1;
+        }
+        if (formData.countryOfIncorporation) {
+          payload.country_of_incorporation = formData.countryOfIncorporation;
+        }
+        if (formData.incorporationTypeId) {
+          payload.incorporation_type = formData.incorporationTypeId;
+        } else if (formData.incorporationType) {
+          // Map incorporation types to IDs
+          const typeMap = {
+            "llc": 1,
+            "corporation": 2,
+            "c-corp": 3,
+            "s-corp": 4,
+            "other": 5
+          };
+          payload.incorporation_type = typeMap[formData.incorporationType] || 1;
+        }
+        if (formData.founderEmail) {
+          payload.founder_email = formData.founderEmail;
+        }
+
+        // For create endpoint, we'll need to handle file upload separately if needed
+        // For now, create without pitch deck, or use FormData if API supports it
+        console.log("➕ Creating new SPV step1 with create_step1 endpoint");
+        console.log("Payload:", payload);
+
+        // Try JSON first (as per curl example)
+        let response;
+        try {
+          response = await axios.post(createStep1Url, payload, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+          console.log("✅ SPV step1 created successfully:", response.data);
+          
+          // Update SPV ID if response includes it
+          if (response.data?.id || response.data?.spv_id) {
+            const newSpvId = response.data.id || response.data.spv_id;
+            setSpvId(newSpvId);
+            console.log("✅ Stored new SPV ID:", newSpvId);
+            setHasExistingData(true);
+          }
+        } catch (createError) {
+          // If JSON fails and we have a file, try FormData
+          if (formData.pitchDeck && createError.response?.status === 400) {
+            console.log("⚠️ JSON create failed, trying with FormData for file upload");
+            const formDataToSend = new FormData();
+            Object.keys(payload).forEach(key => {
+              formDataToSend.append(key, payload[key]);
+            });
+            formDataToSend.append("pitch_deck", formData.pitchDeck);
+            
+            response = await axios.post(createStep1Url, formDataToSend, {
               headers: {
                 'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
                 'Accept': 'application/json'
               }
             });
-
-            // Handle paginated response or direct array
-            const spvData = spvListResponse.data?.results || spvListResponse.data;
-
-            if (Array.isArray(spvData) && spvData.length > 0) {
-              const sortedSpvs = [...spvData].sort((a, b) => {
-                if (a.created_at && b.created_at) {
-                  return new Date(b.created_at) - new Date(a.created_at);
-                }
-                return (b.id || 0) - (a.id || 0);
-              });
-              currentSpvId = sortedSpvs[0].id;
-              console.log("✅ Found SPV ID from list:", currentSpvId);
-            } else if (spvData && spvData.id) {
-              currentSpvId = spvData.id;
-              console.log("✅ Found SPV ID from single object:", currentSpvId);
+            console.log("✅ SPV step1 created successfully with FormData:", response.data);
+            
+            if (response.data?.id || response.data?.spv_id) {
+              const newSpvId = response.data.id || response.data.spv_id;
+              setSpvId(newSpvId);
+              console.log("✅ Stored new SPV ID:", newSpvId);
+              setHasExistingData(true);
             }
-          } catch (spvError) {
-            console.log("⚠️ Could not get SPV list:", spvError.response?.status);
-          }
-
-          // If still no SPV ID, use 1 as default (as shown in curl)
-          if (!currentSpvId) {
-            currentSpvId = 1;
-            console.log("ℹ️ Using default SPV ID: 1");
+          } else {
+            throw createError;
           }
         }
-
-        setSpvId(currentSpvId);
       }
-
-      const step1Url = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/update_step1/`;
-
-      console.log("=== SPV Step1 API Call ===");
-      console.log("Has Existing Data:", hasExistingData);
-      console.log("SPV ID:", currentSpvId);
-      console.log("API URL:", step1Url);
-
-      // Create FormData for file upload
-      const formDataToSend = new FormData();
-
-      // Add text fields
-      if (formData.displayName) {
-        formDataToSend.append("display_name", formData.displayName);
-      }
-      if (formData.portfolioCompany) {
-        // If we have an ID, send ID, otherwise send name
-        if (formData.portfolioCompanyId) {
-          formDataToSend.append("portfolio_company", formData.portfolioCompanyId);
-        }
-        formDataToSend.append("portfolio_company_name", formData.portfolioCompany);
-      }
-      if (formData.companyStageId) {
-        formDataToSend.append("company_stage", formData.companyStageId);
-      } else if (formData.companyStage) {
-        // Map stage names to IDs (you may need to adjust this based on your API)
-        const stageMap = {
-          "pre-seed": 1,
-          "seed": 2,
-          "series-a": 3,
-          "series-b": 4,
-          "growth": 5
-        };
-        const stageId = stageMap[formData.companyStage] || 1;
-        formDataToSend.append("company_stage", stageId);
-      }
-      if (formData.countryOfIncorporation) {
-        formDataToSend.append("country_of_incorporation", formData.countryOfIncorporation);
-      }
-      if (formData.incorporationTypeId) {
-        formDataToSend.append("incorporation_type", formData.incorporationTypeId);
-      } else if (formData.incorporationType) {
-        // Map incorporation types to IDs (you may need to adjust this based on your API)
-        const typeMap = {
-          "llc": 1,
-          "corporation": 2,
-          "c-corp": 3,
-          "s-corp": 4,
-          "other": 5
-        };
-        const typeId = typeMap[formData.incorporationType] || 1;
-        formDataToSend.append("incorporation_type", typeId);
-      }
-      if (formData.founderEmail) {
-        formDataToSend.append("founder_email", formData.founderEmail);
-      }
-
-      // Add pitch deck file if a new one is selected
-      if (formData.pitchDeck) {
-        formDataToSend.append("pitch_deck", formData.pitchDeck);
-        console.log("Pitch deck file will be uploaded:", formData.pitchDeck.name);
-      } else if (!hasExistingData) {
-        // For new data, file is optional
-        console.log("No pitch deck file for new data");
-      } else {
-        // For update, if no new file, don't send (keeps existing file)
-        console.log("No new pitch deck file, keeping existing file");
-      }
-
-      let response;
-
-      // Use PATCH if we have existing data, otherwise POST
-      if (hasExistingData && currentSpvId) {
-        console.log("🔄 Updating existing SPV step1 data with PATCH");
-        response = await axios.patch(step1Url, formDataToSend, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Accept': 'application/json'
-          }
-        });
-        console.log("✅ SPV step1 updated successfully:", response.data);
-      } else {
-        console.log("➕ Creating new SPV step1 data with POST");
-        response = await axios.post(step1Url, formDataToSend, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Accept': 'application/json'
-          }
-        });
-        console.log("✅ SPV step1 created successfully:", response.data);
-        // Update SPV ID if response includes it
-        if (response.data?.id || response.data?.spv_id) {
-          const newSpvId = response.data.id || response.data.spv_id;
-          setSpvId(newSpvId);
-          console.log("✅ Stored SPV ID:", newSpvId);
-        }
-        setHasExistingData(true);
-      }
-
-      // Navigate to next step on success
-      navigate("/syndicate-creation/spv-creation/step2");
     } catch (err) {
       console.error("SPV step1 error:", err);
       const backendData = err.response?.data;
