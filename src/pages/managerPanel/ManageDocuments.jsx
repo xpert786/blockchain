@@ -1,81 +1,222 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Files2Icon, WatchsIcon, SecondFilesIcon,RightssIcon,View1Icon,View2Icon,View3Icon, FilesaddIcon } from "../../components/Icons";
 
 const ManageDocuments = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const documents = [
-    {
-      id: 1,
-      title: "Investment Agreement - Tech Startup Fund Q4",
-      subtitle: "Investment Agreement • John Manager • 3/15/2024 • SPV-001",
-      documentId: "DOC-001",
-      version: "v1.2",
-      fileSize: "2.4 MB",
-      signatories: 24,
-      status: "Signed",
-      statusColor: "bg-green-100 text-green-800",
-      alert: null
-    },
-    {
-      id: 2,
-      title: "KYC Documentation - Sarah Connor",
-      subtitle: "KYC Document • Sarah Connor • 3/14/2024",
-      documentId: "DOC-002",
-      version: "v1.0",
-      fileSize: "3.1 MB",
-      signatories: 0,
-      status: "Pending Review",
-      statusColor: "bg-orange-100 text-orange-800",
-      alert: "Document Requires Admin Review"
-    },
-    {
-      id: 3,
-      title: "Term Sheet - Real Estate Opportunity",
-      subtitle: "Term Sheet • Sarah Wilson • 3/10/2024 • SPV-002",
-      documentId: "DOC-003",
-      version: "v2.1",
-      fileSize: "1.8 MB",
-      signatories: 0,
-      status: "Draft",
-      statusColor: "bg-gray-100 text-gray-800",
-      alert: null
-    },
-    {
-      id: 4,
-      title: "Compliance Report Q1 2024",
-      subtitle: "Compliance Report • Admin User • 3/10/2024",
-      documentId: "DOC-004",
-      version: "v1.0",
-      fileSize: "5.2 MB",
-      signatories: 3,
-      status: "Approved",
-      statusColor: "bg-purple-100 text-purple-800",
-      alert: null
-    },
-    {
-      id: 5,
-      title: "Transfer Agreement - Alice To Bob",
-      subtitle: "Transfer Agreement • Alice Investor • 3/9/2024 • SPV-003",
-      documentId: "DOC-005",
-      version: "v1.0",
-      fileSize: "1.2 MB",
-      signatories: 1,
-      status: "Pending Signature",
-      statusColor: "bg-orange-100 text-orange-800",
-      alert: "Waiting For Signatures From 1 Parties"
+  // Get API URL
+  const getApiUrl = () => {
+    const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+    return `${API_URL.replace(/\/$/, "")}`;
+  };
+
+  // Get access token
+  const getAccessToken = () => {
+    return localStorage.getItem("accessToken");
+  };
+
+  // Format date from ISO string to readable format
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit' 
+      });
+    } catch (e) {
+      return dateString;
     }
-  ];
+  };
+
+  // Map API status to display status
+  const getStatusInfo = (status) => {
+    switch (status?.toLowerCase()) {
+      case "pending_signatures":
+      case "pending_signature":
+        return {
+          status: "Pending Signature",
+          statusColor: "bg-orange-100 text-orange-800",
+          tab: "pending"
+        };
+      case "signed":
+      case "completed":
+        return {
+          status: "Signed",
+          statusColor: "bg-green-100 text-green-800",
+          tab: "signed"
+        };
+      case "draft":
+        return {
+          status: "Draft",
+          statusColor: "bg-gray-100 text-gray-800",
+          tab: "drafts"
+        };
+      case "approved":
+        return {
+          status: "Approved",
+          statusColor: "bg-purple-100 text-purple-800",
+          tab: "all"
+        };
+      default:
+        return {
+          status: status || "Unknown",
+          statusColor: "bg-gray-100 text-gray-800",
+          tab: "all"
+        };
+    }
+  };
+
+  // Format file size
+  const formatFileSize = (mb) => {
+    if (!mb && mb !== 0) return "N/A";
+    if (mb === 0) return "0 MB";
+    if (mb < 1) return `${(mb * 1024).toFixed(0)} KB`;
+    return `${mb.toFixed(1)} MB`;
+  };
+
+  // Fetch documents from API
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const API_URL = getApiUrl();
+        const accessToken = getAccessToken();
+        
+        if (!accessToken) {
+          throw new Error("No access token found. Please login again.");
+        }
+
+        const response = await axios.get(`${API_URL}/documents/generated-documents/`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+
+        console.log("Documents fetched:", response.data);
+        
+        // Handle different response formats
+        let documentsData = [];
+        if (Array.isArray(response.data)) {
+          documentsData = response.data;
+        } else if (response.data?.results) {
+          documentsData = response.data.results;
+        } else if (response.data?.data) {
+          documentsData = response.data.data;
+        }
+
+        // Map API response to component format
+        const mappedDocuments = documentsData.map((doc) => {
+          const docDetail = doc.generated_document_detail || {};
+          const templateDetail = doc.template_detail || {};
+          const generatedByDetail = doc.generated_by_detail || {};
+          const statusInfo = getStatusInfo(docDetail.status);
+          
+          // Build subtitle
+          const subtitleParts = [
+            templateDetail.name || docDetail.title || "Document",
+            generatedByDetail.full_name || generatedByDetail.username || "Unknown",
+            formatDate(docDetail.created_at || doc.generated_at)
+          ];
+          const subtitle = subtitleParts.join(' • ');
+
+          // Build alert message
+          let alert = null;
+          if (statusInfo.status === "Pending Signature" && docDetail.pending_signatures_count > 0) {
+            alert = `Waiting For Signatures From ${docDetail.pending_signatures_count} ${docDetail.pending_signatures_count === 1 ? 'Party' : 'Parties'}`;
+          }
+
+          return {
+            id: doc.id,
+            title: docDetail.title || templateDetail.name || "Untitled Document",
+            subtitle: subtitle,
+            documentId: docDetail.document_id || `DOC-${doc.id}`,
+            version: docDetail.version || templateDetail.version || "v1.0",
+            fileSize: formatFileSize(docDetail.file_size_mb),
+            signatories: docDetail.signatories_count || 0,
+            status: statusInfo.status,
+            statusColor: statusInfo.statusColor,
+            alert: alert,
+            templateId: doc.template,
+            documentType: docDetail.document_type,
+            enableDigitalSignature: doc.enable_digital_signature || false,
+            originalData: doc
+          };
+        });
+
+        setDocuments(mappedDocuments);
+      } catch (err) {
+        console.error("Error fetching documents:", err);
+        const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Failed to load documents";
+        setError(errorMessage);
+        setDocuments([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDocuments();
+  }, []);
+
+  // Calculate tab counts
+  const tabCounts = {
+    all: documents.length,
+    pending: documents.filter(doc => doc.status === "Pending Signature" || doc.status === "Pending Review").length,
+    signed: documents.filter(doc => doc.status === "Signed" || doc.status === "Completed").length,
+    drafts: documents.filter(doc => doc.status === "Draft").length
+  };
 
   const tabs = [
-    { id: "all", label: "All", count: 5 },
-    { id: "pending", label: "Pending", count: 2 },
-    { id: "signed", label: "Signed", count: 0 },
-    { id: "drafts", label: "Drafts", count: 1 }
+    { id: "all", label: "All", count: tabCounts.all },
+    { id: "pending", label: "Pending", count: tabCounts.pending },
+    { id: "signed", label: "Signed", count: tabCounts.signed },
+    { id: "drafts", label: "Drafts", count: tabCounts.drafts }
   ];
+
+  // Filter documents based on active tab and search query
+  const filteredDocuments = documents.filter((doc) => {
+    // Filter by tab
+    if (activeTab === "pending") {
+      if (doc.status !== "Pending Signature" && doc.status !== "Pending Review") return false;
+    } else if (activeTab === "signed") {
+      if (doc.status !== "Signed" && doc.status !== "Completed") return false;
+    } else if (activeTab === "drafts") {
+      if (doc.status !== "Draft") return false;
+    }
+
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      return (
+        doc.title?.toLowerCase().includes(query) ||
+        doc.documentId?.toLowerCase().includes(query) ||
+        doc.subtitle?.toLowerCase().includes(query)
+      );
+    }
+
+    return true;
+  });
+
+  // Calculate summary statistics
+  const summaryStats = {
+    total: documents.length,
+    pendingSignatures: documents.filter(doc => doc.status === "Pending Signature").length,
+    signed: documents.filter(doc => doc.status === "Signed" || doc.status === "Completed").length,
+    finalized: documents.filter(doc => doc.status === "Signed" || doc.status === "Completed" || doc.status === "Approved").length
+  };
 
   const handleViewDetails = (document) => {
     navigate('/manager-panel/document-template-engine', { state: { document } });
@@ -138,8 +279,8 @@ const ManageDocuments = () => {
                 <Files2Icon />
               </div>
               <div className="flex items-center justify-between">
-                <p className="text-2xl font-bold text-gray-900">5</p>
-                <p className="text-xs text-green-600">+8 this month</p>
+                <p className="text-2xl font-bold text-gray-900">{summaryStats.total}</p>
+                <p className="text-xs text-green-600">Total</p>
               </div>
             </div>
           </div>
@@ -151,8 +292,8 @@ const ManageDocuments = () => {
                 <WatchsIcon />
               </div>
               <div className="flex items-center justify-between">
-                <p className="text-2xl font-bold text-gray-900">1</p>
-                <p className="text-xs text-green-600">2 urgent</p>
+                <p className="text-2xl font-bold text-gray-900">{summaryStats.pendingSignatures}</p>
+                <p className="text-xs text-green-600">{summaryStats.pendingSignatures > 0 ? `${summaryStats.pendingSignatures} urgent` : 'All clear'}</p>
               </div>
             </div>
           </div>
@@ -164,8 +305,8 @@ const ManageDocuments = () => {
                 <SecondFilesIcon />
               </div>
               <div className="flex items-center justify-between">
-                <p className="text-2xl font-bold text-gray-900">1</p>
-                <p className="text-xs text-green-600">+5 this week</p>
+                <p className="text-2xl font-bold text-gray-900">{summaryStats.signed}</p>
+                <p className="text-xs text-green-600">Completed</p>
               </div>
             </div>
           </div>
@@ -177,8 +318,8 @@ const ManageDocuments = () => {
                 <RightssIcon />
               </div>
               <div className="flex items-center justify-between">
-                <p className="text-2xl font-bold text-gray-900">10</p>
-                <p className="text-xs text-green-600">+5 this week</p>
+                <p className="text-2xl font-bold text-gray-900">{summaryStats.finalized}</p>
+                <p className="text-xs text-green-600">Finalized</p>
               </div>
             </div>
           </div>
@@ -209,7 +350,9 @@ const ManageDocuments = () => {
         <div className="relative w-full md:max-w-md">
           <input
             type="text"
-            placeholder="Search SPVs by name, ID, or focus area..."
+            placeholder="Search documents by name, ID, or title..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none"
           />
           <svg
@@ -234,9 +377,46 @@ const ManageDocuments = () => {
         </div>
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#00F0C3] mb-4"></div>
+            <p className="text-sm text-gray-600">Loading documents...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && !loading && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-sm text-red-600">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && !error && filteredDocuments.length === 0 && (
+        <div className="bg-white rounded-lg p-12 flex flex-col items-center justify-center">
+          <div className="w-16 h-16 text-gray-400 mb-4">
+            <FilesaddIcon />
+          </div>
+          <p className="text-lg font-medium text-gray-600">No documents found</p>
+          <p className="text-sm text-gray-500 mt-2">
+            {searchQuery ? "Try adjusting your search query" : "Create your first document"}
+          </p>
+        </div>
+      )}
+
       {/* Documents List */}
-      <div className="space-y-4">
-        {documents.map((doc) => (
+      {!loading && !error && filteredDocuments.length > 0 && (
+        <div className="space-y-4">
+          {filteredDocuments.map((doc) => (
           <div key={doc.id} className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
               <div className="flex-1">
@@ -419,8 +599,9 @@ const ManageDocuments = () => {
               </div>
             </div>
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
