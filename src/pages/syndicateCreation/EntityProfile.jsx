@@ -442,19 +442,7 @@ const EntityProfile = () => {
           )}
         </div>
 
-        {/* Add Team Members Button */}
-        <div>
-          <button
-            type="button"
-            onClick={() => setShowTeamModal(true)}
-            className="bg-[#CEC6FF] hover:bg-purple-600 text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Add Team Members
-          </button>
-        </div>
+        
       </div>
 
       {/* Navigation Buttons */}

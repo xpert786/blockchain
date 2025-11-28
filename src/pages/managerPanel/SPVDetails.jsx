@@ -78,7 +78,7 @@ const SPVDetails = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F4F6F5] p-6">
+    <div className="min-h-screen bg-[#F4F6F5] p-6 pt-10">
       {/* Success Message */}
       
       

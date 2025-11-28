@@ -42,7 +42,7 @@ const getStatusBadgeColor = (status = "") => {
 
 const getPendingStatusDot = (status = "") => {
   const normalized = status.toLowerCase();
-  if (normalized.includes("kyc")) return "bg-[#9FD2FF]";
+  if (normalized.includes("KYB")) return "bg-[#9FD2FF]";
   if (normalized.includes("closing")) return "bg-[#82EEAA]";
   if (normalized.includes("document")) return "bg-[#FFD97A]";
   return "bg-[#E2E2FB]";
@@ -167,7 +167,7 @@ const fallbackPendingActions = [
     },
     {
       id: "PA-003",
-      type: "KYC Verification",
+      type: "KYB Verification",
       user: "Bob Johnson",
       project: "Healthcare Innovation",
       amount: "$100,000",
@@ -197,6 +197,12 @@ const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [showDocumentsModal, setShowDocumentsModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selectedSpv, setSelectedSpv] = useState(null);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -272,7 +278,40 @@ const Dashboard = () => {
       statusColor: getStatusBadgeColor(spv.status_label || spv.status)
     })) ?? null;
 
-  const spvs = mappedSpvs && mappedSpvs.length > 0 ? mappedSpvs : fallbackSpvs;
+  const allSpvs = mappedSpvs && mappedSpvs.length > 0 ? mappedSpvs : fallbackSpvs;
+
+  // Filter SPVs based on search query and status filter
+  const spvs = useMemo(() => {
+    if (!allSpvs) return [];
+    
+    let filtered = allSpvs;
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((spv) => {
+        return (
+          spv.name?.toLowerCase().includes(query) ||
+          spv.id?.toLowerCase().includes(query) ||
+          spv.status?.toLowerCase().includes(query)
+        );
+      });
+    }
+
+    // Apply status filter
+    if (filterStatus !== "all") {
+      filtered = filtered.filter((spv) => {
+        const status = (spv.status || "").toLowerCase();
+        if (filterStatus === "raising") return status.includes("raising");
+        if (filterStatus === "ready") return status.includes("ready");
+        if (filterStatus === "closing") return status.includes("closing");
+        if (filterStatus === "draft") return status.includes("draft");
+        return true;
+      });
+    }
+
+    return filtered;
+  }, [allSpvs, searchQuery, filterStatus]);
 
   const mappedPendingActions =
     dashboardData?.sections?.pending_actions?.map((action) => ({
@@ -297,8 +336,12 @@ const Dashboard = () => {
   const statusBreakdown = analyticsData?.status_breakdown ?? fallbackAnalytics.status_breakdown;
   const analyticsActiveInvestors = analyticsData?.active_investors ?? fallbackAnalytics.active_investors;
   const progressCircumference = 2 * Math.PI * 40;
+  // Calculate progress percentage: funds raised vs target
+  const fundsRaisedPercent = totalTargetAmount > 0 
+    ? Math.min((totalFundsRaised / totalTargetAmount) * 100, 100)
+    : 0;
   const progressOffset =
-    progressCircumference * (1 - Math.min(Math.max(averageProgressPercent, 0), 100) / 100);
+    progressCircumference * (1 - Math.min(Math.max(fundsRaisedPercent, 0), 100) / 100);
 
   const getProgressColor = (status = "") => {
     const normalized = status.toLowerCase();
@@ -382,10 +425,10 @@ const Dashboard = () => {
       </div>
       </div> 
 
-      <div className="bg-white rounded-lg p-3 sm:p-4">
+      <div className="bg-white rounded-lg p-3 sm:p-4 w-fit">
                        {/* Tab Navigation */}
-        <div className="flex items-center justify-between">
-          <div className="flex flex-wrap gap-2">
+        <div className="flex items-center justify-between w-fit">
+          <div className="flex flex-wrap gap-2 w-fit">
             <button
               onClick={() => setActiveTab("my-spvs")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -425,13 +468,24 @@ const Dashboard = () => {
 
         {/* Search and Controls - Only show for My SPVs tab */}
         {activeTab === "my-spvs" && (
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4">
+            {/* Results Count */}
+            {(searchQuery || filterStatus !== "all") && (
+              <div className="text-sm text-gray-600">
+                Found {spvs.length} {spvs.length === 1 ? "SPV" : "SPVs"}
+                {searchQuery && ` matching "${searchQuery}"`}
+                {filterStatus !== "all" && ` with status "${filterStatus}"`}
+              </div>
+            )}
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             {/* Search and Filter */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 gap-3">
               <div className="relative w-full sm:w-80">
                 <input
                   type="text"
-                  placeholder="Search SPVs by name, ID, or focus area..."
+                  placeholder="Search SPVs by name, ID, or status..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
                 <svg
@@ -442,13 +496,81 @@ const Dashboard = () => {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
               </div>
-              <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z" />
-                </svg>
-                <span>Filter</span>
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowFilterMenu(!showFilterMenu)}
+                  className={`flex items-center space-x-2 px-4 py-2 border rounded-lg transition-colors ${
+                    filterStatus !== "all"
+                      ? "border-purple-500 bg-purple-50 text-purple-700"
+                      : "border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z" />
+                  </svg>
+                  <span>Filter</span>
+                  {filterStatus !== "all" && (
+                    <span className="bg-purple-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                      1
+                    </span>
+                  )}
+                </button>
+                {showFilterMenu && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowFilterMenu(false)}
+                    ></div>
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+                      <div className="p-2">
+                        <div className="text-xs font-semibold text-gray-500 uppercase px-2 py-1 mb-1">
+                          Filter by Status
+                        </div>
+                        {["all", "raising", "ready", "closing", "draft"].map((status) => (
+                          <button
+                            key={status}
+                            onClick={() => {
+                              setFilterStatus(status);
+                              setShowFilterMenu(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                              filterStatus === status
+                                ? "bg-purple-50 text-purple-700 font-medium"
+                                : "text-gray-700 hover:bg-gray-50"
+                            }`}
+                          >
+                            {status === "all"
+                              ? "All Statuses"
+                              : status.charAt(0).toUpperCase() + status.slice(1)}
+                          </button>
+                        ))}
+                        {filterStatus !== "all" && (
+                          <button
+                            onClick={() => {
+                              setFilterStatus("all");
+                              setShowFilterMenu(false);
+                            }}
+                            className="w-full text-left px-3 py-2 mt-1 rounded-md text-sm text-red-600 hover:bg-red-50 transition-colors"
+                          >
+                            Clear Filter
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* View Toggle */}
@@ -492,6 +614,7 @@ const Dashboard = () => {
                 </button>
               </div>
             </div>
+            </div>
           </div>
         )}
      
@@ -499,7 +622,30 @@ const Dashboard = () => {
       <div className="rounded-lg py-2">
         {activeTab === "my-spvs" ? (
           /* SPV Content - Grid or List View */
-          viewMode === "grid" ? (
+          spvs.length === 0 ? (
+            <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+              <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No SPVs found</h3>
+              <p className="text-gray-600 mb-4">
+                {searchQuery || filterStatus !== "all"
+                  ? "Try adjusting your search or filter criteria."
+                  : "You don't have any SPVs yet."}
+              </p>
+              {(searchQuery || filterStatus !== "all") && (
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setFilterStatus("all");
+                  }}
+                  className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors"
+                >
+                  Clear all filters
+                </button>
+              )}
+            </div>
+          ) : viewMode === "grid" ? (
           <div className="space-y-2">
             {spvs.map((spv, index) => (
               <div key={index} className="bg-white border border-gray-200 rounded-lg p-4">
@@ -513,7 +659,13 @@ const Dashboard = () => {
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${spv.statusColor}`}>
                       {spv.status}
                     </span>
-                    <button className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors border border-gray-300 rounded-lg">
+                    <button
+                      onClick={() => {
+                        setSelectedSpv(spv);
+                        setShowViewModal(true);
+                      }}
+                      className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors border border-gray-300 rounded-lg"
+                    >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -569,7 +721,13 @@ const Dashboard = () => {
                     </svg>
                     <span>Manage Investors</span>
                   </button>
-                  <button className="flex items-center justify-center space-x-1 px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm">
+                  <button
+                    onClick={() => {
+                      setSelectedSpv(spv);
+                      setShowDocumentsModal(true);
+                    }}
+                    className="flex items-center justify-center space-x-1 px-3 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                  >
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
@@ -665,15 +823,15 @@ const Dashboard = () => {
           </div>
         ) : (
           /* Analytics Content */
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="w-full">
             {/* Performance Overview Card */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+            <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 w-full">
               <h2 className="text-2xl font-medium text-gray-900 mb-6">Performance Overview</h2>
               
-              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 gap-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center sm:space-x-8 gap-6">
                 {/* Circular Progress Chart */}
-                <div className="relative w-70 h-70">
-                  <svg className="w-70 h-70 transform -rotate-90" viewBox="0 0 100 100">
+                <div className="relative flex-shrink-0 mx-auto sm:mx-0 w-48 h-48 sm:w-64 sm:h-64">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
                     {/* Background circle */}
                     <circle
                       cx="50"
@@ -702,67 +860,216 @@ const Dashboard = () => {
                       <p className="text-2xl sm:text-3xl font-bold text-gray-900">
                         {formatCurrency(totalFundsRaised)}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 mb-1">
                         of {formatCurrency(totalTargetAmount)} target
+                      </p>
+                      <p className="text-sm font-semibold text-[#00F0C3]">
+                        {fundsRaisedPercent.toFixed(1)}%
                       </p>
                     </div>
                   </div>
                 </div>
 
                 {/* Key Metrics List */}
-                <div className="flex-1 space-y-3">
+                <div className="flex-1 space-y-3 max-w-md">
                   {statusBreakdown.map((item, index) => (
                     <div
                       key={`${item.status}-${index}`}
                       className="flex items-center space-x-3 bg-[#F9F8FF] rounded-lg p-3 border border-[#E2E2FB]"
                     >
-                      <div className={`w-2 h-2 rounded-full ${getBreakdownColor(index)}`}></div>
+                      <div className={`w-3 h-3 rounded-full ${getBreakdownColor(index)}`}></div>
                       <div className="flex-1">
-                        <span className="text-gray-900 font-medium">{item.status}</span>
+                        <span className="text-gray-900 font-medium capitalize">{item.label || item.status}</span>
                         <p className="text-xs text-gray-500">
                           {formatNumber(item.count || 0)} SPVs • {formatCurrency(item.total_allocation || 0)}
                         </p>
                       </div>
                     </div>
                   ))}
-                  <div className="rounded-lg border border-[#E2E2FB] p-2 text-sm text-gray-700">
+                  <div className="rounded-lg border border-[#E2E2FB] p-3 text-sm text-gray-700 bg-[#F9F8FF]">
                     Success Rate: <span className="font-semibold">{successRatePercent}%</span>
                   </div>
-                  <div className="rounded-lg border border-[#E2E2FB] p-2 text-sm text-gray-700">
+                  <div className="rounded-lg border border-[#E2E2FB] p-3 text-sm text-gray-700 bg-[#F9F8FF]">
                     Active Investors: <span className="font-semibold">{formatNumber(analyticsActiveInvestors)}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Pending Actions Card */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
-              <h2 className="text-2xl font-medium text-gray-900 mb-2">Pending Actions</h2>
-              <p className="text-gray-600 mb-6">Items requiring your review and approval</p>
-              
-              <div className="space-y-4">
-                {pendingActions.slice(0, 3).map((action) => (
-                  <div key={action.id} className="bg-white border border-gray-200 rounded-lg p-4 flex items-center space-x-4">
-                    <div className={`w-3 h-3 rounded-full ${action.statusDot || "bg-[#E2E2FB]"}`}></div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{action.type}</h3>
-                      <p className="text-sm text-gray-600">
-                        {[action.user, action.project, action.amount].filter(Boolean).join(" • ") ||
-                          action.description ||
-                          "Pending action"}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">{action.timeAgo}</p>
-                    </div>
-                  </div>
-                ))}
-                {pendingActions.length === 0 && (
-                  <p className="text-sm text-gray-500">You’re all caught up! No pending items right now.</p>
-                )}
-              </div>
-            </div>
+            
           </div>
         )}
       </div>
+
+      {/* Documents Modal */}
+      {showDocumentsModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            onClick={() => setShowDocumentsModal(false)}
+          ></div>
+
+          {/* Modal */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-900">Documents</h2>
+                  {selectedSpv && (
+                    <p className="text-sm text-gray-600 mt-1">{selectedSpv.name}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setShowDocumentsModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Documents Available</h3>
+                  <p className="text-sm text-gray-500 mb-6 max-w-md">
+                    There are no documents uploaded for this SPV yet. Documents will appear here once they are added.
+                  </p>
+                  <button
+                    onClick={() => setShowDocumentsModal(false)}
+                    className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View SPV Details Modal */}
+      {showViewModal && selectedSpv && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            onClick={() => setShowViewModal(false)}
+          ></div>
+
+          {/* Modal */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-900">SPV Details</h2>
+                  <p className="text-sm text-gray-600 mt-1">{selectedSpv.name}</p>
+                </div>
+                <button
+                  onClick={() => setShowViewModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="space-y-6">
+                  {/* Basic Information */}
+                  <div className="bg-[#F9F8FF] rounded-lg p-4 border border-[#E2E2FB]">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">SPV ID</p>
+                        <p className="text-sm font-medium text-gray-900">{selectedSpv.id}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Status</p>
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${selectedSpv.statusColor}`}>
+                          {selectedSpv.status}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Created Date</p>
+                        <p className="text-sm font-medium text-gray-900">{selectedSpv.created}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Progress</p>
+                        <p className="text-sm font-medium text-gray-900">{selectedSpv.progress}%</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Financial Information */}
+                  <div className="bg-[#F9F8FF] rounded-lg p-4 border border-[#E2E2FB]">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Financial Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Current Raised</p>
+                        <p className="text-lg font-semibold text-gray-900">{selectedSpv.current}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Target Amount</p>
+                        <p className="text-lg font-semibold text-gray-900">{selectedSpv.target}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Number of Investors</p>
+                        <p className="text-lg font-semibold text-gray-900">{selectedSpv.investors}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Funding Progress</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Progress</span>
+                        <span className="text-sm font-medium text-gray-900">{selectedSpv.progress}%</span>
+                      </div>
+                      <div className="w-full bg-[#CEC6FF] rounded-full h-3">
+                        <div
+                          className={`h-3 rounded-full ${getProgressColor(selectedSpv.status)}`}
+                          style={{ width: `${selectedSpv.progress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="border-t border-gray-200 p-6 flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowViewModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setShowViewModal(false);
+                    setShowDocumentsModal(true);
+                  }}
+                  className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors"
+                >
+                  View Documents
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

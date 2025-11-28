@@ -15,6 +15,18 @@ const SPVManagement = () => {
   const [summary, setSummary] = useState(null);
   const [tabs, setTabs] = useState([]);
   const [spvs, setSpvs] = useState([]);
+  
+  // Modal states
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selectedSpv, setSelectedSpv] = useState(null);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [spvToArchive, setSpvToArchive] = useState(null);
+  const [archiving, setArchiving] = useState(false);
+  const [showDocumentsModal, setShowDocumentsModal] = useState(false);
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
+  
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch SPV data from API
   useEffect(() => {
@@ -211,6 +223,84 @@ const SPVManagement = () => {
     console.log('Navigation completed!');
   };
 
+  const handleArchiveClick = (spv) => {
+    setSpvToArchive(spv);
+    setShowArchiveModal(true);
+    setOpenDropdown(null);
+  };
+
+  const handleArchiveConfirm = async () => {
+    if (!spvToArchive) return;
+
+    try {
+      setArchiving(true);
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const accessToken = localStorage.getItem("accessToken");
+
+      if (!accessToken) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      // Get the SPV ID from rawData or the spv object
+      const spvId = spvToArchive.rawData?.id || spvToArchive.id;
+
+      // Archive the SPV - try different possible endpoints
+      try {
+        await axios.patch(
+          `${API_URL.replace(/\/$/, "")}/spv/${spvId}/archive/`,
+          { archived: true },
+          {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          }
+        );
+      } catch (patchError) {
+        // If PATCH doesn't work, try PUT or DELETE
+        if (patchError.response?.status === 404 || patchError.response?.status === 405) {
+          // Try alternative endpoint
+          await axios.post(
+            `${API_URL.replace(/\/$/, "")}/spv/${spvId}/archive/`,
+            {},
+            {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              }
+            }
+          );
+        } else {
+          throw patchError;
+        }
+      }
+
+      // Remove the archived SPV from the local state
+      setSpvs(prevSpvs => prevSpvs.filter(spv => {
+        const currentId = spv.rawData?.id || spv.id;
+        return currentId !== spvId;
+      }));
+
+      // Update summary if needed
+      if (summary) {
+        setSummary(prev => ({
+          ...prev,
+          total_spvs: Math.max((prev.total_spvs || 0) - 1, 0)
+        }));
+      }
+
+      setShowArchiveModal(false);
+      setSpvToArchive(null);
+    } catch (err) {
+      console.error("Error archiving SPV:", err);
+      alert(err.response?.data?.detail || err.message || "Failed to archive SPV. Please try again.");
+    } finally {
+      setArchiving(false);
+    }
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -225,13 +315,33 @@ const SPVManagement = () => {
     };
   }, []);
 
-  // Filter SPVs based on active tab
+  // Filter SPVs based on active tab and search query
   const filteredSPVs = spvs.filter(spv => {
-    if (activeTab === "all") return true;
-    if (activeTab === "ready") return spv.status === "Ready to Launch";
-    if (activeTab === "fundraising") return spv.status === "Raising";
-    if (activeTab === "closed") return spv.status === "Closing";
-    return true;
+    // Filter by tab
+    let matchesTab = true;
+    if (activeTab === "all") {
+      matchesTab = true;
+    } else if (activeTab === "ready") {
+      matchesTab = spv.status === "Ready to Launch";
+    } else if (activeTab === "fundraising") {
+      matchesTab = spv.status === "Raising";
+    } else if (activeTab === "closed") {
+      matchesTab = spv.status === "Closing";
+    }
+
+    // Filter by search query
+    let matchesSearch = true;
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      matchesSearch = 
+        spv.name?.toLowerCase().includes(query) ||
+        spv.id?.toLowerCase().includes(query) ||
+        spv.location?.toLowerCase().includes(query) ||
+        spv.category?.toLowerCase().includes(query) ||
+        spv.status?.toLowerCase().includes(query);
+    }
+
+    return matchesTab && matchesSearch;
   });
 
   if (loading) {
@@ -324,8 +434,10 @@ const SPVManagement = () => {
           <div className="relative w-full sm:w-80">
             <input
               type="text"
-              placeholder="Search SPVs by name, ID, or focus area..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none"
+              placeholder="Search SPVs by name, ID, location, or category..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
             <svg
               className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -335,6 +447,16 @@ const SPVManagement = () => {
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
 
@@ -379,13 +501,39 @@ const SPVManagement = () => {
         </div>
       </div>
 
+      {/* Search Results Count */}
+      {searchQuery && (
+        <div className="text-sm text-gray-600">
+          Found {filteredSPVs.length} {filteredSPVs.length === 1 ? "SPV" : "SPVs"} matching "{searchQuery}"
+        </div>
+      )}
+
       {/* SPV Cards */}
       <div className="space-y-4">
         {filteredSPVs.length === 0 ? (
           <div className="bg-white rounded-lg p-8 text-center">
-            <p className="text-gray-600">No SPVs found for the selected filter.</p>
+            <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No SPVs found</h3>
+            <p className="text-gray-600 mb-4">
+              {searchQuery || activeTab !== "all"
+                ? "Try adjusting your search or filter criteria."
+                : "You don't have any SPVs yet."}
+            </p>
+            {(searchQuery || activeTab !== "all") && (
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setActiveTab("all");
+                }}
+                className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors"
+              >
+                Clear all filters
+              </button>
+            )}
           </div>
-        ) : (
+        ) : viewMode === "grid" ? (
           filteredSPVs.map((spv, index) => (
           <div key={index} className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
             {/* Header Section */}
@@ -399,7 +547,13 @@ const SPVManagement = () => {
                   {spv.status}
                 </span>
                 <div className="flex items-center space-x-1">
-                  <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                  <button
+                    onClick={() => {
+                      setSelectedSpv(spv);
+                      setShowViewModal(true);
+                    }}
+                    className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -458,7 +612,10 @@ const SPVManagement = () => {
                           <button className="w-full px-4 py-3 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors rounded-lg mb-2   ">
                             Manage Investors
                           </button>
-                          <button className="w-full px-4 py-3 text-left text-sm font-medium text-red-600 hover:bg-red-50 transition-colors rounded-lg">
+                          <button
+                            onClick={() => handleArchiveClick(spv)}
+                            className="w-full px-4 py-3 text-left text-sm font-medium text-red-600 hover:bg-red-50 transition-colors rounded-lg"
+                          >
                             Archive SPV
                           </button>
                         </div>
@@ -512,13 +669,25 @@ const SPVManagement = () => {
                   </svg>
                   <span>Manage Investors</span>
                 </button>
-                <button className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                <button
+                  onClick={() => {
+                    setSelectedSpv(spv);
+                    setShowDocumentsModal(true);
+                  }}
+                  className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                   <span>Documents</span>
                 </button>
-                <button className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                <button
+                  onClick={() => {
+                    setSelectedSpv(spv);
+                    setShowAnalyticsModal(true);
+                  }}
+                  className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
@@ -528,8 +697,596 @@ const SPVManagement = () => {
             </div>
           </div>
           ))
+        ) : (
+          /* List/Table View */
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="hidden xl:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                    <th className="hidden xl:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Raised</th>
+                    <th className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target</th>
+                    <th className="hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Investors</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredSPVs.map((spv, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-4 lg:px-6 py-4">
+                        <div className="text-sm font-medium text-gray-900">{spv.name}</div>
+                        <div className="text-xs text-gray-500">{spv.id}</div>
+                      </td>
+                      <td className="px-4 lg:px-6 py-4">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${spv.statusColor}`}>
+                          {spv.status}
+                        </span>
+                      </td>
+                      <td className="hidden xl:table-cell px-6 py-4 text-sm text-gray-900">{spv.location}</td>
+                      <td className="hidden xl:table-cell px-6 py-4 text-sm text-gray-900">{spv.created}</td>
+                      <td className="px-4 lg:px-6 py-4 text-sm text-gray-900">{spv.raised}</td>
+                      <td className="hidden lg:table-cell px-6 py-4 text-sm text-gray-900">{spv.target}</td>
+                      <td className="hidden md:table-cell px-6 py-4 text-sm text-gray-900">{spv.investors}</td>
+                      <td className="px-4 lg:px-6 py-4">
+                        <div className="flex items-center">
+                          <div className="w-12 lg:w-16 bg-[#CEC6FF] rounded-full h-2 mr-2">
+                            <div
+                              className={`h-2 rounded-full ${getProgressColor(spv.status)}`}
+                              style={{ width: `${spv.progress}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-xs lg:text-sm text-gray-600">{spv.progress}%</span>
+                        </div>
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 text-sm font-medium">
+                        <div className="flex items-center space-x-1 lg:space-x-2">
+                          <button
+                            onClick={() => {
+                              setSelectedSpv(spv);
+                              setShowViewModal(true);
+                            }}
+                            className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                            title="View Details"
+                          >
+                            <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleViewDetails(spv)}
+                            className="text-[#00F0C3] hover:text-[#00D4A3] transition-colors font-medium text-xs lg:text-sm"
+                            title="View Full Details"
+                          >
+                            View
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="lg:hidden divide-y divide-gray-200">
+              {filteredSPVs.map((spv, index) => (
+                <div key={index} className="p-4 hover:bg-gray-50">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-semibold text-gray-900 truncate">{spv.name}</h3>
+                      <p className="text-xs text-gray-500 mt-1">{spv.id}</p>
+                    </div>
+                    <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${spv.statusColor} flex-shrink-0`}>
+                      {spv.status}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <p className="text-xs text-gray-500">Raised</p>
+                      <p className="text-sm font-semibold text-gray-900">{spv.raised}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Target</p>
+                      <p className="text-sm font-semibold text-gray-900">{spv.target}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Investors</p>
+                      <p className="text-sm font-semibold text-gray-900">{spv.investors}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Progress</p>
+                      <p className="text-sm font-semibold text-gray-900">{spv.progress}%</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-3">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs text-gray-600">Funding Progress</span>
+                      <span className="text-xs text-gray-600">{spv.progress}%</span>
+                    </div>
+                    <div className="w-full bg-[#CEC6FF] rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${getProgressColor(spv.status)}`}
+                        style={{ width: `${spv.progress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end space-x-2 pt-2 border-t border-gray-100">
+                    <button
+                      onClick={() => {
+                        setSelectedSpv(spv);
+                        setShowViewModal(true);
+                      }}
+                      className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                      title="View Details"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleViewDetails(spv)}
+                      className="px-3 py-1.5 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors text-xs"
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
+
+      {/* View SPV Details Modal */}
+      {showViewModal && selectedSpv && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            onClick={() => setShowViewModal(false)}
+          ></div>
+
+          {/* Modal */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-900">SPV Details</h2>
+                  <p className="text-sm text-gray-600 mt-1">{selectedSpv.name}</p>
+                </div>
+                <button
+                  onClick={() => setShowViewModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="space-y-6">
+                  {/* Basic Information */}
+                  <div className="bg-[#F9F8FF] rounded-lg p-4 border border-[#E2E2FB]">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">SPV ID</p>
+                        <p className="text-sm font-medium text-gray-900">{selectedSpv.id}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Status</p>
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${selectedSpv.statusColor}`}>
+                          {selectedSpv.status}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Created Date</p>
+                        <p className="text-sm font-medium text-gray-900">{selectedSpv.created}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Location</p>
+                        <p className="text-sm font-medium text-gray-900">{selectedSpv.location}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Category</p>
+                        <p className="text-sm font-medium text-gray-900">{selectedSpv.category}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Progress</p>
+                        <p className="text-sm font-medium text-gray-900">{selectedSpv.progress}%</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Financial Information */}
+                  <div className="bg-[#F9F8FF] rounded-lg p-4 border border-[#E2E2FB]">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Financial Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Raised</p>
+                        <p className="text-lg font-semibold text-gray-900">{selectedSpv.raised}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Target Amount</p>
+                        <p className="text-lg font-semibold text-gray-900">{selectedSpv.target}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Number of Investors</p>
+                        <p className="text-lg font-semibold text-gray-900">{selectedSpv.investors}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Minimum Investment</p>
+                        <p className="text-lg font-semibold text-gray-900">{selectedSpv.minInvestment}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Funding Progress</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Progress</span>
+                        <span className="text-sm font-medium text-gray-900">{selectedSpv.progress}%</span>
+                      </div>
+                      <div className="w-full bg-[#CEC6FF] rounded-full h-3">
+                        <div
+                          className={`h-3 rounded-full ${selectedSpv.progressColor || getProgressColor(selectedSpv.status)}`}
+                          style={{ width: `${selectedSpv.progress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="border-t border-gray-200 p-6 flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowViewModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setShowViewModal(false);
+                    handleViewDetails(selectedSpv);
+                  }}
+                  className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors"
+                >
+                  View Full Details
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Archive Confirmation Modal */}
+      {showArchiveModal && spvToArchive && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            onClick={() => !archiving && setShowArchiveModal(false)}
+          ></div>
+
+          {/* Modal */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <div className="flex items-center space-x-3">
+                  <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-900">Archive SPV</h2>
+                </div>
+                {!archiving && (
+                  <button
+                    onClick={() => setShowArchiveModal(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <p className="text-gray-700 mb-4">
+                  Are you sure you want to archive <span className="font-semibold text-gray-900">{spvToArchive.name}</span>?
+                </p>
+                <p className="text-sm text-gray-500 mb-4">
+                  This action will archive the SPV. You can restore it later if needed. Archived SPVs will not appear in your active SPV list.
+                </p>
+                {spvToArchive.id && (
+                  <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                    <p className="text-xs text-gray-500 mb-1">SPV ID</p>
+                    <p className="text-sm font-medium text-gray-900">{spvToArchive.id}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="border-t border-gray-200 p-6 flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setShowArchiveModal(false);
+                    setSpvToArchive(null);
+                  }}
+                  disabled={archiving}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleArchiveConfirm}
+                  disabled={archiving}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                >
+                  {archiving ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>Archiving...</span>
+                    </>
+                  ) : (
+                    <span>Archive SPV</span>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Documents Modal */}
+      {showDocumentsModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            onClick={() => setShowDocumentsModal(false)}
+          ></div>
+
+          {/* Modal */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-900">Documents</h2>
+                  {selectedSpv && (
+                    <p className="text-sm text-gray-600 mt-1">{selectedSpv.name}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setShowDocumentsModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Documents Available</h3>
+                  <p className="text-sm text-gray-500 mb-6 max-w-md">
+                    There are no documents uploaded for this SPV yet. Documents will appear here once they are added.
+                  </p>
+                  <button
+                    onClick={() => setShowDocumentsModal(false)}
+                    className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Analytics Modal */}
+      {showAnalyticsModal && selectedSpv && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            onClick={() => setShowAnalyticsModal(false)}
+          ></div>
+
+          {/* Modal */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-900">Analytics</h2>
+                  <p className="text-sm text-gray-600 mt-1">{selectedSpv.name}</p>
+                </div>
+                <button
+                  onClick={() => setShowAnalyticsModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="space-y-6">
+                  {/* Funding Progress Chart */}
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Funding Progress</h3>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center sm:space-x-8 gap-6">
+                      {/* Circular Progress Chart */}
+                      <div className="relative flex-shrink-0 mx-auto sm:mx-0 w-48 h-48 sm:w-64 sm:h-64">
+                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                          {/* Background circle */}
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="40"
+                            stroke="#E5E7EB"
+                            strokeWidth="8"
+                            fill="none"
+                          />
+                          {/* Progress circle */}
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="40"
+                            stroke="#00F0C3"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeDasharray={2 * Math.PI * 40}
+                            strokeDashoffset={2 * Math.PI * 40 * (1 - selectedSpv.progress / 100)}
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        {/* Center text */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="text-center">
+                            <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                              {selectedSpv.raised}
+                            </p>
+                            <p className="text-xs text-gray-500 mb-1">
+                              of {selectedSpv.target} target
+                            </p>
+                            <p className="text-sm font-semibold text-[#00F0C3]">
+                              {selectedSpv.progress}%
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Key Metrics */}
+                      <div className="flex-1 space-y-3 max-w-md">
+                        <div className="bg-[#F9F8FF] rounded-lg p-3 border border-[#E2E2FB]">
+                          <p className="text-xs text-gray-500 mb-1">Status</p>
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${selectedSpv.statusColor}`}>
+                            {selectedSpv.status}
+                          </span>
+                        </div>
+                        <div className="bg-[#F9F8FF] rounded-lg p-3 border border-[#E2E2FB]">
+                          <p className="text-xs text-gray-500 mb-1">Total Investors</p>
+                          <p className="text-lg font-semibold text-gray-900">{selectedSpv.investors}</p>
+                        </div>
+                        <div className="bg-[#F9F8FF] rounded-lg p-3 border border-[#E2E2FB]">
+                          <p className="text-xs text-gray-500 mb-1">Minimum Investment</p>
+                          <p className="text-lg font-semibold text-gray-900">{selectedSpv.minInvestment}</p>
+                        </div>
+                        <div className="bg-[#F9F8FF] rounded-lg p-3 border border-[#E2E2FB]">
+                          <p className="text-xs text-gray-500 mb-1">Progress</p>
+                          <p className="text-lg font-semibold text-gray-900">{selectedSpv.progress}%</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Financial Summary */}
+                  <div className="bg-[#F9F8FF] rounded-lg p-4 border border-[#E2E2FB]">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Financial Summary</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Amount Raised</p>
+                        <p className="text-xl font-semibold text-gray-900">{selectedSpv.raised}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Target Amount</p>
+                        <p className="text-xl font-semibold text-gray-900">{selectedSpv.target}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Remaining</p>
+                        <p className="text-xl font-semibold text-gray-900">
+                          {(() => {
+                            // Extract numeric values for calculation
+                            const raisedNum = parseFloat(selectedSpv.raised.replace(/[$,KM]/g, '')) || 0;
+                            const targetNum = parseFloat(selectedSpv.target.replace(/[$,KM]/g, '')) || 0;
+                            const remaining = targetNum - raisedNum;
+                            if (remaining >= 1000) return `$${(remaining / 1000).toFixed(1)}K`;
+                            return `$${remaining.toFixed(0)}`;
+                          })()}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 mb-1">Average per Investor</p>
+                        <p className="text-xl font-semibold text-gray-900">
+                          {(() => {
+                            const raisedNum = parseFloat(selectedSpv.raised.replace(/[$,KM]/g, '')) || 0;
+                            const investors = parseInt(selectedSpv.investors) || 1;
+                            const avg = raisedNum / investors;
+                            if (avg >= 1000) return `$${(avg / 1000).toFixed(1)}K`;
+                            return `$${avg.toFixed(0)}`;
+                          })()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Detailed Progress</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Funding Progress</span>
+                        <span className="text-sm font-medium text-gray-900">{selectedSpv.progress}%</span>
+                      </div>
+                      <div className="w-full bg-[#CEC6FF] rounded-full h-3">
+                        <div
+                          className={`h-3 rounded-full ${selectedSpv.progressColor || getProgressColor(selectedSpv.status)}`}
+                          style={{ width: `${selectedSpv.progress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="border-t border-gray-200 p-6 flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowAnalyticsModal(false)}
+                  className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

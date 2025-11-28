@@ -9,16 +9,9 @@ const DocumentTemplateEngine = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("generate");
   const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [templateDetails, setTemplateDetails] = useState(null);
-  const [formData, setFormData] = useState({});
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadingDetails, setLoadingDetails] = useState(false);
-  const [generating, setGenerating] = useState(false);
-  const [generateError, setGenerateError] = useState("");
-  const [generateSuccess, setGenerateSuccess] = useState(false);
   const [error, setError] = useState("");
-  const [detailsError, setDetailsError] = useState("");
 
   // Get API URL
   const getApiUrl = () => {
@@ -44,7 +37,7 @@ const DocumentTemplateEngine = () => {
         throw new Error("No access token found. Please login again.");
       }
 
-      const response = await axios.get(`${API_URL}/document-templates/`, {
+      const response = await axios.get(`${API_URL}/api/document-templates/`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
@@ -93,193 +86,25 @@ const DocumentTemplateEngine = () => {
     }
   }, [activeTab]);
 
+  // Remove auto-selection - let user click to select
+
   const tabs = [
     { id: "generate", label: "Generate Documents" },
     { id: "manage", label: "Manage Templates" },
     { id: "generated", label: "Generated Documents" }
   ];
 
-  // Fetch template details when a template is selected
-  const fetchTemplateDetails = async (templateId) => {
-    setLoadingDetails(true);
-    setTemplateDetails(null);
-    setFormData({});
-    setDetailsError("");
-
-    try {
-      const API_URL = getApiUrl();
-      const accessToken = getAccessToken();
-      
-      if (!accessToken) {
-        throw new Error("No access token found. Please login again.");
-      }
-
-      const response = await axios.get(`${API_URL}/document-templates/${templateId}/`, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      });
-
-      console.log("Template details fetched:", response.data);
-      setTemplateDetails(response.data);
-      
-      // Initialize form data with empty values for required fields
-      const initialFormData = {};
-      if (response.data.required_fields && Array.isArray(response.data.required_fields)) {
-        response.data.required_fields.forEach(field => {
-          initialFormData[field.name] = "";
-        });
-      }
-      setFormData(initialFormData);
-    } catch (err) {
-      console.error("Error fetching template details:", err);
-      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Failed to load template details";
-      setDetailsError(errorMessage);
-      setTemplateDetails(null);
-    } finally {
-      setLoadingDetails(false);
-    }
-  };
-
   const handleTemplateSelect = (template) => {
     setSelectedTemplate(template);
-    setGenerateError("");
-    setGenerateSuccess(false);
-    if (template && template.id) {
-      fetchTemplateDetails(template.id);
-    }
-  };
-
-  const handleInputChange = (fieldName, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [fieldName]: value
-    }));
-    // Clear error when user starts typing
-    if (generateError) {
-      setGenerateError("");
-    }
   };
 
   const handleTabClick = (tabId) => {
     setActiveTab(tabId);
-    // Clear selected template when switching tabs
-    if (tabId !== "generate") {
-      setSelectedTemplate(null);
-      setTemplateDetails(null);
-      setFormData({});
-      setDetailsError("");
-    }
   };
 
-  // Generate document from template
-  const handleGenerateDocument = async () => {
-    if (!selectedTemplate || !templateDetails) {
-      setGenerateError("Please select a template first.");
-      return;
-    }
-
-    // Validate required fields
-    const requiredFields = templateDetails.required_fields || [];
-    const missingFields = requiredFields.filter(field => {
-      if (field.required) {
-        const value = formData[field.name];
-        return !value || value.toString().trim() === "";
-      }
-      return false;
-    });
-
-    if (missingFields.length > 0) {
-      const missingFieldNames = missingFields.map(f => f.label || f.name).join(", ");
-      setGenerateError(`Please fill in all required fields: ${missingFieldNames}`);
-      return;
-    }
-
-    setGenerating(true);
-    setGenerateError("");
-    setGenerateSuccess(false);
-
-    try {
-      const API_URL = getApiUrl();
-      const accessToken = getAccessToken();
-      
-      if (!accessToken) {
-        throw new Error("No access token found. Please login again.");
-      }
-
-      // Get user data from localStorage for signatories
-      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-      const userId = userData.user_id || userData.id;
-
-      // Build the request payload
-      const payload = {
-        template_id: selectedTemplate.id || templateDetails.id,
-        field_data: formData,
-        enable_digital_signature: templateDetails.enable_digital_signature || false,
-        title: `${selectedTemplate.name || templateDetails.name} - ${new Date().toLocaleDateString()}`,
-        description: templateDetails.description || `Generated document from ${selectedTemplate.name || templateDetails.name} template`,
-      };
-
-      // Add optional fields if available
-      // You can get these from route params, localStorage, or context as needed
-      const urlParams = new URLSearchParams(window.location.search);
-      const spvId = urlParams.get("spv_id") || localStorage.getItem("currentSpvId");
-      const syndicateId = urlParams.get("syndicate_id") || localStorage.getItem("currentSyndicateId");
-
-      if (spvId) {
-        payload.spv_id = parseInt(spvId);
-      }
-
-      if (syndicateId) {
-        payload.syndicate_id = parseInt(syndicateId);
-      }
-
-      // Add signatories if digital signature is enabled
-      if (templateDetails.enable_digital_signature && userId) {
-        payload.signatories = [
-          {
-            user_id: userId,
-            role: "Manager"
-          }
-        ];
-      }
-
-      console.log("Generating document with payload:", payload);
-
-      const response = await axios.post(`${API_URL}/documents/generate-from-template/`, payload, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      });
-
-      console.log("Document generated successfully:", response.data);
-      setGenerateSuccess(true);
-
-      // Clear form data after successful generation
-      const initialFormData = {};
-      if (templateDetails.required_fields && Array.isArray(templateDetails.required_fields)) {
-        templateDetails.required_fields.forEach(field => {
-          initialFormData[field.name] = "";
-        });
-      }
-      setFormData(initialFormData);
-
-      // Navigate to generated documents after a short delay
-      setTimeout(() => {
-        setActiveTab("generated");
-        setGenerateSuccess(false);
-      }, 2000);
-
-    } catch (err) {
-      console.error("Error generating document:", err);
-      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || "Failed to generate document";
-      setGenerateError(errorMessage);
-    } finally {
-      setGenerating(false);
+  const handleGenerateDocument = () => {
+    if (selectedTemplate) {
+      navigate('/manager-panel/generate-document', { state: { template: selectedTemplate } });
     }
   };
 
@@ -347,7 +172,7 @@ const DocumentTemplateEngine = () => {
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-sm text-red-600">{error}</p>
                 <button
-                  onClick={fetchTemplates}
+                  onClick={() => window.location.reload()}
                   className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
                 >
                   Retry
@@ -418,136 +243,77 @@ const DocumentTemplateEngine = () => {
             
             {selectedTemplate ? (
               <div className="space-y-6">
-                {loadingDetails ? (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="text-center">
-                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#00F0C3] mb-4"></div>
-                      <p className="text-sm text-gray-600">Loading template details...</p>
-                    </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Investor Name *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter Investor name"
+                      className="w-full px-3 py-2 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
+                    />
                   </div>
-                ) : detailsError ? (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p className="text-sm text-red-600">{detailsError}</p>
-                    <button
-                      onClick={() => selectedTemplate && selectedTemplate.id && fetchTemplateDetails(selectedTemplate.id)}
-                      className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
-                    >
-                      Retry
-                    </button>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Spv Name *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter spv name"
+                      className="w-full px-3 py-2 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
+                    />
                   </div>
-                ) : templateDetails ? (
-                  <>
-                    <div className="space-y-4">
-                      {templateDetails.required_fields && Array.isArray(templateDetails.required_fields) && templateDetails.required_fields.length > 0 ? (
-                        templateDetails.required_fields.map((field, index) => (
-                          <div key={field.name || index}>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              {field.label || field.name} {field.required && <span className="text-red-500">*</span>}
-                            </label>
-                            {field.type === "textarea" || field.type === "text_area" ? (
-                              <textarea
-                                value={formData[field.name] || ""}
-                                onChange={(e) => handleInputChange(field.name, e.target.value)}
-                                placeholder={`Enter ${field.label || field.name}`}
-                                required={field.required}
-                                rows={4}
-                                className="w-full px-3 py-2 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
-                              />
-                            ) : field.type === "number" ? (
-                              <input
-                                type="number"
-                                value={formData[field.name] || ""}
-                                onChange={(e) => handleInputChange(field.name, e.target.value)}
-                                placeholder={`Enter ${field.label || field.name}`}
-                                required={field.required}
-                                className="w-full px-3 py-2 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
-                              />
-                            ) : field.type === "email" ? (
-                              <input
-                                type="email"
-                                value={formData[field.name] || ""}
-                                onChange={(e) => handleInputChange(field.name, e.target.value)}
-                                placeholder={`Enter ${field.label || field.name}`}
-                                required={field.required}
-                                className="w-full px-3 py-2 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
-                              />
-                            ) : field.type === "date" ? (
-                              <input
-                                type="date"
-                                value={formData[field.name] || ""}
-                                onChange={(e) => handleInputChange(field.name, e.target.value)}
-                                required={field.required}
-                                className="w-full px-3 py-2 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
-                              />
-                            ) : (
-                              <input
-                                type="text"
-                                value={formData[field.name] || ""}
-                                onChange={(e) => handleInputChange(field.name, e.target.value)}
-                                placeholder={`Enter ${field.label || field.name}`}
-                                required={field.required}
-                                className="w-full px-3 py-2 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
-                              />
-                            )}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                          <p className="text-sm text-yellow-600">No required fields specified for this template.</p>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {templateDetails.enable_digital_signature !== undefined && (
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          id="digitalSignature"
-                          defaultChecked={templateDetails.enable_digital_signature}
-                          className="h-4 w-4 text-[#00F0C3] focus:ring-[#00F0C3] border-gray-300 rounded"
-                          disabled
-                        />
-                        <label htmlFor="digitalSignature" className="ml-2 text-sm text-gray-700">
-                          Enable digital signature workflow {templateDetails.enable_digital_signature ? "(Enabled)" : "(Disabled)"}
-                        </label>
-                      </div>
-                    )}
-
-                    {generateError && (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                        <p className="text-sm text-red-600">{generateError}</p>
-                      </div>
-                    )}
-
-                    {generateSuccess && (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <p className="text-sm text-green-600">Document generated successfully! Redirecting to generated documents...</p>
-                      </div>
-                    )}
-                    
-                    <button
-                      onClick={handleGenerateDocument}
-                      disabled={generating}
-                      className={`w-full px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
-                        generating
-                          ? "bg-gray-400 text-gray-600 cursor-not-allowed"
-                          : "bg-[#00F0C3] hover:bg-[#00D4A3] text-black"
-                      }`}
-                    >
-                      {generating ? (
-                        <>
-                          <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
-                          <span>Generating Document...</span>
-                        </>
-                      ) : (
-                        <>
-                          <BlackfileIcon />
-                          <span>Generate Document</span>
-                        </>
-                      )}
-                    </button>
-                  </>
-                ) : null}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Investment Amount *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter Investment amount"
+                      className="w-full px-3 py-2 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Shares *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter shares"
+                      className="w-full px-3 py-2 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Percentage *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter percentage"
+                      className="w-full px-3 py-2 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="digitalSignature"
+                    className="h-4 w-4 text-[#00F0C3] focus:ring-[#00F0C3] border-gray-300 rounded"
+                  />
+                  <label htmlFor="digitalSignature" className="ml-2 text-sm text-gray-700">
+                    Enable digital signature workflow
+                  </label>
+                </div>
+                
+                <button
+                  onClick={handleGenerateDocument}
+                  className="w-full bg-[#00F0C3] hover:bg-[#00D4A3] text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <BlackfileIcon />
+                  <span>Generate Document</span>
+                </button>
               </div>
             ) : (
               <div className="bg-[#F9F8FF] rounded-lg p-6 flex flex-col items-center justify-center h-64 sm:h-[500px]">
