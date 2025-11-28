@@ -17,7 +17,7 @@ const InvestorDetails = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F6F5] p-6">
+    <div className="min-h-screen bg-[#F4F6F5] p-6 pt-12">
       {/* Breadcrumbs */}
       <div className="mb-6">
         <nav className="text-sm">
