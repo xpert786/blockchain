@@ -81,12 +81,24 @@ const SPVStep7 = () => {
           console.log("⚠️ Could not get SPV list:", spvListError.response?.status);
         }
 
-        // If still no SPV ID, use 1 as default
+        // If still no SPV ID, check localStorage
+        if (!currentSpvId) {
+          const storedSpvId = localStorage.getItem("currentSpvId");
+          if (storedSpvId && !isNaN(storedSpvId)) {
+            currentSpvId = parseInt(storedSpvId, 10);
+          }
+        }
+
+        // If still no SPV ID, use 1 as default (fallback)
         if (!currentSpvId) {
           currentSpvId = 1;
         }
 
         setSpvId(currentSpvId);
+        // Store in localStorage for consistency
+        if (currentSpvId) {
+          localStorage.setItem("currentSpvId", String(currentSpvId));
+        }
 
         // Fetch final review data
         const finalReviewUrl = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/final_review/`;
@@ -138,16 +150,27 @@ const SPVStep7 = () => {
         throw new Error("No access token found. Please login again.");
       }
 
-      if (!spvId) {
-        throw new Error("SPV ID not found. Please try again.");
-      }
+      // SPV ID check is now done above
 
       const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      
+      // Get SPV ID from state or localStorage (critical to prevent creating new SPV)
+      let currentSpvId = spvId || localStorage.getItem("currentSpvId");
+      
+      // Parse if it's a string from localStorage
+      if (currentSpvId && typeof currentSpvId === 'string' && !isNaN(currentSpvId)) {
+        currentSpvId = parseInt(currentSpvId, 10);
+      }
+      
+      if (!currentSpvId) {
+        throw new Error("SPV ID not found. Please start from step 1.");
+      }
+      
       // API endpoint: /api/spv/{id}/final_submit/
-      const finalSubmitUrl = `${API_URL.replace(/\/$/, "")}/spv/${spvId}/final_submit/`;
+      const finalSubmitUrl = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/final_submit/`;
 
       console.log("=== SPV Final Submit API Call ===");
-      console.log("SPV ID:", spvId);
+      console.log("SPV ID:", currentSpvId);
       console.log("API URL:", finalSubmitUrl);
       console.log("Form Data:", formData);
 
@@ -172,6 +195,10 @@ const SPVStep7 = () => {
 
       // Navigate to success page on success
       if (response.data && response.status >= 200 && response.status < 300) {
+        // Clear the SPV ID from localStorage after successful submission
+        // This prevents reusing the same SPV ID for a new submission
+        localStorage.removeItem("currentSpvId");
+        console.log("✅ SPV submitted successfully, cleared localStorage SPV ID");
         navigate("/syndicate-creation/success");
       }
     } catch (err) {

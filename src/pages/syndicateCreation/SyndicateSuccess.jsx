@@ -9,7 +9,7 @@ const SyndicateSuccess = () => {
   const [accessError, setAccessError] = useState("");
 
   const handleGoToDashboard = () => {
-    navigate("/");
+    navigate("/manager-panel/dashboard");
   };
 
   const handleCreateDeal = async () => {

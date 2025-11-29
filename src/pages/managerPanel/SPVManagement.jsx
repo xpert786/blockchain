@@ -593,9 +593,9 @@ const SPVManagement = () => {
                               // Close dropdown first
                               setOpenDropdown(null);
                               
-                              // Navigate directly
+                              // Navigate with SPV data
                               console.log('Navigating to SPV Details...');
-                              navigate('/manager-panel/spv-details');
+                              navigate('/manager-panel/spv-details', { state: { spv: spv.rawData || spv } });
                               console.log('Navigation completed!');
                             }}
                             onMouseDown={(e) => {

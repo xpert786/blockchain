@@ -24,6 +24,9 @@ const SPVStep1 = () => {
   const [spvId, setSpvId] = useState(null);
   const [pitchDeckUrl, setPitchDeckUrl] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showDraftModal, setShowDraftModal] = useState(false);
+  const [foundDraftSpvId, setFoundDraftSpvId] = useState(null);
+  const [userChoseCreateNew, setUserChoseCreateNew] = useState(false);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -67,6 +70,136 @@ const SPVStep1 = () => {
     }
   };
 
+  // Handle user choosing to continue with existing draft
+  const handleContinueDraft = async () => {
+    if (foundDraftSpvId) {
+      setIsLoadingExistingData(true);
+      setSpvId(foundDraftSpvId);
+      localStorage.setItem("currentSpvId", String(foundDraftSpvId));
+      setShowDraftModal(false);
+      console.log("✅ User chose to continue with draft SPV:", foundDraftSpvId);
+      
+      // Fetch and populate existing step1 data
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          setIsLoadingExistingData(false);
+          return;
+        }
+
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const step1Url = `${API_URL.replace(/\/$/, "")}/spv/${foundDraftSpvId}/update_step1/`;
+        
+        const step1Response = await axios.get(step1Url, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+
+        if (step1Response.data && step1Response.status === 200) {
+          const responseData = step1Response.data.step_data || step1Response.data.data || step1Response.data;
+          
+          // Map the data to form format (same logic as in useEffect)
+          const stageIdToString = (stageId) => {
+            const stageMap = { 1: "pre-seed", 2: "seed", 3: "series-a", 4: "series-b", 5: "growth" };
+            return stageMap[stageId] || "pre-seed";
+          };
+
+          const typeIdToString = (typeId) => {
+            const typeMap = { 1: "llc", 2: "corporation", 3: "c-corp", 4: "s-corp", 5: "other" };
+            return typeMap[typeId] || "";
+          };
+
+          const companyStageValue = typeof responseData.company_stage === 'number' 
+            ? stageIdToString(responseData.company_stage) 
+            : (responseData.company_stage || "pre-seed");
+          
+          const incorporationTypeValue = typeof responseData.incorporation_type === 'number'
+            ? typeIdToString(responseData.incorporation_type)
+            : (responseData.incorporation_type || "");
+
+          const mappedData = {
+            displayName: responseData.display_name || "",
+            portfolioCompany: responseData.portfolio_company_name || (typeof responseData.portfolio_company === 'string' ? responseData.portfolio_company : "") || "",
+            portfolioCompanyId: typeof responseData.portfolio_company === 'number' ? responseData.portfolio_company : null,
+            companyStage: companyStageValue,
+            companyStageId: typeof responseData.company_stage === 'number' ? responseData.company_stage : null,
+            countryOfIncorporation: responseData.country_of_incorporation || "",
+            incorporationType: incorporationTypeValue,
+            incorporationTypeId: typeof responseData.incorporation_type === 'number' ? responseData.incorporation_type : null,
+            founderEmail: responseData.founder_email || "",
+            pitchDeck: null
+          };
+
+          // Handle pitch deck URL
+          if (responseData.pitch_deck) {
+            const pitchDeckUrlValue = constructFileUrl(responseData.pitch_deck);
+            setPitchDeckUrl(pitchDeckUrlValue);
+          }
+
+          setFormData(prev => ({
+            ...prev,
+            ...mappedData
+          }));
+
+          setHasExistingData(true);
+          console.log("✅ Form populated with existing draft data");
+        }
+      } catch (getError) {
+        if (getError.response?.status === 404) {
+          console.log("✅ SPV exists but step1 data not found yet - will start fresh");
+          // SPV exists but step1 hasn't been filled yet - this is fine
+        } else {
+          console.error("❌ Error fetching step1 data:", getError.response?.status, getError.response?.data);
+        }
+      } finally {
+        setIsLoadingExistingData(false);
+      }
+    }
+  };
+
+  // Handle user choosing to create new SPV (delete old draft)
+  const handleCreateNew = async () => {
+    setUserChoseCreateNew(true); // Set flag to prevent modal from showing again
+    setShowDraftModal(false);
+    
+    if (foundDraftSpvId) {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          console.log("⚠️ No access token, skipping deletion");
+        } else {
+          const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+          const deleteUrl = `${API_URL.replace(/\/$/, "")}/spv/${foundDraftSpvId}/`;
+
+          console.log("🗑️ Deleting old draft SPV:", foundDraftSpvId);
+          
+          await axios.delete(deleteUrl, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+
+          console.log("✅ Old draft SPV deleted successfully");
+        }
+      } catch (deleteError) {
+        console.error("⚠️ Error deleting old draft SPV:", deleteError.response?.status, deleteError.response?.data);
+        // Continue anyway - the old SPV might not exist or might be in a different state
+      }
+    }
+
+    // Clear everything and start fresh
+    setSpvId(null);
+    setFoundDraftSpvId(null);
+    localStorage.removeItem("currentSpvId");
+    setIsLoadingExistingData(false);
+    console.log("🆕 Starting fresh SPV creation (old draft deleted)");
+  };
+
   const handleDragOver = (e) => {
     e.preventDefault();
   };
@@ -88,6 +221,12 @@ const SPVStep1 = () => {
   useEffect(() => {
     const fetchExistingData = async () => {
       try {
+        // If user already chose to create new, skip draft check
+        if (userChoseCreateNew) {
+          setIsLoadingExistingData(false);
+          return;
+        }
+
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
           setIsLoadingExistingData(false);
@@ -96,14 +235,52 @@ const SPVStep1 = () => {
 
         const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
         
-        // Check if SPV ID was passed from navigation (from ManagerLayout)
+        // Check if SPV ID was passed from navigation or localStorage
+        // IMPORTANT: We need to VALIDATE that the SPV is actually a draft before using it
         let currentSpvId = location.state?.spvId || null;
         let step1Data = null;
-
-        // If SPV ID was passed from navigation, use it directly
+        
+        // If we have an SPV ID from navigation, validate it's a draft first
         if (currentSpvId) {
-          console.log("✅ Using SPV ID from navigation state:", currentSpvId);
-          setSpvId(currentSpvId);
+          // Parse if it's a string
+          if (typeof currentSpvId === 'string' && !isNaN(currentSpvId)) {
+            currentSpvId = parseInt(currentSpvId, 10);
+          }
+          
+          // Validate this SPV is actually a draft before using it
+          try {
+            const checkDraftUrl = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/final_review/`;
+            const draftCheckResponse = await axios.get(checkDraftUrl, {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              }
+            });
+            
+            const reviewData = draftCheckResponse.data;
+            const finalReviewStatus = reviewData?.spv_status || reviewData?.status;
+            
+            if (finalReviewStatus && finalReviewStatus.toLowerCase() !== 'draft') {
+              console.log("⚠️ SPV", currentSpvId, "is not a draft (status:", finalReviewStatus, "), will find/create draft SPV");
+              currentSpvId = null; // Not a draft, don't use it
+            } else {
+              console.log("✅ SPV", currentSpvId, "is a draft, will use it");
+            }
+          } catch (draftCheckError) {
+            // 404 on final_review means it's a draft (not submitted yet)
+            if (draftCheckError.response?.status === 404) {
+              console.log("✅ SPV", currentSpvId, "has no final_review (404) - it's a draft, will use it");
+            } else {
+              console.log("⚠️ Could not validate SPV", currentSpvId, "- will find/create draft SPV instead");
+              currentSpvId = null; // Can't validate, don't use it
+            }
+          }
+        }
+        
+        // If we have a validated draft SPV ID, try to fetch step1 data
+        if (currentSpvId) {
+          console.log("✅ Using validated draft SPV ID:", currentSpvId);
           
           // Try to fetch step1 data for this SPV
           try {
@@ -118,18 +295,52 @@ const SPVStep1 = () => {
 
             if (step1Response.data && step1Response.status === 200) {
               step1Data = step1Response.data;
-              console.log("✅ Found step1 data for SPV ID from navigation:", currentSpvId);
+              console.log("✅ Found step1 data for SPV ID:", currentSpvId);
             }
           } catch (getError) {
             if (getError.response?.status === 404) {
-              console.log("⚠️ No step1 data found for SPV ID from navigation (this is normal for new SPVs)");
+              console.log("✅ SPV", currentSpvId, "exists but step1 data not found yet (404) - this is normal, will use this SPV");
+              // SPV exists but step1 hasn't been filled yet - this is fine, we'll use this SPV
             } else {
               console.error("❌ Error fetching step1 data:", getError.response?.status, getError.response?.data);
             }
           }
-        } else {
-          // Try to get SPV list first to find existing SPV ID that hasn't been finalized
-          try {
+        }
+        
+        // If we don't have a validated SPV ID yet, check localStorage and SPV list
+        if (!currentSpvId) {
+          // First check localStorage, but we'll validate it
+          const storedSpvId = localStorage.getItem("currentSpvId");
+          if (storedSpvId && !isNaN(storedSpvId)) {
+            const parsedStoredId = parseInt(storedSpvId, 10);
+            // Quick validation - check if it's a draft
+            try {
+              const checkDraftUrl = `${API_URL.replace(/\/$/, "")}/spv/${parsedStoredId}/final_review/`;
+              await axios.get(checkDraftUrl, {
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`,
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                }
+              });
+              // If we get here, final_review exists - check status
+              // (We'll check status in the SPV list check below)
+            } catch (draftCheckError) {
+              // 404 means it's a draft - use it
+              if (draftCheckError.response?.status === 404) {
+                currentSpvId = parsedStoredId;
+                console.log("✅ Found draft SPV ID in localStorage:", currentSpvId);
+              } else {
+                // Other error - clear localStorage and find new draft
+                console.log("⚠️ Stored SPV ID", parsedStoredId, "is invalid, clearing localStorage");
+                localStorage.removeItem("currentSpvId");
+              }
+            }
+          }
+          
+          // If still no validated SPV ID, try to get SPV list to find existing draft SPV
+          if (!currentSpvId) {
+            try {
           // Try to get user's SPVs
           const spvListUrl = `${API_URL.replace(/\/$/, "")}/spv/`;
           const spvListResponse = await axios.get(spvListUrl, {
@@ -145,10 +356,25 @@ const SPVStep1 = () => {
           // Handle paginated response or direct array
           const spvData = spvListResponse.data?.results || spvListResponse.data;
 
-          // Check if SPV has been finalized by checking spv_status from final_review API
-          // Only "draft" status means we can use the same SPV, all other statuses mean start new
-          const checkIfSPVFinalized = async (spvId, spvStatus = null) => {
-            // First, check the final_review endpoint to get the actual spv_status
+          // Check if SPV is a draft (can be reused)
+          // A draft SPV is one that:
+          // 1. Has no final_review (404) - means it hasn't been submitted yet
+          // 2. Has final_review with status "draft"
+          // 3. Has status "draft" in the SPV list
+          const checkIfSPVIsDraft = async (spvId, spvStatus = null) => {
+            // First, check the status from the list if available
+            if (spvStatus) {
+              const normalizedStatus = spvStatus.toLowerCase();
+              if (normalizedStatus === 'draft') {
+                console.log("✅ SPV", spvId, "has draft status in list - can use same SPV");
+                return true; // It's a draft, can use this SPV
+              } else if (normalizedStatus === 'pending review' || normalizedStatus === 'pending_review') {
+                console.log("⚠️ SPV", spvId, "has pending review status - will create new SPV");
+                return false; // Already submitted, start new SPV
+              }
+            }
+            
+            // Then check the final_review endpoint to get the actual spv_status
             try {
               const finalReviewUrl = `${API_URL.replace(/\/$/, "")}/spv/${spvId}/final_review/`;
               const finalReviewResponse = await axios.get(finalReviewUrl, {
@@ -167,10 +393,10 @@ const SPVStep1 = () => {
                 const normalizedStatus = finalReviewStatus.toLowerCase();
                 if (normalizedStatus === 'draft') {
                   console.log("✅ SPV", spvId, "has draft status in final_review - can use same SPV");
-                  return false; // Not finalized, can use this SPV
+                  return true; // It's a draft, can use this SPV
                 } else {
                   console.log("⚠️ SPV", spvId, "has status:", finalReviewStatus, "in final_review - will create new SPV");
-                  return true; // Finalized (not draft), start new SPV
+                  return false; // Not draft, start new SPV
                 }
               }
               
@@ -178,34 +404,22 @@ const SPVStep1 = () => {
               const fullSpvData = reviewData?.full_spv_data || reviewData;
               if (fullSpvData?.submitted_at || fullSpvData?.final_submitted) {
                 console.log("⚠️ SPV", spvId, "has been submitted (found submitted_at/final_submitted) - will create new SPV");
-                return true;
+                return false; // Already submitted, start new SPV
               }
               
-              // If final_review exists but no clear status, assume not draft (start new)
+              // If final_review exists but no clear status, assume it's been submitted (start new)
               console.log("⚠️ SPV", spvId, "final_review exists but no draft status - will create new SPV");
-              return true;
+              return false;
             } catch (err) {
-              // If we can't access final_review (404), check the status from the list
+              // If we can't access final_review (404), it means the SPV hasn't been submitted yet
+              // This is a draft SPV - we can use it!
               if (err.response?.status === 404) {
-                console.log("⚠️ SPV", spvId, "final_review not found (404) - checking list status");
-                // No final review data - check status from list
-                if (spvStatus) {
-                  const normalizedStatus = spvStatus.toLowerCase();
-                  if (normalizedStatus === 'draft') {
-                    console.log("✅ SPV", spvId, "has draft status in list - can use same SPV");
-                    return false; // Draft status, can use this SPV
-                  } else {
-                    console.log("⚠️ SPV", spvId, "has status:", spvStatus, "in list - will create new SPV");
-                    return true; // Not draft, start new SPV
-                  }
-                }
-                // If no status from list either, assume not finalized (can use this SPV)
-                console.log("⚠️ SPV", spvId, "no final_review and no list status - assuming can use same SPV");
-                return false;
+                console.log("✅ SPV", spvId, "has no final_review (404) - this is a draft SPV, can use it");
+                return true; // No final_review = draft = can use this SPV
               }
-              // For other errors, assume finalized to be safe (start new)
+              // For other errors, assume it's not a draft to be safe (start new)
               console.log("⚠️ Error checking SPV", spvId, "status - will create new SPV");
-              return true;
+              return false;
             }
           };
 
@@ -219,15 +433,15 @@ const SPVStep1 = () => {
               return (b.id || 0) - (a.id || 0);
             });
 
-            // Check each SPV starting from most recent to find one that's not finalized
+            // Check each SPV starting from most recent to find one that's a draft
             for (const spv of sortedSpvs) {
-              const isFinalized = await checkIfSPVFinalized(spv.id, spv.status);
-              if (!isFinalized) {
+              const isDraft = await checkIfSPVIsDraft(spv.id, spv.status);
+              if (isDraft) {
                 currentSpvId = spv.id;
-                console.log("✅ Found unfinalized SPV ID:", currentSpvId);
+                console.log("✅ Found draft SPV ID:", currentSpvId);
                 break;
               } else {
-                console.log("⚠️ SPV", spv.id, "has been finalized, checking next...");
+                console.log("⚠️ SPV", spv.id, "is not a draft, checking next...");
               }
             }
 
@@ -236,22 +450,24 @@ const SPVStep1 = () => {
               console.log("ℹ️ All existing SPVs have been finalized. Starting new SPV creation.");
             }
           } else if (spvData && spvData.id) {
-            // Single SPV object - check if it's finalized
-            const isFinalized = await checkIfSPVFinalized(spvData.id, spvData.status);
-            if (!isFinalized) {
+            // Single SPV object - check if it's a draft
+            const isDraft = await checkIfSPVIsDraft(spvData.id, spvData.status);
+            if (isDraft) {
               currentSpvId = spvData.id;
-              console.log("✅ Found unfinalized SPV ID from single object:", currentSpvId);
+              console.log("✅ Found draft SPV ID from single object:", currentSpvId);
             } else {
-              console.log("⚠️ SPV has been finalized. Starting new SPV creation.");
+              console.log("⚠️ SPV is not a draft. Starting new SPV creation.");
             }
           }
-        } catch (spvListError) {
-          console.log("⚠️ Could not get SPV list:", spvListError.response?.status, spvListError.response?.data);
-          // If we can't get SPV list, we'll try to get step1 data with default ID 1
+            } catch (spvListError) {
+              console.log("⚠️ Could not get SPV list:", spvListError.response?.status, spvListError.response?.data);
+              // If we can't get SPV list, we'll create a new SPV
+            }
+          }
         }
 
-        // If we have an unfinalized SPV ID, try to get step1 data
-        // Only fetch step1 data if we have a valid unfinalized SPV ID
+        // If we have a validated draft SPV ID but no step1 data yet, try to fetch it
+        // NOTE: 404 is normal if step1 data doesn't exist yet - we'll still use this SPV
         if (currentSpvId && !step1Data) {
           const step1Url = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/update_step1/`;
           
@@ -273,27 +489,67 @@ const SPVStep1 = () => {
             }
           } catch (getError) {
             if (getError.response?.status === 404) {
-              console.log("⚠️ No step1 data found for SPV ID", currentSpvId, "(this is normal for new SPVs)");
+              console.log("✅ SPV", currentSpvId, "exists but step1 data not found yet (404) - this is normal, will use this SPV");
               // SPV exists but step1 hasn't been filled yet - this is fine, we'll use this SPV
+              // The 404 is expected and doesn't mean the SPV doesn't exist
             } else {
               console.error("❌ Error fetching step1 data:", getError.response?.status, getError.response?.data);
+              // If it's a different error (not 404), the SPV might not exist - clear it
+              if (getError.response?.status === 400 || getError.response?.status === 403) {
+                console.log("⚠️ SPV", currentSpvId, "seems invalid, clearing it");
+                currentSpvId = null;
+                localStorage.removeItem("currentSpvId");
+              }
             }
           }
-        } else if (!currentSpvId) {
-          // No unfinalized SPV found - we'll start fresh
-          // Don't set a default SPV ID here, let the submission create a new one
-          console.log("ℹ️ No unfinalized SPV found. Will create new SPV on submission.");
         }
-      }
+        
+        if (!currentSpvId) {
+          // No draft SPV found - we'll start fresh
+          // Don't set a default SPV ID here, let the submission create a new one
+          console.log("ℹ️ No draft SPV found. Will create new SPV on submission.");
+        }
 
-        // Set SPV ID only if we found an unfinalized one
-        // If all SPVs are finalized, currentSpvId will be null and we'll start fresh
+        // Set SPV ID only if we found a VALIDATED draft one
+        // If no draft SPV found, currentSpvId will be null and we'll start fresh
         if (currentSpvId) {
-          setSpvId(currentSpvId);
+          // Final validation: make sure this SPV actually exists and is a draft
+          try {
+            const finalCheckUrl = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/final_review/`;
+            await axios.get(finalCheckUrl, {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              }
+            });
+            // If we get here without 404, check the status
+            // (We already checked this above, but double-check)
+            console.log("✅ SPV", currentSpvId, "validated as draft");
+          } catch (finalCheckError) {
+            // 404 is good (means draft), but other errors mean invalid SPV
+            if (finalCheckError.response?.status !== 404) {
+              console.log("⚠️ SPV", currentSpvId, "validation failed, clearing it");
+              currentSpvId = null;
+              localStorage.removeItem("currentSpvId");
+            }
+          }
+        }
+        
+        if (currentSpvId && !userChoseCreateNew) {
+          // Found a draft SPV - show modal to let user choose (only if user hasn't already chosen to create new)
+          setFoundDraftSpvId(currentSpvId);
+          setShowDraftModal(true);
+          setIsLoadingExistingData(false); // Stop loading since we're showing modal
+          console.log("✅ Found draft SPV ID:", currentSpvId, "- showing modal for user choice");
+          // Don't set SPV ID yet - wait for user's choice
         } else {
           // Clear SPV ID to start fresh
           setSpvId(null);
-          console.log("🆕 Starting fresh SPV creation (all existing SPVs are finalized)");
+          // Clear localStorage as well
+          localStorage.removeItem("currentSpvId");
+          setIsLoadingExistingData(false);
+          console.log("🆕 Starting fresh SPV creation (no valid draft SPV found)");
         }
 
         // If we got step1 data, populate the form
@@ -380,7 +636,7 @@ const SPVStep1 = () => {
     };
 
     fetchExistingData();
-  }, [location.pathname]); // Refetch when route changes
+  }, [location.pathname, userChoseCreateNew]); // Refetch when route changes or user makes choice
 
   const handleNext = async () => {
     setLoading(true);
@@ -394,14 +650,98 @@ const SPVStep1 = () => {
 
       const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
 
-      // Get current SPV ID from state or location
-      let currentSpvId = spvId || location.state?.spvId || null;
+      // Get current SPV ID from state, location, or localStorage (in that order)
+      // CRITICAL: Check localStorage FIRST to prevent creating duplicate SPVs
+      let currentSpvId = localStorage.getItem("currentSpvId") || spvId || location.state?.spvId;
+      
+      // If we have an SPV ID from localStorage, parse it (it's stored as string)
+      if (currentSpvId && typeof currentSpvId === 'string' && !isNaN(currentSpvId)) {
+        currentSpvId = parseInt(currentSpvId, 10);
+      }
+      
+      // If we have an SPV ID, ALWAYS use UPDATE - never create a new one
+      // This prevents duplicate SPV creation
+      if (currentSpvId) {
+        console.log("✅ Using existing SPV ID for UPDATE:", currentSpvId);
+        // Update state and localStorage to ensure consistency
+        setSpvId(currentSpvId);
+        localStorage.setItem("currentSpvId", String(currentSpvId));
+      } else {
+        // Before creating a new SPV, double-check if there's an existing unfinalized one
+        // IMPORTANT: Only create a new SPV if we're absolutely sure there isn't one already
+        // First check localStorage one more time (in case it was set elsewhere)
+        const storedSpvId = localStorage.getItem("currentSpvId");
+        if (storedSpvId && !isNaN(storedSpvId)) {
+          currentSpvId = parseInt(storedSpvId, 10);
+          console.log("✅ Found SPV ID in localStorage:", currentSpvId);
+        }
+        
+        // If still no SPV ID, check the API for existing unfinalized SPVs
+        if (!currentSpvId) {
+          try {
+            const spvListUrl = `${API_URL.replace(/\/$/, "")}/spv/`;
+            const spvListResponse = await axios.get(spvListUrl, {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              }
+            });
 
-      // If we have an SPV ID, use update endpoint (whether it has existing data or not)
-      // Otherwise, use create endpoint to create a new SPV
+            const spvData = spvListResponse.data?.results || spvListResponse.data;
+            
+            if (Array.isArray(spvData) && spvData.length > 0) {
+              // Check each SPV to find one that's not finalized
+              for (const spv of spvData) {
+                try {
+                  const finalReviewUrl = `${API_URL.replace(/\/$/, "")}/spv/${spv.id}/final_review/`;
+                  const finalReviewResponse = await axios.get(finalReviewUrl, {
+                    headers: {
+                      'Authorization': `Bearer ${accessToken}`,
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json'
+                    }
+                  });
+                  
+                  const reviewData = finalReviewResponse.data;
+                  const finalReviewStatus = reviewData?.spv_status || reviewData?.status;
+                  
+                  if (finalReviewStatus && finalReviewStatus.toLowerCase() === 'draft') {
+                    currentSpvId = spv.id;
+                    console.log("✅ Found existing draft SPV:", currentSpvId);
+                    // Store it in localStorage
+                    localStorage.setItem("currentSpvId", String(currentSpvId));
+                    break;
+                  }
+                } catch (err) {
+                  // If final_review doesn't exist (404), it's likely a draft
+                  if (err.response?.status === 404) {
+                    currentSpvId = spv.id;
+                    console.log("✅ Found SPV without final_review (draft):", currentSpvId);
+                    // Store it in localStorage
+                    localStorage.setItem("currentSpvId", String(currentSpvId));
+                    break;
+                  }
+                }
+              }
+            }
+          } catch (spvListError) {
+            console.log("⚠️ Could not check SPV list before creating:", spvListError.response?.status);
+          }
+        }
+      }
+      
+      // If we found an SPV ID, update state
+      if (currentSpvId) {
+        setSpvId(currentSpvId);
+      }
+
+      // If we have an SPV ID, ALWAYS use update endpoint (whether it has existing data or not)
+      // This prevents creating duplicate SPVs
+      // Only create a new SPV if currentSpvId is null/undefined
       if (currentSpvId) {
         // Update existing SPV
-        const step1Url = `${API_URL.replace(/\/$/, "")}/api/spv/${currentSpvId}/update_step1/`;
+        const step1Url = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/update_step1/`;
 
         console.log("=== SPV Step1 Update API Call ===");
         console.log("SPV ID:", currentSpvId);
@@ -491,8 +831,10 @@ const SPVStep1 = () => {
           console.log("✅ SPV step1 updated successfully:", response.data);
         }
         
-        // Navigate to next step on success
-        navigate("/syndicate-creation/spv-creation/step2");
+        // Navigate to next step on success, passing SPV ID in state
+        navigate("/syndicate-creation/spv-creation/step2", { 
+          state: { spvId: currentSpvId } 
+        });
       } else {
         // Create new SPV using the create_step1 endpoint
         const createStep1Url = `${API_URL.replace(/\/$/, "")}/spv/create_step1/`;
@@ -568,8 +910,20 @@ const SPVStep1 = () => {
           if (response.data?.id || response.data?.spv_id) {
             const newSpvId = response.data.id || response.data.spv_id;
             setSpvId(newSpvId);
-            console.log("✅ Stored new SPV ID:", newSpvId);
+            // Store SPV ID in localStorage to persist across steps
+            localStorage.setItem("currentSpvId", String(newSpvId));
+            console.log("✅ Stored new SPV ID in state and localStorage:", newSpvId);
             setHasExistingData(true);
+            
+            // Navigate to next step, passing SPV ID
+            navigate("/syndicate-creation/spv-creation/step2", { 
+              state: { spvId: newSpvId } 
+            });
+            return; // Exit early after successful creation
+          } else {
+            // Even if no ID in response, navigate (SPV might have been created)
+            navigate("/syndicate-creation/spv-creation/step2");
+            return;
           }
         } catch (createError) {
           // If JSON fails and we have a file, try FormData
@@ -592,8 +946,20 @@ const SPVStep1 = () => {
             if (response.data?.id || response.data?.spv_id) {
               const newSpvId = response.data.id || response.data.spv_id;
               setSpvId(newSpvId);
-              console.log("✅ Stored new SPV ID:", newSpvId);
+              // Store SPV ID in localStorage to persist across steps
+              localStorage.setItem("currentSpvId", String(newSpvId));
+              console.log("✅ Stored new SPV ID in state and localStorage:", newSpvId);
               setHasExistingData(true);
+              
+              // Navigate to next step, passing SPV ID
+              navigate("/syndicate-creation/spv-creation/step2", { 
+                state: { spvId: newSpvId } 
+              });
+              return; // Exit early after successful creation
+            } else {
+              // Even if no ID in response, navigate (SPV might have been created)
+              navigate("/syndicate-creation/spv-creation/step2");
+              return;
             }
           } else {
             throw createError;
@@ -634,6 +1000,45 @@ const SPVStep1 = () => {
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Draft SPV Found Modal */}
+          {showDraftModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-lg w-full max-w-md p-6 space-y-4 shadow-xl">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-semibold text-gray-900">Draft SPV Found</h2>
+                </div>
+                
+                <div className="space-y-2">
+                  <p className="text-gray-700">
+                    We found an existing draft SPV (ID: <span className="font-semibold">{foundDraftSpvId}</span>).
+                  </p>
+                  <p className="text-gray-600 text-sm">
+                    Would you like to continue with this draft or create a new SPV?
+                  </p>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                  <button
+                    onClick={handleContinueDraft}
+                    className="flex-1 bg-[#00F0C3] hover:bg-[#00D4A3] text-black px-6 py-3 rounded-lg font-medium transition-colors"
+                  >
+                    Continue with Draft
+                  </button>
+                  <button
+                    onClick={handleCreateNew}
+                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
+                  >
+                    Create New SPV
+                  </button>
+                </div>
+                
+                <p className="text-xs text-gray-500 text-center pt-2">
+                  Note: Creating a new SPV will delete the existing draft.
+                </p>
+              </div>
             </div>
           )}
 

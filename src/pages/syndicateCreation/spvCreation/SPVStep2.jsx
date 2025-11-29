@@ -117,6 +117,8 @@ const SPVStep2 = () => {
         // Set SPV ID if we found one
         if (currentSpvId) {
           setSpvId(currentSpvId);
+          // Store in localStorage for consistency
+          localStorage.setItem("currentSpvId", String(currentSpvId));
         }
 
         // If we got step2 data, populate the form
@@ -221,8 +223,13 @@ const SPVStep2 = () => {
 
       const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
 
-      // Get SPV ID from state or fetch it
-      let currentSpvId = spvId;
+      // Get SPV ID from state, localStorage, or fetch it
+      let currentSpvId = spvId || localStorage.getItem("currentSpvId");
+      
+      // Parse if it's a string from localStorage
+      if (currentSpvId && typeof currentSpvId === 'string' && !isNaN(currentSpvId)) {
+        currentSpvId = parseInt(currentSpvId, 10);
+      }
 
       if (!currentSpvId) {
         try {
@@ -261,6 +268,10 @@ const SPVStep2 = () => {
         }
 
         setSpvId(currentSpvId);
+        // Store in localStorage for consistency
+        if (currentSpvId) {
+          localStorage.setItem("currentSpvId", String(currentSpvId));
+        }
       }
 
       const step2Url = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/update_step2/`;

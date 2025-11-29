@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 
 // --- Sub-Components ---
 
@@ -26,9 +26,18 @@ const InviteLPsModal = ({ isOpen, onClose, spvId }) => {
     setIsSending(true);
     const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || TEST_TOKEN;
 
-    // Prepare payload based on cURL request
+    // Parse emails - backend will handle validation
+    const emailList = emails.split(',').map(e => e.trim()).filter(e => e !== "");
+    
+    if (emailList.length === 0) {
+      alert("Please enter at least one email address.");
+      setIsSending(false);
+      return;
+    }
+
+    // Prepare payload - send all emails, backend will validate
     const payload = {
-      emails: emails.split(',').map(e => e.trim()).filter(e => e !== ""), // Split CSV to array
+      emails: emailList,
       message: message,
       lead_carry_percentage: parseFloat(leadCarry) || 0,
       investment_visibility: visibility, // "hidden" or "visible"
@@ -38,7 +47,12 @@ const InviteLPsModal = ({ isOpen, onClose, spvId }) => {
     };
 
     try {
-      const response = await fetch(`${API_BASE_URL}/${spvId}/invite-lps/`, {
+      const url = `${API_BASE_URL}/${spvId}/invite-lps/`;
+      console.log("Sending invite request to:", url);
+      console.log("Payload:", payload);
+      console.log("SPV ID being used:", spvId);
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -47,8 +61,13 @@ const InviteLPsModal = ({ isOpen, onClose, spvId }) => {
         body: JSON.stringify(payload)
       });
 
+      console.log("Response status:", response.status);
+      console.log("Response ok:", response.ok);
+
       if (response.ok) {
-        alert("Invites sent successfully!");
+        const result = await response.json();
+        console.log("Invite response:", result);
+        alert(`Invites sent successfully!`);
         // Reset form
         setEmails("");
         setMessage("");
@@ -57,12 +76,19 @@ const InviteLPsModal = ({ isOpen, onClose, spvId }) => {
         setTags("");
         onClose();
       } else {
-        const errorData = await response.json();
-        alert(`Failed to send invites: ${errorData.message || response.statusText}`);
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { message: errorText || response.statusText };
+        }
+        console.error("Error response:", errorData);
+        alert(`Failed to send invites: ${errorData.message || errorData.detail || response.statusText}`);
       }
     } catch (error) {
       console.error("Error sending invites:", error);
-      alert("Network error occurred while sending invites.");
+      alert(`Network error occurred while sending invites: ${error.message}`);
     } finally {
       setIsSending(false);
     }
@@ -357,20 +383,33 @@ const SPVDocuments = ({ spvId }) => {
   );
 };
 
-const SPVActivity = () => (
-  <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-    <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
-    <div className="space-y-4">
-      <div className="flex items-start space-x-3 pb-4 border-b border-gray-100 last:border-0">
-        <div className="w-2 h-2 mt-2 rounded-full bg-[#00F0C3]"></div>
-        <div>
-          <p className="text-sm font-medium text-gray-900">SPV Created</p>
-          <p className="text-xs text-gray-500">2 days ago</p>
-        </div>
+const SPVActivity = ({ activities }) => {
+  if (!activities || activities.length === 0) {
+    return (
+      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 text-center">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
+        <p className="text-gray-500">No activity recorded yet.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+      <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
+      <div className="space-y-4">
+        {activities.map((activity, index) => (
+          <div key={index} className="flex items-start space-x-3 pb-4 border-b border-gray-100 last:border-0">
+            <div className="w-2 h-2 mt-2 rounded-full bg-[#00F0C3]"></div>
+            <div>
+              <p className="text-sm font-medium text-gray-900">{activity.title || activity.type}</p>
+              {activity.date && <p className="text-xs text-gray-500">{activity.date}</p>}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // --- Main Component ---
 
@@ -382,11 +421,45 @@ const SPVDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [spvNumericId, setSpvNumericId] = useState(null); // Store the actual numeric SPV ID from API
   
   const navigate = useNavigate();
-  const { id } = useParams(); 
-  // Default to 13 as per your curl request if no ID is in URL
-  const displayId = id || "13";
+  const location = useLocation();
+  const { id } = useParams();
+  
+  // Get SPV ID from multiple sources (priority order):
+  // 1. URL parameter (if route has :id)
+  // 2. Location state (passed from navigation)
+  // 3. Default to "13" only if nothing is available (shouldn't happen in normal flow)
+  const getSpvId = () => {
+    // Try URL param first
+    if (id) {
+      console.log("Using SPV ID from URL params:", id);
+      return String(id);
+    }
+    
+    // Try location state
+    const stateSpv = location.state?.spv;
+    if (stateSpv) {
+      // Prioritize numeric ID over code
+      const spvId = stateSpv.id || stateSpv.spv_id || stateSpv.write_id;
+      if (spvId) {
+        console.log("Using SPV ID from location state:", spvId, "Full state:", stateSpv);
+        return String(spvId);
+      }
+      // Fallback to code if no numeric ID
+      if (stateSpv.code) {
+        console.log("Using SPV code from location state:", stateSpv.code);
+        return String(stateSpv.code);
+      }
+    }
+    
+    // Last resort: default (shouldn't happen)
+    console.warn("No SPV ID found in URL or state, defaulting to 13. Location state:", location.state);
+    return "13";
+  };
+  
+  const displayId = getSpvId();
 
   // --- Configuration ---
   const API_BASE_URL = "http://168.231.121.7/blockchain-backend/api/spv";
@@ -421,6 +494,7 @@ const SPVDetails = () => {
     const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || TEST_TOKEN;
 
     try {
+      console.log("Fetching SPV details with ID:", displayId);
       const response = await fetch(`${API_BASE_URL}/${displayId}/details/`, {
         method: 'GET',
         headers: {
@@ -431,14 +505,17 @@ const SPVDetails = () => {
 
       if (response.ok) {
         const result = await response.json();
+        console.log("SPV Details API response:", result);
         if (result.success) {
           transformAndSetData(result.data);
         } else {
            // If we can't get details, we might still be able to show the list, but usually we need context
-           console.warn("SPV Details success flag was false");
+           console.warn("SPV Details success flag was false", result);
         }
       } else {
-        console.error(`Error fetching SPV details: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error(`Error fetching SPV details: ${response.status} ${response.statusText}`, errorText);
+        setError(`Failed to load SPV details: ${response.statusText}`);
       }
     } catch (err) {
       console.error("Error fetching SPV details:", err);
@@ -449,11 +526,16 @@ const SPVDetails = () => {
   };
 
   const fetchInvestorsList = async () => {
+    await fetchInvestorsListWithId(displayId);
+  };
+
+  const fetchInvestorsListWithId = async (spvIdToUse) => {
     const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || TEST_TOKEN;
     
     try {
+        console.log("Fetching investors with SPV ID:", spvIdToUse);
         // Hit the exact endpoint requested for the investor list
-        const response = await fetch(`${API_BASE_URL}/${displayId}/investors/`, {
+        const response = await fetch(`${API_BASE_URL}/${spvIdToUse}/investors/`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -463,9 +545,11 @@ const SPVDetails = () => {
 
         if (response.ok) {
             const result = await response.json();
+            console.log("Investors API response:", result);
             // Check based on the provided JSON structure
             if (result.success && result.data && result.data.investors) {
                 const mappedInvestors = result.data.investors.map(inv => ({
+                    id: inv.id || inv.investor_id || inv.write_id, // Include investor ID
                     name: inv.name,
                     email: inv.email,
                     // Map API 'amount' (e.g., 50000) to formatted currency
@@ -481,7 +565,8 @@ const SPVDetails = () => {
                 setInvestorList(mappedInvestors);
             }
         } else {
-            console.error("Failed to fetch investor list");
+            const errorText = await response.text();
+            console.error("Failed to fetch investor list:", response.status, errorText);
         }
     } catch (err) {
         console.error("Error fetching investor list:", err);
@@ -489,6 +574,13 @@ const SPVDetails = () => {
   };
 
   const transformAndSetData = (apiData) => {
+    // Store the numeric SPV ID for API calls (not the code)
+    const numericId = apiData.id || apiData.spv_id || apiData.write_id;
+    if (numericId) {
+      setSpvNumericId(String(numericId));
+      console.log("Stored SPV numeric ID for API calls:", numericId);
+    }
+    
     // 1. Map API data to UI structure
     const mappedData = {
         name: apiData.display_name || apiData.spv_code,
@@ -496,8 +588,8 @@ const SPVDetails = () => {
         raised: formatCurrency(apiData.fundraising_progress?.total_raised),
         target: formatCurrency(apiData.fundraising_progress?.target),
         progress: apiData.fundraising_progress?.progress_percent || 0,
-        daysLeft: apiData.fundraising_progress?.days_to_close ? `${apiData.fundraising_progress.days_to_close} Days Left` : "Closed",
-        status: apiData.status_label || "Unknown",
+        daysLeft: apiData.fundraising_progress?.days_to_close ? `${apiData.fundraising_progress.days_to_close} Days Left` : null,
+        status: apiData.status_label || null,
         statusColor: apiData.status === "raising" || apiData.status === "active" ? "bg-[#22C55E] text-white" : "bg-gray-200 text-gray-700",
         totalValue: formatCurrency(apiData.financial_metrics?.total_value),
         unrealizedGain: formatCurrency(apiData.financial_metrics?.uninvested_sum), 
@@ -505,17 +597,18 @@ const SPVDetails = () => {
         multiple: `${apiData.financial_metrics?.multiple || 0}x`,
         jurisdiction: `${apiData.spv_details?.jurisdiction}, ${apiData.spv_details?.country?.toUpperCase()}`,
         created: formatDate(apiData.created_at),
-        focus: apiData.portfolio_company?.sector || "General",
+        focus: apiData.portfolio_company?.sector || null,
         vintage: apiData.spv_details?.year,
         fundTerm: `${apiData.spv_details?.term_length_years} Year(s)`,
         closingDate: formatDate(apiData.fundraising_progress?.target_closing_date),
-        description: `An SPV targeting ${apiData.portfolio_company?.stage || 'Early'} stage companies in ${apiData.portfolio_company?.sector || 'various sectors'}.`,
+        description: apiData.description || (apiData.portfolio_company?.sector ? `An SPV targeting ${apiData.portfolio_company?.stage || ''} stage companies in ${apiData.portfolio_company?.sector}.` : null),
         minInvestment: formatCurrency(apiData.investment_terms?.minimum_investment),
-        managementFee: "2.0%", 
-        investmentPeriod: "24 Months", 
+        managementFee: apiData.investment_terms?.management_fee ? formatPercent(apiData.investment_terms.management_fee) : null, 
+        investmentPeriod: apiData.investment_terms?.investment_period || null, 
         maxCap: formatCurrency(apiData.fundraising_progress?.target), 
         carriedInterest: formatPercent(apiData.carry_fees?.total_carry_percentage),
-        investorCount: apiData.investors?.count || 0
+        investorCount: apiData.investors?.count || 0,
+        activities: apiData.activities || apiData.activity_log || []
     };
 
     setSpvData(mappedData);
@@ -603,18 +696,22 @@ const SPVDetails = () => {
             <p className="text-sm text-gray-500 mb-1">Min Investment</p>
             <p className="text-2xl font-bold text-gray-900">{spvData.minInvestment}</p>
           </div>
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Days to Close</p>
-            <p className="text-2xl font-bold text-gray-900">{spvData.daysLeft}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Status</p>
-            <div className="flex items-center space-x-2">
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${spvData.statusColor}`}>
-                {spvData.status}
-              </span>
+          {spvData.daysLeft && (
+            <div>
+              <p className="text-sm text-gray-500 mb-1">Days to Close</p>
+              <p className="text-2xl font-bold text-gray-900">{spvData.daysLeft}</p>
             </div>
-          </div>
+          )}
+          {spvData.status && (
+            <div>
+              <p className="text-sm text-gray-500 mb-1">Status</p>
+              <div className="flex items-center space-x-2">
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${spvData.statusColor}`}>
+                  {spvData.status}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -679,10 +776,12 @@ const SPVDetails = () => {
               <span className="text-sm text-gray-500">Created:</span>
               <span className="text-sm font-medium text-gray-900">{spvData.created}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-500">Investment Focus:</span>
-              <span className="text-sm font-medium text-gray-900">{spvData.focus}</span>
-            </div>
+            {spvData.focus && (
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-500">Investment Focus:</span>
+                <span className="text-sm font-medium text-gray-900">{spvData.focus}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-sm text-gray-500">Vintage:</span>
               <span className="text-sm font-medium text-gray-900">{spvData.vintage}</span>
@@ -696,10 +795,12 @@ const SPVDetails = () => {
               <span className="text-sm font-medium text-gray-900">{spvData.closingDate}</span>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <p className="text-sm text-gray-500 mb-2">Description</p>
-            <p className="text-sm text-gray-900">{spvData.description}</p>
-          </div>
+          {spvData.description && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <p className="text-sm text-gray-500 mb-2">Description</p>
+              <p className="text-sm text-gray-900">{spvData.description}</p>
+            </div>
+          )}
         </div>
 
         {/* Investment Terms Card */}
@@ -710,14 +811,18 @@ const SPVDetails = () => {
               <span className="text-sm text-gray-500">Minimum Investment:</span>
               <span className="text-sm font-medium text-gray-900">{spvData.minInvestment}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-500">Management Fee:</span>
-              <span className="text-sm font-medium text-gray-900">{spvData.managementFee}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-500">Investment Period:</span>
-              <span className="text-sm font-medium text-gray-900">{spvData.investmentPeriod}</span>
-            </div>
+            {spvData.managementFee && (
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-500">Management Fee:</span>
+                <span className="text-sm font-medium text-gray-900">{spvData.managementFee}</span>
+              </div>
+            )}
+            {spvData.investmentPeriod && (
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-500">Investment Period:</span>
+                <span className="text-sm font-medium text-gray-900">{spvData.investmentPeriod}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-sm text-gray-500">Maximum Cap.:</span>
               <span className="text-sm font-medium text-gray-900">{spvData.maxCap}</span>
@@ -767,7 +872,7 @@ const SPVDetails = () => {
             <div className="relative flex-1 max-w-md">
               <input
                 type="text"
-                placeholder="Search investors by name or email..."
+                placeholder="Search investors by email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
@@ -813,10 +918,7 @@ const SPVDetails = () => {
                     filteredInvestors.map((investor, index) => (
                     <tr key={index}>
                         <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                            <div className="text-sm font-medium text-gray-900">{investor.name}</div>
-                            <div className="text-sm text-gray-500">{investor.email}</div>
-                        </div>
+                        <div className="text-sm font-medium text-gray-900">{investor.email}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{investor.amount}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{investor.ownership}</td>
@@ -867,13 +969,13 @@ const SPVDetails = () => {
       )}
 
       {activeTab === "documents" && <SPVDocuments spvId={displayId} />}
-      {activeTab === "activity" && <SPVActivity />}
+      {activeTab === "activity" && <SPVActivity activities={spvData.activities} />}
 
       {/* Invite LPs Modal */}
       <InviteLPsModal 
         isOpen={isInviteModalOpen} 
         onClose={() => setIsInviteModalOpen(false)} 
-        spvId={displayId}
+        spvId={spvNumericId || displayId}
       />
     </div>
   );
