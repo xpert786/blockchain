@@ -1,10 +1,108 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Invest = () => {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("All");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [viewMode, setViewMode] = useState("list"); // "list" or "grid"
   const filterDropdownRef = useRef(null);
+  const [syndicates, setSyndicates] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Format currency helper
+  const formatCurrency = (value) => {
+    if (!value || value === 0) return "$0";
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`;
+    } else if (value >= 1000) {
+      return `$${(value / 1000).toFixed(1)}K`;
+    }
+    return `$${value.toFixed(0)}`;
+  };
+
+  // Format allocated as percentage or number
+  const formatAllocated = (value) => {
+    if (!value || value === 0) return "0";
+    return value.toString();
+  };
+
+  // Calculate progress percentage
+  const calculateProgress = (raised, target) => {
+    if (!target || target === 0) return 0;
+    return Math.round((raised / target) * 100);
+  };
+
+  // Fetch discover deals from API
+  useEffect(() => {
+    fetchDiscoverDeals();
+  }, []);
+
+  const fetchDiscoverDeals = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      const response = await fetch(`${API_URL.replace(/\/$/, "")}/dashboard/discover_deals/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Discover deals API response:", data);
+        
+        // Map API response to component data structure
+        const mappedSyndicates = data.results?.map(deal => {
+          const progress = calculateProgress(deal.raised || 0, deal.target || 0);
+          
+          return {
+            id: deal.id,
+            spvId: deal.spv_id,
+            name: deal.syndicate_name || deal.company_name || "Unnamed Deal",
+            date: deal.created_at || "-",
+            description: `${deal.company_name || deal.syndicate_name} - ${deal.sector || "General"} sector opportunity in ${deal.stage || "Seed"} stage.`,
+            tags: [
+              ...(deal.tags || []),
+              deal.sector,
+              deal.stage,
+              deal.status === "Pending" ? "Pending" : "Raising"
+            ].filter(Boolean),
+            allocated: formatAllocated(deal.allocated),
+            raised: formatCurrency(deal.raised),
+            target: formatCurrency(deal.target),
+            minInvestment: formatCurrency(deal.min_investment),
+            trackRecord: "+23.4% IRR", // This might come from API in future
+            status: progress,
+            daysLeft: deal.days_left?.toString() || "0",
+            rawData: deal // Keep raw data for navigation
+          };
+        }) || [];
+
+        setSyndicates(mappedSyndicates);
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to fetch discover deals:", response.status, errorText);
+        setError("Failed to load deals. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error fetching discover deals:", err);
+      setError(err.message || "Network error loading deals.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Close filter dropdown when clicking outside
   useEffect(() => {
@@ -20,44 +118,6 @@ const Invest = () => {
     };
   }, []);
 
-  const syndicates = [
-    {
-      name: "NextGen AI Syndicate",
-      date: "02/01/2024",
-      description: "Focused On Artificial Intelligence And Machine Learning Startups With Proven Traction And Enterprise Customers.",
-      tags: ["Technology", "Series B", "Raising"],
-      allocated: "18",
-      raised: "$1.2M",
-      target: "$25M",
-      minInvestment: "$25,000",
-      trackRecord: "+23.4% IRR",
-      status: 65
-    },
-    {
-      name: "NextGen AI Syndicate",
-      date: "02/01/2024",
-      description: "Focused On Artificial Intelligence And Machine Learning Startups With Proven Traction And Enterprise Customers.",
-      tags: ["Technology", "Series B", "Raising"],
-      allocated: "18",
-      raised: "$1.2M",
-      target: "$25M",
-      minInvestment: "$25,000",
-      trackRecord: "+23.4% IRR",
-      status: 65
-    },
-    {
-      name: "NextGen AI Syndicate",
-      date: "02/01/2024",
-      description: "Focused On Artificial Intelligence And Machine Learning Startups With Proven Traction And Enterprise Customers.",
-      tags: ["Technology", "Series B", "Raising"],
-      allocated: "18",
-      raised: "$1.2M",
-      target: "$25M",
-      minInvestment: "$25,000",
-      trackRecord: "+23.4% IRR",
-      status: 65
-    }
-  ];
 
   const filterOptions = ["All", "Technology", "AI/ML", "Robotics", "Healthcare", "Energy", "Finance"];
 
@@ -159,7 +219,26 @@ const Invest = () => {
 
         {/* Syndicate Cards */}
         <div className="space-y-4">
-          {syndicates.map((syndicate, index) => (
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="w-10 h-10 border-4 border-[#00F0C3] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-600 mb-4">{error}</p>
+              <button
+                onClick={fetchDiscoverDeals}
+                className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          ) : syndicates.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">No deals available at the moment.</p>
+            </div>
+          ) : (
+            syndicates.map((syndicate, index) => (
             <div key={index} className="bg-white rounded-lg p-6" style={{border: "0.5px solid #E2E2FB"}}>
               {/* Header: Name, Date, Tags */}
               <div className="flex items-start justify-between mb-4">
@@ -247,7 +326,31 @@ const Invest = () => {
 
                {/* Action Buttons */}
                <div className="flex flex-wrap items-center justify-start gap-3 ">
-                  <button className="px-4 py-2 bg-[#00F0C3] text-black rounded-xl hover:bg-[#16a34a] transition-colors font-medium font-poppins-custom flex items-center gap-2 text-sm">
+                  <button 
+                    onClick={() => navigate(`/investor-panel/tax-documents/${syndicate.id || syndicate.spvId || '1'}`, { 
+                      state: { 
+                        document: {
+                          id: syndicate.id || syndicate.spvId || '1',
+                          investmentName: syndicate.name,
+                          company: syndicate.name,
+                          taxYear: new Date().getFullYear().toString(),
+                          issueDate: syndicate.date,
+                          status: "Available",
+                          stage: syndicate.tags?.find(tag => ['Seed', 'Series A', 'Series B', 'Series C'].includes(tag)) || "Seed",
+                          valuation: syndicate.target,
+                          expectedReturns: "3-5x",
+                          timeline: `${syndicate.daysLeft} days`,
+                          fundingProgress: syndicate.status,
+                          fundingRaised: syndicate.raised,
+                          fundingTarget: syndicate.target,
+                          documentTitle: `${syndicate.name} Investment Document`,
+                          size: "2.5 MB",
+                          rawData: syndicate.rawData || syndicate
+                        }
+                      } 
+                    })}
+                    className="px-4 py-2 bg-[#00F0C3] text-black rounded-xl hover:bg-[#16a34a] transition-colors font-medium font-poppins-custom flex items-center gap-2 text-sm"
+                  >
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M16.5 5.25L10.125 11.625L6.375 7.875L1.5 12.75M16.5 5.25H12M16.5 5.25V9.75" stroke="#001D21" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>                                                   
@@ -273,7 +376,8 @@ const Invest = () => {
                   </button>
                 </div>
             </div>
-          ))}
+          ))
+          )}
         </div>
     </>
   );

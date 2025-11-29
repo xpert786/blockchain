@@ -3,7 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 
 // --- Sub-Components ---
 
-const InviteLPsModal = ({ isOpen, onClose, spvId }) => {
+const InviteLPsModal = ({ isOpen, onClose, spvId, investorList = [] }) => {
   if (!isOpen) return null;
 
   // Form State
@@ -976,6 +976,7 @@ const SPVDetails = () => {
         isOpen={isInviteModalOpen} 
         onClose={() => setIsInviteModalOpen(false)} 
         spvId={spvNumericId || displayId}
+        investorList={investorList}
       />
     </div>
   );

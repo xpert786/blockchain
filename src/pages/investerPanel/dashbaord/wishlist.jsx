@@ -10,6 +10,142 @@ const Wishlist = () => {
   const [showInvestDropdown, setShowInvestDropdown] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const investDropdownRef = useRef(null);
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Format currency helper
+  const formatCurrency = (value) => {
+    if (!value || value === 0) return "$0";
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`;
+    } else if (value >= 1000) {
+      return `$${(value / 1000).toFixed(1)}K`;
+    }
+    return `$${value.toFixed(0)}`;
+  };
+
+  // Format date helper
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffTime = Math.abs(now - date);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) return "1 Day Ago";
+      if (diffDays < 7) return `${diffDays} Days Ago`;
+      if (diffDays < 14) return "1 Week Ago";
+      if (diffDays < 21) return "2 Weeks Ago";
+      if (diffDays < 30) return "3 Weeks Ago";
+      if (diffDays < 60) return "1 Month Ago";
+      if (diffDays < 90) return "2 Months Ago";
+      return `${Math.floor(diffDays / 30)} Months Ago`;
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  // Delete item from wishlist
+  const deleteWishlistItem = async (spvId) => {
+    if (!spvId) {
+      console.error("No SPV ID provided for wishlist deletion");
+      return;
+    }
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        console.error("No access token found. Please login again.");
+        return;
+      }
+
+      const response = await fetch(`${API_URL.replace(/\/$/, "")}/dashboard/delete_wishlist/?spv_id=${spvId}`, {
+        method: 'DELETE',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        console.log("Wishlist item deleted successfully");
+        // Remove item from local state
+        setWishlistItems(prev => prev.filter(item => (item.id !== spvId && item.spvId !== spvId)));
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to delete wishlist item:", response.status, errorText);
+        // Optionally show error message to user
+      }
+    } catch (err) {
+      console.error("Error deleting wishlist item:", err);
+      // Optionally show error message to user
+    }
+  };
+
+  // Fetch wishlist from API
+  useEffect(() => {
+    fetchWishlist();
+  }, []);
+
+  const fetchWishlist = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      const response = await fetch(`${API_URL.replace(/\/$/, "")}/dashboard/wishlist/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Wishlist API response:", data);
+        
+        // Map API response to component data structure
+        const mappedItems = data.results?.map(item => ({
+          id: item.id || item.spv_id,
+          spvId: item.spv_id,
+          name: item.syndicate_name || item.company_name || "Unnamed Deal",
+          estimatedMin: formatCurrency(item.min_investment),
+          updates: item.updates || "0 New",
+          added: formatDate(item.added_at || item.created_at),
+          tags: [
+            ...(item.tags || []),
+            item.sector,
+            item.stage
+          ].filter(Boolean),
+          statusTag: item.status === "Active" ? "Watching" : item.status === "Pending" ? "Available Soon" : "Invite Only",
+          statusTagColor: item.status === "Active" ? "purple" : item.status === "Pending" ? "blue" : "dark",
+          rawData: item // Keep raw data for navigation
+        })) || [];
+
+        setWishlistItems(mappedItems);
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to fetch wishlist:", response.status, errorText);
+        setError("Failed to load wishlist. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error fetching wishlist:", err);
+      setError(err.message || "Network error loading wishlist.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -25,37 +161,7 @@ const Wishlist = () => {
     };
   }, []);
 
-  const wishlistItems = [
-    {
-      name: "SpaceX Series F",
-      estimatedMin: "$100,000",
-      updates: "3 New",
-      added: "2 Weeks Ago",
-      tags: ["Healthcare", "Series B"],
-      statusTag: "Watching",
-      statusTagColor: "purple"
-    },
-    {
-      name: "Stripe Series H",
-      estimatedMin: "$500,000",
-      updates: "5 New",
-      added: "3 Weeks Ago",
-      tags: ["FinTech", "Series H"],
-      statusTag: "Available Soon",
-      statusTagColor: "blue"
-    },
-    {
-      name: "OpenAI Series C",
-      estimatedMin: "$250,000",
-      updates: "1 New",
-      added: "1 Month Ago",
-      tags: ["AI/ML", "Series C"],
-      statusTag: "Invite Only",
-      statusTagColor: "dark"
-    }
-  ];
-
-  const pendingCount = 2;
+  const pendingCount = wishlistItems.filter(item => item.statusTag === "Watching" || item.statusTag === "Available Soon").length;
 
   return (
     <div className="min-h-screen bg-[#F4F6F5] overflow-x-hidden">
@@ -82,7 +188,26 @@ const Wishlist = () => {
 
         {/* Wishlist Items */}
         <div className="space-y-4">
-          {wishlistItems.map((item, index) => (
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="w-10 h-10 border-4 border-[#00F0C3] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-600 mb-4">{error}</p>
+              <button
+                onClick={fetchWishlist}
+                className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          ) : wishlistItems.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">No items in your wishlist yet.</p>
+            </div>
+          ) : (
+            wishlistItems.map((item, index) => (
             <div key={index} className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
               {/* Top Row: Company Name and Tags */}
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
@@ -148,15 +273,20 @@ const Wishlist = () => {
                  style={{border: "0.5px solid #01373D"}}>
                   View Updates
                 </button >
-                <button className="w-10 h-10 bg-[#F4F6F5] text-[#0A2A2E]  rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
-                style={{border: "0.5px solid #01373D"}}>
+                <button 
+                  onClick={() => deleteWishlistItem(item.id || item.spvId)}
+                  className="w-10 h-10 bg-[#F4F6F5] text-[#0A2A2E] rounded-lg hover:bg-red-50 transition-colors flex items-center justify-center"
+                  style={{border: "0.5px solid #01373D"}}
+                  title="Remove from wishlist"
+                >
                 <svg width="13" height="14" viewBox="0 0 13 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M0.5 3H11.75M10.5 3V11.75C10.5 12.375 9.875 13 9.25 13H3C2.375 13 1.75 12.375 1.75 11.75V3M3.625 3V1.75C3.625 1.125 4.25 0.5 4.875 0.5H7.375C8 0.5 8.625 1.125 8.625 1.75V3M4.875 6.125V9.875M7.375 6.125V9.875" stroke="#001D21" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 </button>
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </main>
     </div>

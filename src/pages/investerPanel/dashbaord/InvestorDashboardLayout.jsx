@@ -32,8 +32,14 @@ const InvestorDashboardLayout = () => {
       setActiveNav("invest");
     } else if (path.includes("/investor-panel/portfolio")) {
       setActiveNav("portfolio");
-    } else if (path.includes("/investor-panel/tax-documents")) {
-      setActiveNav("taxes");
+    } else if (path === "/investor-panel/tax-documents" || path.startsWith("/investor-panel/tax-documents/")) {
+      // Only set taxes as active for the list page, not the detail page
+      if (path === "/investor-panel/tax-documents") {
+        setActiveNav("taxes");
+      } else {
+        // For detail pages, show overview or none
+        setActiveNav("overview");
+      }
     } else if (path.includes("/investor-panel/messages")) {
       setActiveNav("messages");
     } else if (path.includes("/investor-panel/settings")) {

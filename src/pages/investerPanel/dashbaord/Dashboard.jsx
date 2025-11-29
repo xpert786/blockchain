@@ -1,122 +1,403 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("discover-deals");
+  const [investmentOpportunities, setInvestmentOpportunities] = useState([]);
+  const [isLoadingDeals, setIsLoadingDeals] = useState(false);
+  const [dealsError, setDealsError] = useState(null);
+  const [topSyndicates, setTopSyndicates] = useState([]);
+  const [isLoadingSyndicates, setIsLoadingSyndicates] = useState(false);
+  const [syndicatesError, setSyndicatesError] = useState(null);
+  const [invites, setInvites] = useState([]);
+  const [isLoadingInvites, setIsLoadingInvites] = useState(false);
+  const [invitesError, setInvitesError] = useState(null);
+  const [overview, setOverview] = useState(null);
+  const [isLoadingOverview, setIsLoadingOverview] = useState(false);
+  const [wishlistStatus, setWishlistStatus] = useState({}); // Track wishlist status: { spvId: true/false }
 
-  const investmentOpportunities = [
-    {
-      name: "naman",
-      date: "02/01/2024",
-      allocated: "18",
-      raised: "$1.2M",
-      target: "$25M",
-      minInvestment: "$85k",
-      tags: ["Healthcare", "Series B", "Raising"],
-      daysLeft: "22",
-      statusColor: "bg-[#22C55E]"
-    },
-    {
-      name: "Green Energy Initiative Q3",
-      date: "02/01/2024",
-      allocated: "30",
-      raised: "$4M",
-      target: "$45M",
-      minInvestment: "$50k",
-      tags: ["Energy", "Raising"],
-      daysLeft: "22",
-      statusColor: "bg-[#22C55E]"
-    },
-    {
-      name: "Real Estate Opportunity Fund",
-      date: "15/01/2024",
-      allocated: "18",
-      raised: "$1.3M",
-      target: "$8M",
-      minInvestment: "$50k",
-      tags: ["Energy", "Raising"],
-      daysLeft: "22",
-      statusColor: "bg-[#22C55E]"
+  // Format currency helper
+  const formatCurrency = (value) => {
+    if (!value || value === 0) return "$0";
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`;
+    } else if (value >= 1000) {
+      return `$${(value / 1000).toFixed(1)}K`;
     }
-  ];
+    return `$${value.toFixed(0)}`;
+  };
 
-  const topSyndicates = [
-    {
-      name: "NextGen AI Syndicate",
-      sector: "Technology",
-      allocated: "18",
-      raised: "$1.2M",
-      target: "$25M",
-      minInvestment: "$250,000",
-      trackRecord: "+23.4% IRR",
-      status: 65
-    },
-    {
-      name: "NextGen AI Syndicate",
-      sector: "Technology",
-      allocated: "18",
-      raised: "$1.2M",
-      target: "$25M",
-      minInvestment: "$250,000",
-      trackRecord: "+23.4% IRR",
-      status: 65
-    },
-    {
-      name: "NextGen AI Syndicate",
-      sector: "Technology",
-      allocated: "18",
-      raised: "$1.2M",
-      target: "$25M",
-      minInvestment: "$250,000",
-      trackRecord: "+23.4% IRR",
-      status: 65
-    },
-    {
-      name: "NextGen AI Syndicate",
-      sector: "Technology",
-      allocated: "18",
-      raised: "$1.2M",
-      target: "$25M",
-      minInvestment: "$250,000",
-      trackRecord: "+23.4% IRR",
-      status: 65
-    }
-  ];
+  // Format allocated as percentage or number
+  const formatAllocated = (value) => {
+    if (!value || value === 0) return "0";
+    return value.toString();
+  };
 
-  const invites = [
-    {
-      name: "TechCorp Series c",
-      date: "02/01/2024",
-      allocated: "18",
-      raised: "$1.2M",
-      target: "$25M",
-      minInvestment: "$85k",
-      tags: ["Technology","series b"],
-      daysLeft: "22",
-      statusColor: "bg-[#22C55E]"
-    },
-    {
-      name: "Green Energy Initiative Q3",
-      date: "02/01/2024",
-      allocated: "30",
-      raised: "$4M",
-      target: "$45M",
-      minInvestment: "$50k",
-      tags: ["Energy", "Raising"],
-      daysLeft: "22",
-      statusColor: "bg-[#22C55E]"
-    },
-    {
-      name: "Real Estate Opportunity Fund",
-      date: "15/01/2024",
-      allocated: "18",
-      raised: "$1.3M",
-      target: "$8M",
-      minInvestment: "$50k",
-      tags: ["Energy", "Raising"],
-      daysLeft: "22",
-      statusColor: "bg-[#22C55E]"
+  // Get status color based on status
+  const getStatusColor = (status) => {
+    const statusLower = status?.toLowerCase();
+    if (statusLower === "raising" || statusLower === "active") {
+      return "bg-[#22C55E]";
+    } else if (statusLower === "pending") {
+      return "bg-[#FFD97A]";
+    } else if (statusLower === "closed" || statusLower === "closing") {
+      return "bg-[#ED1C24]";
     }
-  ];
+    return "bg-gray-200";
+  };
+
+  // Fetch overview data and wishlist on component mount
+  useEffect(() => {
+    fetchOverview();
+    fetchWishlist();
+  }, []);
+
+  // Fetch data based on active tab
+  useEffect(() => {
+    if (activeTab === "discover-deals") {
+      fetchDiscoverDeals();
+    } else if (activeTab === "top-syndicates") {
+      fetchTopSyndicates();
+    } else if (activeTab === "invites") {
+      fetchInvites();
+    }
+  }, [activeTab]);
+
+  const fetchDiscoverDeals = async () => {
+    setIsLoadingDeals(true);
+    setDealsError(null);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      const response = await fetch(`${API_URL.replace(/\/$/, "")}/dashboard/discover_deals/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Discover deals API response:", data);
+        
+        // Map API response to component data structure
+        const mappedDeals = data.results?.map(deal => ({
+          id: deal.id,
+          spvId: deal.spv_id,
+          name: deal.syndicate_name || deal.company_name || "Unnamed Deal",
+          date: deal.created_at || "-",
+          allocated: formatAllocated(deal.allocated),
+          raised: formatCurrency(deal.raised),
+          target: formatCurrency(deal.target),
+          minInvestment: formatCurrency(deal.min_investment),
+          tags: [
+            ...(deal.tags || []),
+            deal.sector,
+            deal.stage,
+            deal.status === "Pending" ? "Pending" : "Raising"
+          ].filter(Boolean),
+          daysLeft: deal.days_left?.toString() || "0",
+          statusColor: getStatusColor(deal.status),
+          status: deal.status,
+          rawData: deal // Keep raw data for navigation
+        })) || [];
+
+        setInvestmentOpportunities(mappedDeals);
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to fetch discover deals:", response.status, errorText);
+        setDealsError("Failed to load deals. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error fetching discover deals:", err);
+      setDealsError(err.message || "Network error loading deals.");
+    } finally {
+      setIsLoadingDeals(false);
+    }
+  };
+
+  // Fetch top syndicates from API
+  const fetchTopSyndicates = async () => {
+    setIsLoadingSyndicates(true);
+    setSyndicatesError(null);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      const response = await fetch(`${API_URL.replace(/\/$/, "")}/dashboard/top_syndicates/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Top syndicates API response:", data);
+        
+        // Map API response to component data structure
+        const mappedSyndicates = data.results?.map(syndicate => {
+          // Calculate progress percentage (raised vs total_allocation or target)
+          const total = syndicate.total_allocation || syndicate.total_raised || 0;
+          const raised = syndicate.total_raised || 0;
+          const progress = total > 0 ? Math.round((raised / total) * 100) : 0;
+
+          return {
+            id: syndicate.id,
+            syndicateLeadId: syndicate.syndicate_lead_id,
+            name: syndicate.syndicate_name || "Unnamed Syndicate",
+            sector: syndicate.sectors?.[0] || "General",
+            allocated: formatAllocated(syndicate.total_allocation),
+            raised: formatCurrency(syndicate.total_raised),
+            target: formatCurrency(syndicate.total_allocation),
+            minInvestment: formatCurrency(syndicate.min_investment),
+            trackRecord: syndicate.track_record || "N/A",
+            status: progress,
+            statusLabel: syndicate.status || "Inactive",
+            rawData: syndicate // Keep raw data for navigation
+          };
+        }) || [];
+
+        setTopSyndicates(mappedSyndicates);
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to fetch top syndicates:", response.status, errorText);
+        setSyndicatesError("Failed to load syndicates. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error fetching top syndicates:", err);
+      setSyndicatesError(err.message || "Network error loading syndicates.");
+    } finally {
+      setIsLoadingSyndicates(false);
+    }
+  };
+
+  // Fetch invites from API
+  const fetchInvites = async () => {
+    setIsLoadingInvites(true);
+    setInvitesError(null);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      const response = await fetch(`${API_URL.replace(/\/$/, "")}/dashboard/invites/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Invites API response:", data);
+        
+        // Map API response to component data structure
+        const mappedInvites = data.results?.map(invite => ({
+          id: invite.id,
+          spvId: invite.spv_id,
+          name: invite.syndicate_name || invite.company_name || "Unnamed Invite",
+          date: invite.invited_at || "-",
+          allocated: formatAllocated(invite.allocated),
+          raised: formatCurrency(invite.raised),
+          target: formatCurrency(invite.target),
+          minInvestment: formatCurrency(invite.min_investment),
+          tags: [
+            ...(invite.tags || []),
+            invite.sector,
+            invite.stage,
+            invite.status === "Active" ? "Raising" : invite.status
+          ].filter(Boolean),
+          daysLeft: invite.deadline?.toString() || "0",
+          statusColor: getStatusColor(invite.status),
+          status: invite.status,
+          rawData: invite // Keep raw data for navigation
+        })) || [];
+
+        setInvites(mappedInvites);
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to fetch invites:", response.status, errorText);
+        setInvitesError("Failed to load invites. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error fetching invites:", err);
+      setInvitesError(err.message || "Network error loading invites.");
+    } finally {
+      setIsLoadingInvites(false);
+    }
+  };
+
+  // Fetch overview data from API
+  const fetchOverview = async () => {
+    setIsLoadingOverview(true);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        console.warn("No access token found for overview API.");
+        setIsLoadingOverview(false);
+        return;
+      }
+
+      const response = await fetch(`${API_URL.replace(/\/$/, "")}/dashboard/overview/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Overview API response:", data);
+        setOverview(data);
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to fetch overview:", response.status, errorText);
+      }
+    } catch (err) {
+      console.error("Error fetching overview:", err);
+    } finally {
+      setIsLoadingOverview(false);
+    }
+  };
+
+  // Get KYC status badge styling
+  const getKYCStatusBadgeClass = () => {
+    if (!overview?.kyc_card) return "bg-gray-200 text-gray-700";
+    if (overview.kyc_card.verified) {
+      return "bg-[#001D21] text-white";
+    }
+    return "bg-gray-200 text-gray-700";
+  };
+
+  // Fetch wishlist from API
+  const fetchWishlist = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        console.warn("No access token found for wishlist API.");
+        return;
+      }
+
+      const response = await fetch(`${API_URL.replace(/\/$/, "")}/dashboard/wishlist/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Wishlist API response:", data);
+        
+        // Map wishlist items to status object
+        const wishlistMap = {};
+        if (data.results && Array.isArray(data.results)) {
+          data.results.forEach(item => {
+            const spvId = item.spv_id || item.id;
+            if (spvId) {
+              wishlistMap[spvId] = true;
+            }
+          });
+        }
+        setWishlistStatus(wishlistMap);
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to fetch wishlist:", response.status, errorText);
+      }
+    } catch (err) {
+      console.error("Error fetching wishlist:", err);
+    }
+  };
+
+  // Toggle wishlist for an SPV
+  const toggleWishlist = async (spvId, currentStatus) => {
+    if (!spvId) {
+      console.error("No SPV ID provided for wishlist toggle");
+      return;
+    }
+
+    const newStatus = !currentStatus;
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        console.error("No access token found. Please login again.");
+        return;
+      }
+
+      let response;
+      
+      // If item is already in wishlist, use DELETE endpoint to remove it
+      if (currentStatus) {
+        response = await fetch(`${API_URL.replace(/\/$/, "")}/dashboard/delete_wishlist/?spv_id=${spvId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+      } else {
+        // If item is not in wishlist, use POST endpoint to add it
+        response = await fetch(`${API_URL.replace(/\/$/, "")}/dashboard/toggle_wishlist/`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            spv_id: spvId,
+            is_in_wishlist: newStatus
+          }),
+        });
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Wishlist toggle API response:", data);
+        // Update local state
+        setWishlistStatus(prev => ({
+          ...prev,
+          [spvId]: newStatus
+        }));
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to toggle wishlist:", response.status, errorText);
+        // Optionally show error message to user
+      }
+    } catch (err) {
+      console.error("Error toggling wishlist:", err);
+      // Optionally show error message to user
+    }
+  };
 
   return (
     <>
@@ -132,8 +413,8 @@ const Dashboard = () => {
               </svg>
             </div>
             <div>
-              <span className="w-fit bg-[#001D21] text-white px-3 py-2 rounded-md text-xs font-medium font-poppins-custom">
-                Verified
+              <span className={`w-fit px-3 py-2 rounded-md text-xs font-medium font-poppins-custom ${getKYCStatusBadgeClass()}`}>
+                {isLoadingOverview ? "Loading..." : (overview?.kyc_card?.status_label || "Not Started")}
               </span>
             </div>
           </div>
@@ -148,8 +429,12 @@ const Dashboard = () => {
 
             </div>
             <div className="flex flex-row justify-between gap-5">
-              <p className="text-2xl font-bold text-[#0A2A2E] font-poppins-custom mb-1">3</p>
-              <p className="text-sm text-[#748A91] font-poppins-custom">Active SPVs</p>
+              <p className="text-2xl font-bold text-[#0A2A2E] font-poppins-custom mb-1">
+                {isLoadingOverview ? "..." : (overview?.investments_card?.count || 0)}
+              </p>
+              <p className="text-sm text-[#748A91] font-poppins-custom">
+                {isLoadingOverview ? "Loading..." : (overview?.investments_card?.label || "Active SPVs")}
+              </p>
             </div>
           </div>
 
@@ -164,8 +449,14 @@ const Dashboard = () => {
 
             </div>
             <div className="flex flex-row justify-between gap-5">
-              <p className="text-2xl font-bold text-[#0A2A2E] font-poppins-custom mb-1">$287,500</p>
-              <p className="text-sm text-[#22C55E] font-poppins-custom">+ 15% from invested capital</p>
+              <p className="text-2xl font-bold text-[#0A2A2E] font-poppins-custom mb-1">
+                {isLoadingOverview ? "..." : (overview?.portfolio_card?.formatted_value || "$0")}
+              </p>
+              {overview?.portfolio_card?.growth_label && (
+                <p className="text-sm text-[#22C55E] font-poppins-custom">
+                  {overview.portfolio_card.growth_label}
+                </p>
+              )}
             </div>
           </div>
 
@@ -179,8 +470,12 @@ const Dashboard = () => {
 
             </div>
             <div className="flex flex-row justify-between gap-5">
-              <p className="text-2xl font-bold text-[#0A2A2E] font-poppins-custom mb-1">5</p>
-              <p className="text-sm text-[#22C55E] font-poppins-custom">Unread Updates</p>
+              <p className="text-2xl font-bold text-[#0A2A2E] font-poppins-custom mb-1">
+                {isLoadingOverview ? "..." : (overview?.notification_card?.count || 0)}
+              </p>
+              <p className="text-sm text-[#22C55E] font-poppins-custom">
+                {isLoadingOverview ? "Loading..." : (overview?.notification_card?.label || "Unread Updates")}
+              </p>
             </div>
           </div>
         </div>
@@ -237,6 +532,26 @@ const Dashboard = () => {
             if (activeTab === "top-syndicates") {
               return (
                 <div className="bg-white rounded-lg p-6 mb-6" style={{border: "0.5px solid #E2E2FB"}}>
+              {isLoadingSyndicates ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="w-10 h-10 border-4 border-[#00F0C3] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : syndicatesError ? (
+                <div className="text-center py-12">
+                  <p className="text-red-600 mb-4">{syndicatesError}</p>
+                  <button
+                    onClick={fetchTopSyndicates}
+                    className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : topSyndicates.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500">No syndicates available at the moment.</p>
+                </div>
+              ) : (
+                <>
               <div className="overflow-x-auto">
                 <div className="min-w-[900px]">
                   {/* Table Header */}
@@ -303,6 +618,8 @@ const Dashboard = () => {
                   </svg>
                 </button>
               </div>
+                </>
+              )}
                 </div>
               );
             } else if (activeTab === "invites") {
@@ -310,7 +627,26 @@ const Dashboard = () => {
                 <div key="invites-section" className="space-y-4 mb-6 bg-white rounded-lg p-6"
                 style={{border: "0.5px solid #E2E2FB"}}
                 >
-              {invites.map((invite, index) => (
+            {isLoadingInvites ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="w-10 h-10 border-4 border-[#00F0C3] border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : invitesError ? (
+              <div className="text-center py-12">
+                <p className="text-red-600 mb-4">{invitesError}</p>
+                <button
+                  onClick={fetchInvites}
+                  className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : invites.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500">No invites available at the moment.</p>
+              </div>
+            ) : (
+              invites.map((invite, index) => (
               <div key={index} className="bg-white rounded-lg p-6"
               style={{border: "0.5px solid #E2E2FB"}}
               >
@@ -379,7 +715,31 @@ const Dashboard = () => {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                   {/* Left: Action Buttons */}
                   <div className="flex items-center gap-3">
-                    <button className="px-5 py-2.5 bg-[#00F0C3] text-[#001D21] rounded-lg hover:bg-[#00C4B3] transition-colors font-medium font-poppins-custom flex items-center gap-2">
+                    <button 
+                      onClick={() => navigate(`/investor-panel/tax-documents/${invite.id || invite.spvId || '1'}`, { 
+                        state: { 
+                          document: {
+                            id: invite.id || invite.spvId || '1',
+                            investmentName: invite.name,
+                            company: invite.name,
+                            taxYear: new Date().getFullYear().toString(),
+                            issueDate: invite.date,
+                            status: "Available",
+                            stage: invite.tags?.find(tag => ['Seed', 'Series A', 'Series B', 'Series C'].includes(tag)) || "Seed",
+                            valuation: invite.target,
+                            expectedReturns: "3-5x",
+                            timeline: `${invite.daysLeft} days`,
+                            fundingProgress: 65,
+                            fundingRaised: invite.raised,
+                            fundingTarget: invite.target,
+                            documentTitle: `${invite.name} Investment Document`,
+                            size: "2.5 MB",
+                            rawData: invite.rawData || invite
+                          }
+                        } 
+                      })}
+                      className="px-5 py-2.5 bg-[#00F0C3] text-[#001D21] rounded-lg hover:bg-[#00C4B3] transition-colors font-medium font-poppins-custom flex items-center gap-2"
+                    >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <g clipPath="url(#clip0_1401_2449)">
                         <path d="M14.6673 7.38527V7.99861C14.6665 9.43622 14.201 10.8351 13.3402 11.9865C12.4794 13.1379 11.2695 13.9803 9.89089 14.3879C8.51227 14.7955 7.03882 14.7465 5.6903 14.2483C4.34177 13.7501 3.19042 12.8293 2.40796 11.6233C1.6255 10.4173 1.25385 8.99065 1.34844 7.55615C1.44303 6.12165 1.99879 4.75616 2.93284 3.66332C3.86689 2.57049 5.12917 1.80886 6.53144 1.49204C7.93371 1.17521 9.40083 1.32017 10.714 1.90527M6.00065 7.33194L8.00065 9.33194L14.6673 2.66527" stroke="#001D21" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -407,9 +767,21 @@ const Dashboard = () => {
                         </defs>
                       </svg>
                     </button>
-                    <button className="w-10 h-10 bg-[#F4F6F5] border border-gray-400 text-[#0A2A2E] rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center">
+                    <button 
+                      onClick={() => toggleWishlist(invite.id || invite.spvId, wishlistStatus[invite.id || invite.spvId] || false)}
+                      className={`w-10 h-10 border border-gray-400 text-[#0A2A2E] rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center ${
+                        wishlistStatus[invite.id || invite.spvId] ? 'bg-[#FFD700]' : 'bg-[#F4F6F5]'
+                      }`}
+                    >
                       <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M10 1.5L12.5 7.5L19 8.5L14.5 13L15.5 19.5L10 16.5L4.5 19.5L5.5 13L1 8.5L7.5 7.5L10 1.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path 
+                          d="M10 1.5L12.5 7.5L19 8.5L14.5 13L15.5 19.5L10 16.5L4.5 19.5L5.5 13L1 8.5L7.5 7.5L10 1.5Z" 
+                          stroke="currentColor" 
+                          strokeWidth="1.5" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round"
+                          fill={wishlistStatus[invite.id || invite.spvId] ? "currentColor" : "none"}
+                        />
                       </svg>
                     </button>
                   </div>
@@ -424,8 +796,10 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-            ))}
+            ))
+            )}
               {/* View All Invites Button */}
+          {!isLoadingInvites && !invitesError && invites.length > 0 && (
               <div className="text-center mt-6">
                 <button className="px-6 py-3 bg-white border border-gray-300 text-[#0A2A2E] rounded-lg hover:bg-gray-50 transition-colors font-medium font-poppins-custom flex items-center gap-2 mx-auto">
                   View All Invites
@@ -434,6 +808,7 @@ const Dashboard = () => {
                   </svg>
                 </button>
               </div>
+          )}
             </div>
               );
             } else {
@@ -441,7 +816,26 @@ const Dashboard = () => {
                 <div key="discover-deals-section" className="space-y-4 mb-6 bg-white rounded-lg p-6"
                 style={{border: "0.5px solid #E2E2FB"}}
                 >
-            {investmentOpportunities.map((opportunity, index) => (
+            {isLoadingDeals ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="w-10 h-10 border-4 border-[#00F0C3] border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : dealsError ? (
+              <div className="text-center py-12">
+                <p className="text-red-600 mb-4">{dealsError}</p>
+                <button
+                  onClick={fetchDiscoverDeals}
+                  className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : investmentOpportunities.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-gray-500">No deals available at the moment.</p>
+              </div>
+            ) : (
+              investmentOpportunities.map((opportunity, index) => (
               <div key={index} className="bg-white rounded-lg p-6"
               style={{border: "0.5px solid #E2E2FB"}}
               >
@@ -510,7 +904,31 @@ const Dashboard = () => {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                   {/* Left: Action Buttons */}
                   <div className="flex items-center gap-3">
-                    <button className="px-5 py-2.5 bg-[#00F0C3] text-[#001D21] rounded-lg hover:bg-[#00C4B3] transition-colors font-medium font-poppins-custom flex items-center gap-2">
+                    <button 
+                      onClick={() => navigate(`/investor-panel/tax-documents/${opportunity.id || opportunity.spvId || '1'}`, { 
+                        state: { 
+                          document: {
+                            id: opportunity.id || opportunity.spvId || '1',
+                            investmentName: opportunity.name,
+                            company: opportunity.name,
+                            taxYear: new Date().getFullYear().toString(),
+                            issueDate: opportunity.date,
+                            status: "Available",
+                            stage: opportunity.tags?.find(tag => ['Seed', 'Series A', 'Series B', 'Series C'].includes(tag)) || "Seed",
+                            valuation: opportunity.target,
+                            expectedReturns: "3-5x",
+                            timeline: `${opportunity.daysLeft} days`,
+                            fundingProgress: 65,
+                            fundingRaised: opportunity.raised,
+                            fundingTarget: opportunity.target,
+                            documentTitle: `${opportunity.name} Investment Document`,
+                            size: "2.5 MB",
+                            rawData: opportunity.rawData || opportunity
+                          }
+                        } 
+                      })}
+                      className="px-5 py-2.5 bg-[#00F0C3] text-[#001D21] rounded-lg hover:bg-[#00C4B3] transition-colors font-medium font-poppins-custom flex items-center gap-2"
+                    >
                     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M16.5 5.25L10.125 11.625L6.375 7.875L1.5 12.75M16.5 5.25H12M16.5 5.25V9.75" stroke="#001D21" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
@@ -520,9 +938,21 @@ const Dashboard = () => {
                     <button className="px-5 py-2.5 bg-[#F4F6F5] border border-gray-400 text-[#0A2A2E] rounded-lg hover:bg-gray-50 transition-colors font-medium font-poppins-custom">
                       View Details
                     </button>
-                    <button className="w-10 h-10 bg-[#F4F6F5] border border-gray-400 text-[#0A2A2E] rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center">
+                    <button 
+                      onClick={() => toggleWishlist(opportunity.id || opportunity.spvId, wishlistStatus[opportunity.id || opportunity.spvId] || false)}
+                      className={`w-10 h-10 border border-gray-400 text-[#0A2A2E] rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center ${
+                        wishlistStatus[opportunity.id || opportunity.spvId] ? 'bg-[#FFD700]' : 'bg-[#F4F6F5]'
+                      }`}
+                    >
                       <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M10 1.5L12.5 7.5L19 8.5L14.5 13L15.5 19.5L10 16.5L4.5 19.5L5.5 13L1 8.5L7.5 7.5L10 1.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path 
+                          d="M10 1.5L12.5 7.5L19 8.5L14.5 13L15.5 19.5L10 16.5L4.5 19.5L5.5 13L1 8.5L7.5 7.5L10 1.5Z" 
+                          stroke="currentColor" 
+                          strokeWidth="1.5" 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round"
+                          fill={wishlistStatus[opportunity.id || opportunity.spvId] ? "currentColor" : "none"}
+                        />
                       </svg>
                     </button>
                   </div>
@@ -537,13 +967,16 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-            ))}
+            ))
+            )}
           {/* View All Deals Button */}
+          {!isLoadingDeals && !dealsError && investmentOpportunities.length > 0 && (
               <div className="text-center mt-6">
             <button className="px-6 py-3 bg-white border border-gray-300 text-[#0A2A2E] rounded-lg hover:bg-gray-50 transition-colors font-medium font-poppins-custom flex items-center gap-2 mx-auto">
               View All Deals →
             </button>
           </div>
+          )}
                 </div>
               );
             }
@@ -556,14 +989,23 @@ const Dashboard = () => {
         >
           <div className="mb-6 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
         <div>
-              <h2 className="text-3xl  text-[#0A2A2E] font-poppins-custom mb-2">
+              <h2 
+                onClick={() => navigate('/investor-panel/portfolio')}
+                className="text-3xl  text-[#0A2A2E] font-poppins-custom mb-2 cursor-pointer hover:text-[#9889FF] transition-colors"
+              >
               My Portfolio Snapshot
             </h2>
-            <p className="text-sm text-[#748A91] font-poppins-custom">
+            <p 
+              onClick={() => navigate('/investor-panel/portfolio')}
+              className="text-sm text-[#748A91] font-poppins-custom cursor-pointer hover:text-[#0A2A2E] transition-colors"
+            >
               Your investment performance overview
             </p>
             </div>
-            <button className="px-4 py-2 bg-white border border-gray-400 text-[#0A2A2E] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium font-poppins-custom">
+            <button 
+              onClick={() => navigate('/investor-panel/portfolio')}
+              className="px-4 py-2 bg-white border border-gray-400 text-[#0A2A2E] rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium font-poppins-custom"
+            >
               View Full
             </button>
           </div>
@@ -574,9 +1016,13 @@ const Dashboard = () => {
             style={{border: "0.5px solid #E2E2FB"}}
             >
               <p className="text-sm text-[#748A91] font-poppins-custom mb-3">Total Invested</p>
-              <p className="text-3xl  text-[#0A2A2E] font-poppins-custom mb-6">$250,000</p>
+              <p className="text-3xl  text-[#0A2A2E] font-poppins-custom mb-6">
+                {isLoadingOverview ? "..." : formatCurrency(overview?.portfolio_card?.total_invested || 0)}
+              </p>
               <p className="text-sm text-[#748A91] font-poppins-custom mb-2">Current Value</p>
-              <p className="text-2xl text-[#0A2A2E] font-poppins-custom">$287,500</p>
+              <p className="text-2xl text-[#0A2A2E] font-poppins-custom">
+                {isLoadingOverview ? "..." : (overview?.portfolio_card?.formatted_value || "$0")}
+              </p>
             </div>
 
             {/* Unrealized Gain Card */}
@@ -585,8 +1031,14 @@ const Dashboard = () => {
             >
               <p className="text-sm text-[#748A91] font-poppins-custom mb-3">Unrealized Gain</p>
               <div className="flex items-center justify-between mb-4">
-                <p className="text-3xl  text-[#22C55E] font-poppins-custom">+$37,500</p>
-                <p className="text-sm text-[#22C55E] font-poppins-custom">15% Portfolio Growth</p>
+                <p className="text-3xl  text-[#22C55E] font-poppins-custom">
+                  {isLoadingOverview ? "..." : formatCurrency(overview?.portfolio_card?.unrealized_gain || 0)}
+                </p>
+                {overview?.portfolio_card?.growth_percentage !== undefined && (
+                  <p className="text-sm text-[#22C55E] font-poppins-custom">
+                    {overview.portfolio_card.growth_percentage >= 0 ? "+" : ""}{overview.portfolio_card.growth_percentage.toFixed(1)}% Portfolio Growth
+                  </p>
+                )}
               </div>
               {/* Line Graph Representation */}
               <div className="h-40 bg-[#F9F8FF] rounded-lg relative overflow-hidden mt-4">

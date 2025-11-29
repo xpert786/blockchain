@@ -24,6 +24,9 @@ const TopSyndicates = () => {
   const actionsDropdownRefs = useRef({});
   const actionButtonRefs = useRef({});
   const [activeNav, setActiveNav] = useState("invest");
+  const [syndicates, setSyndicates] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const path = location.pathname;
@@ -127,48 +130,101 @@ const TopSyndicates = () => {
     }
   }, [showActionsDropdown]);
 
-  const syndicates = [
-    {
-      name: "NextGen AI Syndicate",
-      sector: "Technology",
-      allocated: "18",
-      raised: "$1.2M",
-      target: "$25M",
-      minInvestment: "$250,000",
-      trackRecord: "+23.4% IRR",
-      status: 65
-    },
-    {
-      name: "NextGen AI Syndicate",
-      sector: "Technology",
-      allocated: "18",
-      raised: "$1.2M",
-      target: "$25M",
-      minInvestment: "$250,000",
-      trackRecord: "+23.4% IRR",
-      status: 65
-    },
-    {
-      name: "NextGen AI Syndicate",
-      sector: "Technology",
-      allocated: "18",
-      raised: "$1.2M",
-      target: "$25M",
-      minInvestment: "$250,000",
-      trackRecord: "+23.4% IRR",
-      status: 65
-    },
-    {
-      name: "NextGen AI Syndicate",
-      sector: "Technology",
-      allocated: "18",
-      raised: "$1.2M",
-      target: "$25M",
-      minInvestment: "$250,000",
-      trackRecord: "+23.4% IRR",
-      status: 65
+  // Format currency helper
+  const formatCurrency = (value) => {
+    if (!value || value === 0) return "$0";
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`;
+    } else if (value >= 1000) {
+      return `$${(value / 1000).toFixed(1)}K`;
     }
-  ];
+    return `$${value.toFixed(0)}`;
+  };
+
+  // Format allocated as percentage or number
+  const formatAllocated = (value) => {
+    if (!value || value === 0) return "0";
+    return value.toString();
+  };
+
+  // Calculate progress percentage
+  const calculateProgress = (raised, target) => {
+    if (!target || target === 0) return 0;
+    const progress = (raised / target) * 100;
+    return Math.min(Math.round(progress), 100);
+  };
+
+  // Fetch top syndicates from API
+  useEffect(() => {
+    fetchTopSyndicates();
+  }, []);
+
+  const fetchTopSyndicates = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      const response = await fetch(`${API_URL.replace(/\/$/, "")}/dashboard/top_syndicates/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Top Syndicates API response:", data);
+        
+        // Map API response to component data structure
+        const mappedSyndicates = data.results?.map(syndicate => {
+          // Use total_allocation as target if available, otherwise use a calculated value
+          const target = syndicate.total_allocation || syndicate.total_raised * 2 || 0;
+          const progress = calculateProgress(syndicate.total_raised || 0, target);
+          
+          return {
+            id: syndicate.id,
+            syndicateLeadId: syndicate.syndicate_lead_id,
+            name: syndicate.syndicate_name || "Unnamed Syndicate",
+            sector: syndicate.sectors && syndicate.sectors.length > 0 
+              ? syndicate.sectors[0] 
+              : "General",
+            sectors: syndicate.sectors || [],
+            allocated: formatAllocated(syndicate.total_allocation),
+            raised: formatCurrency(syndicate.total_raised),
+            target: formatCurrency(target),
+            minInvestment: formatCurrency(syndicate.min_investment),
+            trackRecord: syndicate.track_record || "N/A",
+            status: progress,
+            totalSpvs: syndicate.total_spvs || 0,
+            activeSpvs: syndicate.active_spvs || 0,
+            totalInvestors: syndicate.total_investors || 0,
+            leadEmail: syndicate.lead_email,
+            joinedDate: syndicate.joined_date,
+            rawData: syndicate // Keep raw data for navigation
+          };
+        }) || [];
+
+        setSyndicates(mappedSyndicates);
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to fetch top syndicates:", response.status, errorText);
+        setError("Failed to load syndicates. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error fetching top syndicates:", err);
+      setError(err.message || "Network error loading syndicates.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filterOptions = ["All", "Technology", "AI/ML", "Robotics", "Healthcare", "Energy", "Finance"];
 
@@ -353,7 +409,34 @@ const TopSyndicates = () => {
                 </tr>
               </thead>
               <tbody className="bg-white">
-                {syndicates.map((syndicate, index) => (
+                {isLoading ? (
+                  <tr>
+                    <td colSpan="9" className="px-6 py-12 text-center">
+                      <div className="flex justify-center items-center">
+                        <div className="w-10 h-10 border-4 border-[#00F0C3] border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                    </td>
+                  </tr>
+                ) : error ? (
+                  <tr>
+                    <td colSpan="9" className="px-6 py-12 text-center">
+                      <p className="text-red-600 mb-4">{error}</p>
+                      <button
+                        onClick={fetchTopSyndicates}
+                        className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors"
+                      >
+                        Retry
+                      </button>
+                    </td>
+                  </tr>
+                ) : syndicates.length === 0 ? (
+                  <tr>
+                    <td colSpan="9" className="px-6 py-12 text-center">
+                      <p className="text-gray-500">No syndicates available at the moment.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  syndicates.map((syndicate, index) => (
                   <tr key={index} className="hover:bg-gray-50 border-b border-[#E2E2FB]">
                     <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-[#0A2A2E] font-poppins-custom">
@@ -437,6 +520,30 @@ const TopSyndicates = () => {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setShowActionsDropdown(null);
+                                // Navigate to investment detail page
+                                const syndicateId = syndicate.id || syndicate.syndicateLeadId || '1';
+                                navigate(`/investor-panel/tax-documents/${syndicateId}`, {
+                                  state: {
+                                    document: {
+                                      id: syndicateId,
+                                      investmentName: syndicate.name,
+                                      company: syndicate.name,
+                                      taxYear: new Date().getFullYear().toString(),
+                                      issueDate: syndicate.joinedDate || new Date().toLocaleDateString('en-GB'),
+                                      status: syndicate.rawData?.status || "Available",
+                                      stage: syndicate.sector || "Seed",
+                                      valuation: syndicate.target,
+                                      expectedReturns: syndicate.trackRecord,
+                                      timeline: "5-7 Years",
+                                      fundingProgress: syndicate.status,
+                                      fundingRaised: syndicate.raised,
+                                      fundingTarget: syndicate.target,
+                                      documentTitle: `${syndicate.name} Investment Document`,
+                                      size: "2.5 MB",
+                                      rawData: syndicate.rawData || syndicate
+                                    }
+                                  }
+                                });
                               }}
                               className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] rounded-t-lg hover:bg-[#00F0C3] transition-colors"
                             >
@@ -474,7 +581,8 @@ const TopSyndicates = () => {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>

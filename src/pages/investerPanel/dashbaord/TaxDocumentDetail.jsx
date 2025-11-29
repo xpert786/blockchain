@@ -30,24 +30,6 @@ const tabButtonClasses = (isActive) =>
     isActive ? "bg-[#00F0C3] text-[#001D21]" : "bg-[#F9F8FF] text-black hover:bg-gray-50 border border-[#E5E7EB]"
   }`;
 
-const keyKpis = [
-  { label: "ARR", value: "$42.0M" },
-  { label: "MRR", value: "$3.50M" },
-  { label: "Gross Margin", value: "82%" },
-  { label: "Monthly Burn", value: "$800,000" }
-];
-
-const financialSummary = [
-  { year: 2022, revenue: "$12M", ebitda: "$1.2M", cash: "$5M" },
-  { year: 2023, revenue: "$15M", ebitda: "$1.5M", cash: "$6M" },
-  { year: 2024, revenue: "$18M", ebitda: "$1.8M", cash: "$7M" },
-  { year: 2025, revenue: "$20M", ebitda: "$2.0M", cash: "$8M" },
-  { year: 2026, revenue: "$24M", ebitda: "$2.4M", cash: "$9M" },
-  { year: 2027, revenue: "$28M", ebitda: "$3.1M", cash: "$10M" },
-  { year: 2028, revenue: "$33M", ebitda: "$3.8M", cash: "$11M" },
-  { year: 2029, revenue: "$37M", ebitda: "$4.4M", cash: "$12M" },
-  { year: 2030, revenue: "$42M", ebitda: "$5.0M", cash: "$13M" }
-];
 
 const TaxDocumentDetail = () => {
   const navigate = useNavigate();
@@ -55,17 +37,63 @@ const TaxDocumentDetail = () => {
   const { documentId } = useParams();
   const investDropdownRef = useRef(null);
 
-  const [activeNav, setActiveNav] = useState("taxes");
   const [showInvestDropdown, setShowInvestDropdown] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
   const [investmentAmount, setInvestmentAmount] = useState("50,000");
   const [financialPage, setFinancialPage] = useState(1);
+  const [opportunityData, setOpportunityData] = useState(null);
+  const [isLoadingOpportunity, setIsLoadingOpportunity] = useState(false);
+  const [opportunityError, setOpportunityError] = useState(null);
+  const [financialsData, setFinancialsData] = useState(null);
+  const [isLoadingFinancials, setIsLoadingFinancials] = useState(false);
+  const [financialsError, setFinancialsError] = useState(null);
+  const [teamData, setTeamData] = useState(null);
+  const [isLoadingTeam, setIsLoadingTeam] = useState(false);
+  const [teamError, setTeamError] = useState(null);
 
   const documentFromState = location.state?.document;
-  const documentInfo = documentFromState || documentsMap[documentId] || taxDocumentsList[0];
+  
+  // Use API data if available, otherwise fall back to state or static data
+  const documentInfo = opportunityData ? {
+    id: opportunityData.spv_id,
+    investmentName: opportunityData.overview?.display_name || opportunityData.overview?.company_name,
+    company: opportunityData.overview?.company_name,
+    taxYear: new Date().getFullYear().toString(),
+    issueDate: new Date().toLocaleDateString('en-GB'),
+    status: opportunityData.details?.status_label === "Pending Review" ? "Pending" : "Available",
+    stage: opportunityData.overview?.stage,
+    valuation: opportunityData.overview?.valuation || "N/A",
+    expectedReturns: opportunityData.overview?.expected_returns,
+    timeline: opportunityData.overview?.timeline || `${opportunityData.details?.days_left || 0} days`,
+    fundingProgress: opportunityData.funding?.percentage || 0,
+    fundingRaised: opportunityData.funding?.raised_formatted || "$0",
+    fundingTarget: opportunityData.funding?.target_formatted || "$0",
+    documentTitle: `${opportunityData.overview?.display_name || opportunityData.overview?.company_name} Investment Document`,
+    size: "2.5 MB",
+    documents: opportunityData.documents ? [
+      ...(opportunityData.documents.pitch_deck ? [{ title: "Pitch Deck", size: "2.5 MB" }] : []),
+      ...(opportunityData.documents.supporting_document ? [{ title: "Supporting Document", size: "1.8 MB" }] : [])
+    ] : [],
+    rawData: opportunityData
+  } : (documentFromState || documentsMap[documentId] || taxDocumentsList[0]);
+  
   const investmentDocuments = documentInfo.documents ?? [];
 
+  // Use API financials data if available, otherwise use empty arrays
+  const keyKpis = financialsData?.key_kpis ? [
+    { label: "ARR", value: financialsData.key_kpis.arr_formatted || "$0" },
+    { label: "MRR", value: financialsData.key_kpis.mrr_formatted || "$0" },
+    { label: "Gross Margin", value: financialsData.key_kpis.gross_margin_formatted || "0%" },
+    { label: "Monthly Burn", value: financialsData.key_kpis.monthly_burn_formatted || "$0" }
+  ] : [
+    { label: "ARR", value: "$0" },
+    { label: "MRR", value: "$0" },
+    { label: "Gross Margin", value: "0%" },
+    { label: "Monthly Burn", value: "$0" }
+  ];
+
+  const financialSummary = financialsData?.financial_summary?.data || [];
   const rowsPerPage = 4;
   const totalPages = Math.ceil(financialSummary.length / rowsPerPage);
   const paginatedSummary = financialSummary.slice(
@@ -73,23 +101,136 @@ const TaxDocumentDetail = () => {
     financialPage * rowsPerPage
   );
 
+  // Scroll to top when component mounts or documentId changes
   useEffect(() => {
-    if (location.pathname.includes("/investor-panel/invest")) {
-      setActiveNav("invest");
-    } else if (location.pathname.includes("/investor-panel/portfolio")) {
-      setActiveNav("portfolio");
-    } else if (location.pathname.includes("/investor-panel/top-syndicates")) {
-      setActiveNav("invest");
-    } else if (location.pathname.includes("/investor-panel/wishlist")) {
-      setActiveNav("invest");
-    } else if (location.pathname.includes("/investor-panel/invites")) {
-      setActiveNav("invest");
-    } else if (location.pathname.includes("/investor-panel/notifications")) {
-      setActiveNav("messages");
-    } else {
-      setActiveNav("taxes");
+    window.scrollTo(0, 0);
+  }, [documentId]);
+
+  // Fetch investment opportunity data from API
+  useEffect(() => {
+    if (documentId) {
+      fetchInvestmentOpportunity();
+      fetchFinancials();
+      fetchTeam();
     }
-  }, [location.pathname]);
+  }, [documentId]);
+
+  const fetchInvestmentOpportunity = async () => {
+    setIsLoadingOpportunity(true);
+    setOpportunityError(null);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        console.warn("No access token found for investment opportunity API.");
+        setIsLoadingOpportunity(false);
+        return;
+      }
+
+      const response = await fetch(`${API_URL.replace(/\/$/, "")}/investment-opportunity/${documentId}/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Investment opportunity API response:", data);
+        setOpportunityData(data);
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to fetch investment opportunity:", response.status, errorText);
+        setOpportunityError("Failed to load investment details.");
+      }
+    } catch (err) {
+      console.error("Error fetching investment opportunity:", err);
+      setOpportunityError(err.message || "Network error loading investment details.");
+    } finally {
+      setIsLoadingOpportunity(false);
+    }
+  };
+
+  const fetchFinancials = async () => {
+    setIsLoadingFinancials(true);
+    setFinancialsError(null);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        console.warn("No access token found for financials API.");
+        setIsLoadingFinancials(false);
+        return;
+      }
+
+      const response = await fetch(`${API_URL.replace(/\/$/, "")}/investment-opportunity/${documentId}/financials/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Financials API response:", data);
+        setFinancialsData(data);
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to fetch financials:", response.status, errorText);
+        setFinancialsError("Failed to load financial data.");
+      }
+    } catch (err) {
+      console.error("Error fetching financials:", err);
+      setFinancialsError(err.message || "Network error loading financial data.");
+    } finally {
+      setIsLoadingFinancials(false);
+    }
+  };
+
+  const fetchTeam = async () => {
+    setIsLoadingTeam(true);
+    setTeamError(null);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        console.warn("No access token found for team API.");
+        setIsLoadingTeam(false);
+        return;
+      }
+
+      const response = await fetch(`${API_URL.replace(/\/$/, "")}/investment-opportunity/${documentId}/team/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Team API response:", data);
+        setTeamData(data);
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to fetch team:", response.status, errorText);
+        setTeamError("Failed to load team data.");
+      }
+    } catch (err) {
+      console.error("Error fetching team:", err);
+      setTeamError(err.message || "Network error loading team data.");
+    } finally {
+      setIsLoadingTeam(false);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -135,7 +276,7 @@ const TaxDocumentDetail = () => {
                   <div>
                     <p className="text-lg text-black font-poppins-custom mb-1">Investment Overview</p>
                     <p className="mt-3 text-sm text-[#748A91] font-poppins-custom max-w-2xl">
-                      Snapshot of the underlying investment details and performance.
+                      {opportunityData?.overview?.description || "Snapshot of the underlying investment details and performance."}
                     </p>
                   </div>
                 </div>
@@ -190,182 +331,254 @@ const TaxDocumentDetail = () => {
               {activeTab === "details" && (
                 <section className="bg-white rounded-2xl border border-[#E5E7EB] p-6">
                   <h2 className="text-xl font-semibold text-[#0A2A2E] font-poppins-custom mb-4">Company Details</h2>
-                  <div className="space-y-5">
-                    <div>
-                      <h3 className="text-lg text-[#001D21] font-poppins-custom uppercase tracking-wide mb-2">
-                        Business Model
-                      </h3>
-                      <p className="text-base text-[#748A91] font-poppins-custom">
-                        SaaS platform with enterprise clients, recurring revenue model with 95% retention rate.
-                      </p>
+                  {isLoadingOpportunity ? (
+                    <div className="flex justify-center items-center py-12">
+                      <div className="w-10 h-10 border-4 border-[#00F0C3] border-t-transparent rounded-full animate-spin"></div>
                     </div>
-                    <div>
-                      <h3 className="text-lg text-[#001D21] font-poppins-custom uppercase tracking-wide mb-2">
-                        Market Opportunity
-                      </h3>
-                      <p className="text-base text-[#748A91] font-poppins-custom">
-                        $50B+ addressable market in enterprise automation, growing at 25% CAGR.
-                      </p>
+                  ) : opportunityError ? (
+                    <div className="text-center py-12">
+                      <p className="text-red-600 mb-4">{opportunityError}</p>
                     </div>
-                    <div>
-                      <h3 className="text-lg text-[#001D21] font-poppins-custom uppercase tracking-wide mb-2">
-                        Competitive Advantage
-                      </h3>
-                      <p className="text-base text-[#748A91] font-poppins-custom">
-                        Proprietary AI technology with 3+ years R&amp;D lead over competitors.
-                      </p>
+                  ) : (
+                    <div className="space-y-5">
+                      {opportunityData?.company_details?.business_model && (
+                        <div>
+                          <h3 className="text-lg text-[#001D21] font-poppins-custom uppercase tracking-wide mb-2">
+                            Business Model
+                          </h3>
+                          <p className="text-base text-[#748A91] font-poppins-custom">
+                            {opportunityData.company_details.business_model}
+                          </p>
+                        </div>
+                      )}
+                      {opportunityData?.company_details?.market_opportunity && (
+                        <div>
+                          <h3 className="text-lg text-[#001D21] font-poppins-custom uppercase tracking-wide mb-2">
+                            Market Opportunity
+                          </h3>
+                          <p className="text-base text-[#748A91] font-poppins-custom">
+                            {opportunityData.company_details.market_opportunity}
+                          </p>
+                        </div>
+                      )}
+                      {opportunityData?.company_details?.competitive_advantage && (
+                        <div>
+                          <h3 className="text-lg text-[#001D21] font-poppins-custom uppercase tracking-wide mb-2">
+                            Competitive Advantage
+                          </h3>
+                          <p className="text-base text-[#748A91] font-poppins-custom">
+                            {opportunityData.company_details.competitive_advantage}
+                          </p>
+                        </div>
+                      )}
+                      {opportunityData?.overview?.description && (
+                        <div>
+                          <h3 className="text-lg text-[#001D21] font-poppins-custom uppercase tracking-wide mb-2">
+                            Description
+                          </h3>
+                          <p className="text-base text-[#748A91] font-poppins-custom">
+                            {opportunityData.overview.description}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  )}
                 </section>
               )}
 
               {activeTab === "financials" && (
                 <section className="space-y-6">
-                  <div className="bg-white text-[#001D21] rounded-3xl p-6 md:p-8" style={{ border: "1px solid #D1D5DB80" }}>
-                    <div className="mb-6">
-                      <p className="text-lg uppercase tracking-widest text-[#001D21] font-poppins-custom">
-                        Key KPIs
-                      </p>
-                      <h3 className="text-sm text-[#748A91] font-poppins-custom mt-2">
-                        Snapshot of current financial performance
-                      </h3>
+                  {isLoadingFinancials ? (
+                    <div className="flex justify-center items-center py-12">
+                      <div className="w-10 h-10 border-4 border-[#00F0C3] border-t-transparent rounded-full animate-spin"></div>
                     </div>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                      {keyKpis.map((item) => (
-                        <div key={item.label} className="flex flex-col gap-2">
-                          <span className="text-xs uppercase tracking-widest text-[#748A91] font-poppins-custom">
-                            {item.label}
-                          </span>
-                          <span className="text-2xl font-medium text-[#001D21] font-poppins-custom">
-                            {item.value}
-                          </span>
+                  ) : financialsError ? (
+                    <div className="text-center py-12">
+                      <p className="text-red-600 mb-4">{financialsError}</p>
+                      <button
+                        onClick={fetchFinancials}
+                        className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="bg-white text-[#001D21] rounded-3xl p-6 md:p-8" style={{ border: "1px solid #D1D5DB80" }}>
+                        <div className="mb-6">
+                          <p className="text-lg uppercase tracking-widest text-[#001D21] font-poppins-custom">
+                            Key KPIs
+                          </p>
+                          <h3 className="text-sm text-[#748A91] font-poppins-custom mt-2">
+                            Snapshot of current financial performance
+                          </h3>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="bg-white text-[#001D21] rounded-3xl overflow-hidden" style={{ border: "1px solid #D1D5DB80" }}>
-                    <div className="px-6 md:px-8 pt-6">
-                      <p className="text-sm uppercase tracking-widest text-[#001D21] font-poppins-custom mb-1">
-                        NextGen AI Syndicate
-                      </p>
-                      <h3 className="text-xl font-medium font-poppins-custom">Financial Summary</h3>
-                      <p className="text-sm text-[#748A91] font-poppins-custom mb-6">
-                        Yearly revenue, EBITDA, and cash balance
-                      </p>
-                    </div>
-                    <div className="bg-white text-[#00171C] rounded-3xl mx-4 mb-6 border border-[#D1D5DB80]">
-                      <div className="px-6 md:px-8 py-4">
-                        <div className="grid grid-cols-4 text-sm font-medium text-[#6A7A80] font-poppins-custom border-b border-[#E5E7EB] pb-3">
-                          <span>Year</span>
-                          <span>Revenue</span>
-                          <span>EBITDA</span>
-                          <span>Cash</span>
-                        </div>
-                        <div className="divide-y divide-[#EEF1F2]">
-                          {paginatedSummary.map((row) => (
-                            <div
-                              key={row.year}
-                              className="grid grid-cols-4 text-sm font-poppins-custom text-[#00171C] p-4 mb-4 mt-2 rounded-lg border border-[#E5E7EB]"
-                            >
-                              <span className="font-medium">{row.year}</span>
-                              <span className="font-medium">{row.revenue}</span>
-                              <span className="font-medium">{row.ebitda}</span>
-                              <span className="font-medium">{row.cash}</span>
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                          {keyKpis.map((item) => (
+                            <div key={item.label} className="flex flex-col gap-2">
+                              <span className="text-xs uppercase tracking-widest text-[#748A91] font-poppins-custom">
+                                {item.label}
+                              </span>
+                              <span className="text-2xl font-medium text-[#001D21] font-poppins-custom">
+                                {item.value}
+                              </span>
                             </div>
                           ))}
                         </div>
                       </div>
-                      <div className="flex items-center justify-center gap-3 pb-6">
-                        <button
-                          onClick={() => setFinancialPage((prev) => Math.max(prev - 1, 1))}
-                          className="text-xs text-[#6A7A80] font-poppins-custom hover:text-[#00171C] transition-colors disabled:opacity-30"
-                          disabled={financialPage === 1}
-                        >
-                          ‹
-                        </button>
-                        {Array.from({ length: totalPages }).map((_, index) => {
-                          const page = index + 1;
-                          const isActive = page === financialPage;
-                          return (
-                            <button
-                              key={page}
-                              onClick={() => setFinancialPage(page)}
-                              className={`w-8 h-8 rounded-full text-xs font-poppins-custom transition-all ${
-                                isActive ? "bg-[#00171C] text-white" : "text-[#6A7A80] hover:text-[#00171C]"
-                              }`}
-                            >
-                              {page}
-                            </button>
-                          );
-                        })}
-                        <button
-                          onClick={() => setFinancialPage((prev) => Math.min(prev + 1, totalPages))}
-                          className="text-xs text-[#6A7A80] font-poppins-custom hover:text-[#00171C] transition-colors disabled:opacity-30"
-                          disabled={financialPage === totalPages}
-                        >
-                          ›
-                        </button>
+
+                      <div className="bg-white text-[#001D21] rounded-3xl overflow-hidden" style={{ border: "1px solid #D1D5DB80" }}>
+                        <div className="px-6 md:px-8 pt-6">
+                          <p className="text-sm uppercase tracking-widest text-[#001D21] font-poppins-custom mb-1">
+                            {financialsData?.financial_summary?.title || financialsData?.spv_name || "Financial Summary"}
+                          </p>
+                          <h3 className="text-xl font-medium font-poppins-custom">Financial Summary</h3>
+                          <p className="text-sm text-[#748A91] font-poppins-custom mb-6">
+                            {financialsData?.financial_summary?.subtitle || "Yearly revenue, EBITDA, and cash balance"}
+                          </p>
+                        </div>
+                        {financialSummary.length === 0 ? (
+                          <div className="px-6 md:px-8 py-12 text-center">
+                            <p className="text-gray-500">No financial data available.</p>
+                          </div>
+                        ) : (
+                          <div className="bg-white text-[#00171C] rounded-3xl mx-4 mb-6 border border-[#D1D5DB80]">
+                            <div className="px-6 md:px-8 py-4">
+                              <div className="grid grid-cols-4 text-sm font-medium text-[#6A7A80] font-poppins-custom border-b border-[#E5E7EB] pb-3">
+                                <span>Year</span>
+                                <span>Revenue</span>
+                                <span>EBITDA</span>
+                                <span>Cash</span>
+                              </div>
+                              <div className="divide-y divide-[#EEF1F2]">
+                                {paginatedSummary.map((row, index) => (
+                                  <div
+                                    key={row.year || index}
+                                    className="grid grid-cols-4 text-sm font-poppins-custom text-[#00171C] p-4 mb-4 mt-2 rounded-lg border border-[#E5E7EB]"
+                                  >
+                                    <span className="font-medium">{row.year || "N/A"}</span>
+                                    <span className="font-medium">{row.revenue_formatted || row.revenue || "$0"}</span>
+                                    <span className="font-medium">{row.ebitda_formatted || row.ebitda || "$0"}</span>
+                                    <span className="font-medium">{row.cash_formatted || row.cash || "$0"}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            {totalPages > 1 && (
+                              <div className="flex items-center justify-center gap-3 pb-6">
+                                <button
+                                  onClick={() => setFinancialPage((prev) => Math.max(prev - 1, 1))}
+                                  className="text-xs text-[#6A7A80] font-poppins-custom hover:text-[#00171C] transition-colors disabled:opacity-30"
+                                  disabled={financialPage === 1}
+                                >
+                                  ‹
+                                </button>
+                                {Array.from({ length: totalPages }).map((_, index) => {
+                                  const page = index + 1;
+                                  const isActive = page === financialPage;
+                                  return (
+                                    <button
+                                      key={page}
+                                      onClick={() => setFinancialPage(page)}
+                                      className={`w-8 h-8 rounded-full text-xs font-poppins-custom transition-all ${
+                                        isActive ? "bg-[#00171C] text-white" : "text-[#6A7A80] hover:text-[#00171C]"
+                                      }`}
+                                    >
+                                      {page}
+                                    </button>
+                                  );
+                                })}
+                                <button
+                                  onClick={() => setFinancialPage((prev) => Math.min(prev + 1, totalPages))}
+                                  className="text-xs text-[#6A7A80] font-poppins-custom hover:text-[#00171C] transition-colors disabled:opacity-30"
+                                  disabled={financialPage === totalPages}
+                                >
+                                  ›
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </div>
+                    </>
+                  )}
                 </section>
               )}
 
               {activeTab === "team" && (
                 <section className="space-y-6">
-                  <div className="bg-white text-black rounded-3xl p-6 md:p-8" style={{ border: "1px solid #D1D5DB80" }}>
-                    <div className="mb-6">
-                      <p className="text-sm uppercase tracking-widest text-[#001D21]">
-                        Leadership Team
-                      </p>
-                      <p className="text-sm text-[#748A91] font-medium mt-2 font-poppins-custom">
-                        Core executives and functional leaders
-                      </p>
+                  {isLoadingTeam ? (
+                    <div className="flex justify-center items-center py-12">
+                      <div className="w-10 h-10 border-4 border-[#00F0C3] border-t-transparent rounded-full animate-spin"></div>
                     </div>
-                    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                      {["Alex Morgan", "Priya Shah", "Jordan Lee"].map((name) => (
-                        <div
-                          key={name}
-                          className="bg-white text-[#00171C] rounded-2xl p-6 flex flex-col gap-4"
-                          style={{ border: "1px solid #D1D5DB80" }}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-4">
-                              <img
-                                src={
-                                  name === "Alex Morgan"
-                                    ? "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=200&h=200&fit=crop"
-                                    : name === "Priya Shah"
-                                    ? "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?q=80&w=200&h=200&fit=crop"
-                                    : "https://images.unsplash.com/photo-1544723795-3fb27298f5b3?q=80&w=200&h=200&fit=crop"
-                                }
-                                alt={name}
-                                className="w-13 h-13 rounded-full object-cover border border-[#E5E7EB]"
-                              />
-                              <div className="flex flex-col gap-1">
-                                <h4 className="text-lg font-semibold font-poppins-custom text-[#00171C]">{name}</h4>
-                                <p className="text-xs text-[#748A91] font-poppins-custom">
-                                  {name === "Alex Morgan"
-                                    ? "CEO & Co-Founder"
-                                    : name === "Priya Shah"
-                                    ? "CTO & Co-Founder"
-                                    : "CFO"}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                          <p className="text-sm text-[#4B5C63] font-poppins-custom leading-relaxed">
-                            {name === "Alex Morgan"
-                              ? "Former product lead at a top SaaS unicorn. 10+ years in enterprise AI."
-                              : name === "Priya Shah"
-                              ? "Built ML platforms at FAANG. PhD in Computer Science (AI)."
-                              : "Ex-investment banker with multiple growth-stage finance leadership roles."}
-                          </p>
+                  ) : teamError ? (
+                    <div className="text-center py-12">
+                      <p className="text-red-600 mb-4">{teamError}</p>
+                      <button
+                        onClick={fetchTeam}
+                        className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="bg-white text-black rounded-3xl p-6 md:p-8" style={{ border: "1px solid #D1D5DB80" }}>
+                      <div className="mb-6">
+                        <p className="text-sm uppercase tracking-widest text-[#001D21] font-poppins-custom">
+                          {teamData?.team?.title || "Leadership Team"}
+                        </p>
+                        <p className="text-sm text-[#748A91] font-medium mt-2 font-poppins-custom">
+                          {teamData?.team?.subtitle || "Core executives and functional leaders"}
+                        </p>
+                      </div>
+                      {!teamData?.team?.members || teamData.team.members.length === 0 ? (
+                        <div className="text-center py-12">
+                          <p className="text-gray-500">No team members available.</p>
                         </div>
-                      ))}
+                      ) : (
+                        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                          {teamData.team.members.map((member) => (
+                            <div
+                              key={member.id}
+                              className="bg-white text-[#00171C] rounded-2xl p-6 flex flex-col gap-4"
+                              style={{ border: "1px solid #D1D5DB80" }}
+                            >
+                              <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-4">
+                                  {member.avatar ? (
+                                    <img
+                                      src={member.avatar}
+                                      alt={member.name}
+                                      className="w-13 h-13 rounded-full object-cover border border-[#E5E7EB]"
+                                    />
+                                  ) : (
+                                    <div className="w-13 h-13 rounded-full bg-[#F4F6F5] border border-[#E5E7EB] flex items-center justify-center">
+                                      <span className="text-lg font-semibold text-[#748A91] font-poppins-custom">
+                                        {member.name?.charAt(0)?.toUpperCase() || "?"}
+                                      </span>
+                                    </div>
+                                  )}
+                                  <div className="flex flex-col gap-1">
+                                    <h4 className="text-lg font-semibold font-poppins-custom text-[#00171C]">
+                                      {member.name}
+                                    </h4>
+                                    <p className="text-xs text-[#748A91] font-poppins-custom">
+                                      {member.title || member.role_display || member.role || "Team Member"}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                              {member.email && (
+                                <p className="text-xs text-[#748A91] font-poppins-custom">
+                                  {member.email}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  )}
                 </section>
               )}
 
@@ -446,7 +659,9 @@ const TaxDocumentDetail = () => {
                     className="flex-1 bg-[#F4F6F5] border border-gray-300 rounded-lg px-4 py-2 text-base text-[#0A2A2E] font-poppins-custom focus:outline-none focus:ring-2 focus:ring-[#9889FF]"
                   />
                 </div>
-                <p className="mt-2 text-xs text-[#748A91] font-poppins-custom">Min: $25,000 · Max: $500,000</p>
+                <p className="mt-2 text-xs text-[#748A91] font-poppins-custom">
+                  Min: ${opportunityData?.details?.min_investment ? opportunityData.details.min_investment.toLocaleString() : '25,000'} · Max: ${opportunityData?.details?.max_investment ? opportunityData.details.max_investment.toLocaleString() : '500,000'}
+                </p>
                 <button className="mt-5 w-full bg-[#00F0C3] text-[#001D21] rounded-lg py-3 font-medium text-sm font-poppins-custom hover:bg-[#00C4B3] transition-colors">
                   Invest Now
                 </button>
@@ -457,16 +672,38 @@ const TaxDocumentDetail = () => {
                 <div className="space-y-3 text-sm font-poppins-custom">
                   <div className="flex justify-between">
                     <span className="text-[#748A91]">Investors</span>
-                    <span className="text-[#0A2A2E] font-medium">47</span>
+                    <span className="text-[#0A2A2E] font-medium">
+                      {isLoadingOpportunity ? "..." : (opportunityData?.stats?.total_investors || 0)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#748A91]">Days Remaining</span>
-                    <span className="text-[#0A2A2E] font-medium">23</span>
+                    <span className="text-[#0A2A2E] font-medium">
+                      {isLoadingOpportunity ? "..." : (opportunityData?.details?.days_left || opportunityData?.stats?.days_remaining || 0)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#748A91]">Expected Returns</span>
-                    <span className="text-[#0A2A2E] font-medium">3-5x</span>
+                    <span className="text-[#0A2A2E] font-medium">
+                      {isLoadingOpportunity ? "..." : (opportunityData?.overview?.expected_returns || opportunityData?.stats?.expected_returns || "N/A")}
+                    </span>
                   </div>
+                  {opportunityData?.details?.min_investment && (
+                    <div className="flex justify-between">
+                      <span className="text-[#748A91]">Min. Investment</span>
+                      <span className="text-[#0A2A2E] font-medium">
+                        ${opportunityData.details.min_investment.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+                  {opportunityData?.details?.max_investment && (
+                    <div className="flex justify-between">
+                      <span className="text-[#748A91]">Max. Investment</span>
+                      <span className="text-[#0A2A2E] font-medium">
+                        ${opportunityData.details.max_investment.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </section>
             </div>

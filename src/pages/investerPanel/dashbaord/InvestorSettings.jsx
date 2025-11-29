@@ -31,30 +31,70 @@ const settingsTabs = [
 
 ];
 
-const identityFields = [
+// Identity fields configuration
+const getIdentityFields = (formData, handleChange) => [
   {
     label: "Full Legal Name (as per ID)",
-    placeholder: "John Michael Smith"
+    name: "full_legal_name",
+    value: formData.full_legal_name,
+    onChange: handleChange,
+    fullWidth: true
   },
   {
     label: "Country of Residence",
-    placeholder: "United States"
+    name: "country_of_residence",
+    value: formData.country_of_residence,
+    onChange: handleChange
   },
   {
     label: "Tax Domicile",
-    placeholder: "United States"
+    name: "tax_domicile",
+    value: formData.tax_domicile,
+    onChange: handleChange
   },
   {
     label: "National ID / Passport Number",
-    placeholder: "123-45-6789"
+    name: "national_id_passport",
+    value: formData.national_id_passport,
+    onChange: handleChange
   },
   {
     label: "Date of Birth",
-    placeholder: "15-06-1985"
+    name: "date_of_birth",
+    value: formData.date_of_birth,
+    onChange: handleChange,
+    type: "date"
   },
   {
-    label: "Full Legal Name (as per ID)",
-    placeholder: "123 Main St, New York, NY 10001"
+    label: "Street Address",
+    name: "street_address",
+    value: formData.street_address,
+    onChange: handleChange,
+    fullWidth: true
+  },
+  {
+    label: "City",
+    name: "city",
+    value: formData.city,
+    onChange: handleChange
+  },
+  {
+    label: "State/Province",
+    name: "state_province",
+    value: formData.state_province,
+    onChange: handleChange
+  },
+  {
+    label: "Zip/Postal Code",
+    name: "zip_postal_code",
+    value: formData.zip_postal_code,
+    onChange: handleChange
+  },
+  {
+    label: "Country",
+    name: "country",
+    value: formData.country,
+    onChange: handleChange
   }
 ];
 
@@ -153,6 +193,24 @@ const InvestorSettings = () => {
   const [activeTab, setActiveTab] = useState("Identity");
   const [showTabsDropdown, setShowTabsDropdown] = useState(false);
   const tabsDropdownRef = useRef(null);
+  const [identityData, setIdentityData] = useState(null);
+  const [isLoadingIdentity, setIsLoadingIdentity] = useState(false);
+  const [identityError, setIdentityError] = useState(null);
+  const [isSavingIdentity, setIsSavingIdentity] = useState(false);
+  
+  // Identity form state
+  const [identityForm, setIdentityForm] = useState({
+    full_legal_name: "",
+    country_of_residence: "",
+    tax_domicile: "",
+    national_id_passport: "",
+    date_of_birth: "",
+    street_address: "",
+    city: "",
+    state_province: "",
+    zip_postal_code: "",
+    country: ""
+  });
 
   const logout = () => {
     localStorage.removeItem("accessToken");
@@ -197,6 +255,148 @@ const InvestorSettings = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Fetch identity data when Identity tab is active
+  useEffect(() => {
+    if (activeTab === "Identity") {
+      fetchIdentityData();
+    }
+  }, [activeTab]);
+
+  // Fetch identity settings from API
+  const fetchIdentityData = async () => {
+    setIsLoadingIdentity(true);
+    setIdentityError(null);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      const response = await fetch(`${API_URL.replace(/\/$/, "")}/investors/settings/identity/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Identity API response:", data);
+        setIdentityData(data);
+        
+        // Extract identity data from nested structure
+        const identity = data.identity || data;
+        
+        // Parse zip/postal code from full_address if available
+        let zipPostalCode = identity.zip_postal_code || "";
+        if (!zipPostalCode && identity.full_address) {
+          // Try to extract zip code from full_address (format: "street, zip, state")
+          const addressParts = identity.full_address.split(',').map(part => part.trim());
+          if (addressParts.length >= 2) {
+            zipPostalCode = addressParts[1] || "";
+          }
+        }
+        
+        // Populate form with fetched data
+        // Handle national_id_passport - preserve empty strings
+        const nationalIdPassport = (identity.national_id_passport !== null && identity.national_id_passport !== undefined) 
+          ? identity.national_id_passport 
+          : "";
+        
+        const formData = {
+          full_legal_name: identity.full_legal_name || "",
+          country_of_residence: identity.country_of_residence || "",
+          tax_domicile: identity.tax_domicile || identity.country_of_residence || "",
+          national_id_passport: nationalIdPassport,
+          date_of_birth: identity.date_of_birth_raw || (identity.date_of_birth ? identity.date_of_birth.split('-').reverse().join('-') : "") || "",
+          street_address: identity.street_address || "",
+          city: identity.city || "",
+          state_province: identity.state_province || "",
+          zip_postal_code: zipPostalCode,
+          country: identity.country || ""
+        };
+        
+        console.log("Identity data from API:", identity);
+        console.log("national_id_passport value:", identity.national_id_passport, "type:", typeof identity.national_id_passport);
+        console.log("Setting form with national_id_passport:", nationalIdPassport);
+        console.log("Full form data:", formData);
+        
+        setIdentityForm(formData);
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to fetch identity data:", response.status, errorText);
+        setIdentityError("Failed to load identity data.");
+      }
+    } catch (err) {
+      console.error("Error fetching identity data:", err);
+      setIdentityError(err.message || "Network error loading identity data.");
+    } finally {
+      setIsLoadingIdentity(false);
+    }
+  };
+
+  // Save identity settings
+  const saveIdentityData = async () => {
+    setIsSavingIdentity(true);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      // Prepare payload - ensure national_id_passport is included even if empty
+      const payload = {
+        full_legal_name: identityForm.full_legal_name || "",
+        country_of_residence: identityForm.country_of_residence || "",
+        tax_domicile: identityForm.tax_domicile || "",
+        national_id_passport: identityForm.national_id_passport || "",
+        date_of_birth: identityForm.date_of_birth || "",
+        street_address: identityForm.street_address || "",
+        city: identityForm.city || "",
+        state_province: identityForm.state_province || "",
+        zip_postal_code: identityForm.zip_postal_code || "",
+        country: identityForm.country || ""
+      };
+
+      console.log("Saving identity payload:", payload);
+      console.log("national_id_passport value:", identityForm.national_id_passport);
+
+      const response = await fetch(`${API_URL.replace(/\/$/, "")}/investors/settings/identity/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Identity update API response:", data);
+        // Refresh data after successful update
+        await fetchIdentityData();
+        // Optionally show success message
+        alert("Identity information saved successfully!");
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to update identity:", response.status, errorText);
+        alert("Failed to save identity information. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error updating identity:", err);
+      alert("Network error saving identity information.");
+    } finally {
+      setIsSavingIdentity(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F4F6F5] overflow-x-hidden">
@@ -306,7 +506,7 @@ const InvestorSettings = () => {
             <section className="bg-white border border-[#E5E7EB] rounded-3xl p-4 sm:p-6 space-y-6">
               <header className="flex items-start gap-3">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 21V19C19 17.9391 18.5786 16.9217 17.8284 16.1716C17.0783 15.4214 16.0609 15 15 15H9C7.93913 15 6.92172 15.4214 6.17157 16.1716C5.42143 16.9217 5 17.9391 5 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="#00F0C3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M19 21V19C19 17.9391 18.5786 16.9217 17.8284 16.1716C17.0783 15.4214 16.0609 15 15 15H9C7.93913 15 6.92172 15.4214 6.17157 16.1716C5.42143 16.9217 5 17.9391 5 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="#00F0C3" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
 
                 <div>
@@ -317,51 +517,80 @@ const InvestorSettings = () => {
                 </div>
               </header>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {identityFields.map((field, index) => {
-                  const isFullWidth = index === 0 || index === identityFields.length - 1;
-                  return (
-                    <div key={field.label} className={isFullWidth ? "md:col-span-2" : ""}>
-                      <label className="block text-xs uppercase tracking-wide text-[#748A91] font-medium mb-2 font-poppins-custom">
-                        {field.label}
-                      </label>
-                      <input
-                        type="text"
-                        readOnly
-                        value={field.placeholder}
-                        className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-md px-4 py-3 text-sm text-[#0A2A2E] font-poppins-custom focus:outline-none"
-                      />
+              {isLoadingIdentity ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="w-10 h-10 border-4 border-[#00F0C3] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : identityError ? (
+                <div className="text-center py-12">
+                  <p className="text-red-600 mb-4">{identityError}</p>
+                  <button
+                    onClick={fetchIdentityData}
+                    className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {getIdentityFields(identityForm, (e) => {
+                      const { name, value } = e.target;
+                      setIdentityForm(prev => ({
+                        ...prev,
+                        [name]: value
+                      }));
+                    }).map((field) => {
+                      return (
+                        <div key={field.name} className={field.fullWidth ? "md:col-span-2" : ""}>
+                          <label className="block text-xs uppercase tracking-wide text-[#748A91] font-medium mb-2 font-poppins-custom">
+                            {field.label}
+                          </label>
+                          <input
+                            type={field.type || "text"}
+                            name={field.name}
+                            value={field.value}
+                            onChange={field.onChange}
+                            className="w-full bg-white border border-[#0A2A2E] rounded-md px-4 py-3 text-sm text-[#0A2A2E] font-poppins-custom focus:outline-none focus:ring-2 focus:ring-[#00F0C3]"
+                            placeholder={field.placeholder || ""}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="bg-[#F8F6FF] border border-[#E5E5FF] rounded-2xl px-4 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex flex-row items-center gap-2">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 15C4 15 5 14 8 14C11 14 13 16 16 16C19 16 20 15 20 15V3C20 3 19 4 16 4C13 4 11 2 8 2C5 2 4 3 4 3V15Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M4 22V15" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <div className="flex flex-col gap-1">
+                            <p className="text-sm font-medium text-[#0A2A2E] font-poppins-custom">Jurisdiction Status</p>
+                            <p className="text-xs text-[#748A91] font-poppins-custom">Auto-tagged based on residence</p>
                     </div>
-                  );
-                })}
-              </div>
+                     
+                    </div>
+                    
+                    <span className="inline-flex items-center justify-center px-4 py-1 bg-[#22C55E] text-white text-xs font-semibold rounded-md">
+                      {identityData?.jurisdiction_status || identityData?.identity?.jurisdiction_status || "Approved"}
+                    </span>
+                  </div>
 
-              <div className="bg-[#F8F6FF] border border-[#E5E5FF] rounded-2xl px-4 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex flex-row items-center gap-2">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 15C4 15 5 14 8 14C11 14 13 16 16 16C19 16 20 15 20 15V3C20 3 19 4 16 4C13 4 11 2 8 2C5 2 4 3 4 3V15Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M4 22V15" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <div className="flex flex-col gap-1">
-                        <p className="text-sm font-medium text-[#0A2A2E] font-poppins-custom">Jurisdiction Status</p>
-                        <p className="text-xs text-[#748A91] font-poppins-custom">Auto-tagged based on residence</p>
-                </div>
-                 
-                </div>
-                
-                <span className="inline-flex items-center justify-center px-4 py-1 bg-[#22C55E] text-white text-xs font-semibold rounded-md">
-                  Approved
-                </span>
-              </div>
-
-              <div className="flex justify-start">
-                <button
-                  type="button"
-                  className="px-6 py-3 bg-[#00F0C3] text-[#001D21] rounded-md text-sm font-medium font-poppins-custom hover:bg-[#00D9B0] transition-colors"
-                >
-                  Save Identity Information
-                </button>
-              </div>
+                  <div className="flex justify-start">
+                    <button
+                      type="button"
+                      onClick={saveIdentityData}
+                      disabled={isSavingIdentity}
+                      className={`px-6 py-3 bg-[#00F0C3] text-[#001D21] rounded-md text-sm font-medium font-poppins-custom hover:bg-[#00D9B0] transition-colors ${
+                        isSavingIdentity ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      {isSavingIdentity ? "Saving..." : "Save Identity Information"}
+                    </button>
+                  </div>
+                </>
+              )}
             </section>
             )}
 

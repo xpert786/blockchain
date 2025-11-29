@@ -189,8 +189,8 @@ const App = () => {
         <Route path="top-syndicates" element={<TopSyndicates />} />
         <Route path="wishlist" element={<Wishlist />} />
         <Route path="portfolio" element={<Portfolio />} />
-        <Route path="tax-documents" element={<TaxDocuments />} />
         <Route path="tax-documents/:documentId" element={<TaxDocumentDetail />} />
+        <Route path="tax-documents" element={<TaxDocuments />} />
         <Route path="messages" element={<Messages />} />
         <Route path="settings" element={<InvestorSettings />} />
       </Route>
