@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { DontIcon } from "../../components/Icons";
+import accreditationRules from "../../data/accreditation_rules.json";
 
 // Utility functions
 const mapLpBaseSizeToRange = (size) => {
@@ -48,6 +49,8 @@ const LeadInfo = () => {
   const sectorDropdownRef = useRef(null);
   const geographyDropdownRef = useRef(null);
   const [hasExistingData, setHasExistingData] = useState(false);
+  const [showAccreditationModal, setShowAccreditationModal] = useState(false);
+  const [userResidence, setUserResidence] = useState(null);
 
   // === LOAD DATA ===
   useEffect(() => {
@@ -186,6 +189,85 @@ const LeadInfo = () => {
   const getSectorName = useCallback((id) => sectors.find(s => s.id === id)?.name ?? `Sector ${id}`, [sectors]);
   const getGeographyName = useCallback((id) => geographies.find(g => g.id === id)?.name ?? `Geography ${id}`, [geographies]);
 
+  // Check if form should be disabled
+  const isDisabled = formData.accreditation === "not-accredited";
+
+  // Close dropdowns when form is disabled
+  useEffect(() => {
+    if (isDisabled) {
+      setShowSectorDropdown(false);
+      setShowGeographyDropdown(false);
+    }
+  }, [isDisabled]);
+
+  // Map country name to accreditation rule code
+  const mapCountryToCode = (countryName) => {
+    if (!countryName) return "default";
+    
+    const countryLower = countryName.toLowerCase();
+    
+    // Map common country names to codes
+    if (countryLower.includes("united states") || countryLower === "us" || countryLower === "usa") {
+      return "us";
+    } else if (countryLower.includes("united kingdom") || countryLower === "uk" || countryLower.includes("britain")) {
+      return "uk";
+    } else if (countryLower.includes("singapore") || countryLower === "sg") {
+      return "sg";
+    } else if (countryLower.includes("uae") || countryLower.includes("united arab emirates")) {
+      return "uae";
+    } else if (countryLower.includes("hong kong") || countryLower === "hk") {
+      return "hk";
+    } else if (countryLower.includes("australia") || countryLower === "au") {
+      return "au";
+    } else if (countryLower.includes("european union") || countryLower === "eu" || 
+               countryLower.includes("germany") || countryLower.includes("france") || 
+               countryLower.includes("spain") || countryLower.includes("italy") ||
+               countryLower.includes("netherlands") || countryLower.includes("belgium")) {
+      return "eu";
+    }
+    
+    return "default";
+  };
+
+  // Get accreditation rules based on user residence
+  const getAccreditationRules = () => {
+    const code = userResidence ? mapCountryToCode(userResidence) : "default";
+    return accreditationRules[code] || accreditationRules.default;
+  };
+
+  // Fetch user profile to get tax residence
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) return;
+
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const profileUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
+
+        const response = await axios.get(profileUrl, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+
+        if (response.data && response.data.results && response.data.results.length > 0) {
+          const profileData = response.data.results[0];
+          if (profileData.legal_place_of_residence) {
+            setUserResidence(profileData.legal_place_of_residence);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching user profile:", err);
+        // If profile fetch fails, use default rules
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
   // === FORM SUBMIT ===
   const handleNext = async () => {
     setError("");
@@ -266,7 +348,14 @@ const LeadInfo = () => {
       <div className="space-y-4">
         <h2 className="text-xl text-[#0A2A2E]">Accreditation</h2>
         <p className="text-gray-600">
-          To be a syndicate, you must be a <span className="text-purple-400 font-semibold">accredited Investor</span>
+          To be a syndicate, you must be a{" "}
+          <button
+            type="button"
+            onClick={() => setShowAccreditationModal(true)}
+            className="text-purple-400 font-semibold hover:text-purple-500 underline cursor-pointer"
+          >
+            Accredited Investor
+          </button>
         </p>
         <div className="space-y-3">
           {["accredited", "not-accredited"].map((val) => (
@@ -286,11 +375,12 @@ const LeadInfo = () => {
           ))}
         </div>
         <div className="pt-2">
-          <label className="flex items-start sm:items-center gap-3">
+          <label className={`flex items-start sm:items-center gap-3 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
             <input
               type="checkbox"
               checked={formData.understandRequirements}
               onChange={e => handleInputChange("understandRequirements", e.target.checked)}
+              disabled={isDisabled}
               className="mt-1 sm:mt-0"
             />
             <span className="text-gray-700">
@@ -298,15 +388,20 @@ const LeadInfo = () => {
             </span>
           </label>
         </div>
+        {isDisabled && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+            Only accredited investors can launch a syndicate on Unlocksley
+          </div>
+        )}
       </div>
 
       {/* Sector Focus */}
-      <div className="space-y-4">
+      <div className={`space-y-4 ${isDisabled ? 'opacity-50 pointer-events-none' : ''}`}>
         <h2 className="text-xl text-[#0A2A2E]">Sector Focus</h2>
         <div className="relative" ref={sectorDropdownRef}>
           <div
-            className="border border-[#0A2A2E] rounded-lg p-3 min-h-[50px] flex flex-wrap items-center gap-2 bg-[#F4F6F5] cursor-pointer"
-            onClick={() => setShowSectorDropdown(s => !s)}
+            className={`border border-[#0A2A2E] rounded-lg p-3 min-h-[50px] flex flex-wrap items-center gap-2 bg-[#F4F6F5] ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+            onClick={() => !isDisabled && setShowSectorDropdown(s => !s)}
           >
             {formData.sectorFocus.length > 0 ? formData.sectorFocus.map((sectorId) => (
               <span
@@ -363,12 +458,12 @@ const LeadInfo = () => {
       </div>
 
       {/* Geography Focus */}
-      <div className="space-y-4">
+      <div className={`space-y-4 ${isDisabled ? 'opacity-50 pointer-events-none' : ''}`}>
         <h2 className="text-xl text-[#0A2A2E]">Geography Focus</h2>
         <div className="relative" ref={geographyDropdownRef}>
           <div
-            className="border border-[#0A2A2E] rounded-lg p-3 min-h-[50px] flex flex-wrap items-center gap-2 bg-[#F4F6F5] cursor-pointer"
-            onClick={() => setShowGeographyDropdown(g => !g)}
+            className={`border border-[#0A2A2E] rounded-lg p-3 min-h-[50px] flex flex-wrap items-center gap-2 bg-[#F4F6F5] ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+            onClick={() => !isDisabled && setShowGeographyDropdown(g => !g)}
           >
             {formData.geographyFocus.length > 0 ? formData.geographyFocus.map((geographyId) => (
               <span
@@ -423,13 +518,14 @@ const LeadInfo = () => {
       </div>
 
       {/* Existing LP Network Section */}
-      <div className="space-y-4">
+      <div className={`space-y-4 ${isDisabled ? 'opacity-50 pointer-events-none' : ''}`}>
         <h2 className="text-xl text-[#0A2A2E]">Existing LP Network</h2>
         <p className="text-gray-600">How many LPs do you have to invest in your deal?</p>
         <div className="border border-[#0A2A2E] rounded-lg p-3 w-full sm:max-w-xs bg-[#F4F6F5]">
           <select
             value={formData.existingLpNetwork}
             onChange={e => handleInputChange("existingLpNetwork", e.target.value)}
+            disabled={isDisabled}
             className="w-full bg-transparent outline-none"
           >
             <option value="No">No</option>
@@ -444,6 +540,7 @@ const LeadInfo = () => {
                 type="number"
                 value={formData.lpBaseSize}
                 onChange={e => handleInputChange("lpBaseSize", parseInt(e.target.value, 10) || 0)}
+                disabled={isDisabled}
                 className="border border-[#0A2A2E] rounded-lg p-3 w-full sm:max-w-xs bg-[#F4F6F5]"
                 placeholder="Enter LP base size"
                 min={1}
@@ -455,6 +552,7 @@ const LeadInfo = () => {
                 id="enablePlatformLpAccess"
                 checked={formData.enablePlatformLpAccess}
                 onChange={e => handleInputChange("enablePlatformLpAccess", e.target.checked)}
+                disabled={isDisabled}
                 className="form-checkbox h-5 w-5 text-purple-600 rounded"
               />
               <label
@@ -503,7 +601,7 @@ const LeadInfo = () => {
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
           <button
             onClick={handleNext}
-            disabled={loading}
+            disabled={loading || isDisabled}
             className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
           >
             {loading ? "Submitting..." : "Next"}
@@ -513,6 +611,100 @@ const LeadInfo = () => {
           </button>
         </div>
       </div>
+
+      {/* Accreditation Rules Modal */}
+      {showAccreditationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowAccreditationModal(false)}>
+          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-[#0A2A2E]">Accreditation Rules</h2>
+              <button
+                type="button"
+                onClick={() => setShowAccreditationModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label="Close modal"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 space-y-6">
+              {(() => {
+                const rules = getAccreditationRules();
+                return (
+                  <>
+                    <div>
+                      <h3 className="text-xl font-semibold text-[#0A2A2E] mb-2">{rules.label}</h3>
+                      <p className="text-sm text-gray-500 mb-4">{rules.jurisdiction}</p>
+                      <p className="text-gray-700 mb-6">{rules.user_facing_summary}</p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-lg font-semibold text-[#0A2A2E] mb-3">Natural Person Rules</h4>
+                      <ul className="space-y-2">
+                        {rules.natural_person_rules.map((rule, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-purple-500 mt-1">•</span>
+                            <span className="text-gray-700">{rule}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h4 className="text-lg font-semibold text-[#0A2A2E] mb-3">Entity Rules</h4>
+                      <ul className="space-y-2">
+                        {rules.entity_rules.map((rule, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-purple-500 mt-1">•</span>
+                            <span className="text-gray-700">{rule}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {rules.references && rules.references.length > 0 && (
+                      <div>
+                        <h4 className="text-lg font-semibold text-[#0A2A2E] mb-3">References</h4>
+                        <ul className="space-y-2">
+                          {rules.references.map((ref, index) => (
+                            <li key={index}>
+                              <a
+                                href={ref.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-purple-500 hover:text-purple-600 underline"
+                              >
+                                {ref.label}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {rules.notes && (
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <p className="text-sm text-gray-600 italic">{rules.notes}</p>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+            <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowAccreditationModal(false)}
+                className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

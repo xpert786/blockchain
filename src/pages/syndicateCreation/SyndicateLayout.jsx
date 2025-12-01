@@ -105,7 +105,7 @@ const SyndicateLayout = () => {
 
   const steps = [
     { id: "lead-info", name: "Lead Info", path: "/syndicate-creation/lead-info" },
-    { id: "entity-profile", name: "Entity Profile", path: "/syndicate-creation/entity-profile" },
+    { id: "entity-profile", name: "Syndicate Profile", path: "/syndicate-creation/entity-profile" },
     { id: "kyb-verification", name: "KYB Verification", path: "/syndicate-creation/kyb-verification" },
     { id: "compliance-attestation", name: "Compliance & Attestation", path: "/syndicate-creation/compliance-attestation" },
     { id: "final-review", name: "Final Review & Submit", path: "/syndicate-creation/final-review" }

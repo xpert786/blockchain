@@ -1072,39 +1072,39 @@ const Messages = () => {
   }, [showReactionPicker]);
 
   return (
-    <div className="min-h-screen bg-[#F4F6F5] overflow-x-hidden">
-      <main className="w-full px-4 sm:px-6 py-8">
-        <div className="mb-6 sm:mb-8 mt-5">
-          <h1 className="text-2xl sm:text-3xl font-medium text-[#0A2A2E] font-poppins-custom">Messages</h1>
-          <p className="text-sm text-[#748A91] font-poppins-custom">
+    <div className="min-h-screen bg-[#F4F6F5] overflow-x-hidden w-full max-w-full">
+      <main className="w-full max-w-full px-2 sm:px-4 lg:px-6 py-4 sm:py-8">
+        <div className="mb-4 sm:mb-6 lg:mb-8 mt-2 sm:mt-5">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-medium text-[#0A2A2E] font-poppins-custom">Messages</h1>
+          <p className="text-xs sm:text-sm text-[#748A91] font-poppins-custom">
             Communicate with investors and support team
           </p>
         </div>
 
         {error && (
-          <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-2">
-            <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded-lg flex items-start gap-2">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
-            <span className="text-sm font-poppins-custom">{error}</span>
+            <span className="text-xs sm:text-sm font-poppins-custom break-words">{error}</span>
           </div>
         )}
      
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-6 w-full max-w-full">
           {/* Conversations List - Hidden on mobile when message view is shown */}
-          <aside className={`bg-white border border-[#E5E7EB] rounded-3xl p-4 sm:p-6 w-full lg:w-1/3 ${showMessageView ? "hidden lg:block" : "block"}`}>
-            <div className="mb-4">
-              <p className="text-md font-medium text-[#001D21] font-poppins-custom">
+          <aside className={`bg-white border border-[#E5E7EB] rounded-2xl sm:rounded-3xl p-3 sm:p-4 lg:p-6 w-full lg:w-1/3 max-w-full overflow-hidden ${showMessageView ? "hidden lg:block" : "block"}`}>
+            <div className="mb-3 sm:mb-4">
+              <p className="text-sm sm:text-md font-medium text-[#001D21] font-poppins-custom">
                 Conversations
               </p>
             </div>
-            <div className="mb-4 space-y-2">
+            <div className="mb-3 sm:mb-4 space-y-2">
               <input
                 type="text"
                 placeholder="Search conversations..."
                 value={searchQuery}
                 onChange={handleSearch}
-                className="w-full bg-[#F4F6F5] border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                className="w-full max-w-full bg-[#F4F6F5] border border-gray-300 rounded-lg px-3 sm:px-4 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
               />
               {selectedConversation && (
                 <input
@@ -1115,7 +1115,7 @@ const Messages = () => {
                     setMessageSearchQuery(e.target.value);
                     searchMessages(e.target.value);
                   }}
-                  className="w-full bg-[#F4F6F5] border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  className="w-full max-w-full bg-[#F4F6F5] border border-gray-300 rounded-lg px-3 sm:px-4 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                 />
               )}
             </div>
@@ -1147,19 +1147,19 @@ const Messages = () => {
                     <button
                       key={conversationId || `conv-${Math.random()}`}
                       onClick={() => handleConversationSelect(conversation)}
-                      className={`w-full text-left border rounded-2xl px-4 py-3 transition-colors ${
+                      className={`w-full max-w-full text-left border rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors ${
                         isActive ? "border-[#00F0C3] bg-[#F4FFFB]" : "border-[#E5E7EB] bg-white hover:bg-[#F9FAFB]"
                       }`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 flex-shrink-0 rounded-full bg-[#E5F1F0] flex items-center justify-center text-sm font-medium text-[#0A2A2E]">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 rounded-full bg-[#E5F1F0] flex items-center justify-center text-xs sm:text-sm font-medium text-[#0A2A2E]">
                           {initials}
                         </div>
                         <div className="flex-1 min-w-0 overflow-hidden">
-                          <div className="flex items-center justify-between gap-2">
-                            <p className="text-sm font-medium text-[#0A2A2E] font-poppins-custom truncate">{name}</p>
+                          <div className="flex items-center justify-between gap-1 sm:gap-2">
+                            <p className="text-xs sm:text-sm font-medium text-[#0A2A2E] font-poppins-custom truncate">{name}</p>
                             {conversation.unread_count > 0 && (
-                              <span className="flex-shrink-0 bg-[#00F0C3] text-[#0A2A2E] text-xs font-semibold rounded-full px-2 py-0.5">
+                              <span className="flex-shrink-0 bg-[#00F0C3] text-[#0A2A2E] text-xs font-semibold rounded-full px-1.5 sm:px-2 py-0.5">
                                 {conversation.unread_count}
                               </span>
                             )}
@@ -1184,38 +1184,38 @@ const Messages = () => {
           </aside>
 
           {/* Message View - Hidden on mobile when conversations list is shown */}
-          <section className={`bg-white border border-[#E5E7EB] rounded-3xl p-4 sm:p-6 flex-1 flex flex-col min-h-[70vh] ${showMessageView ? "flex" : "hidden lg:flex"}`}>
+          <section className={`bg-white border border-[#E5E7EB] rounded-2xl sm:rounded-3xl p-3 sm:p-4 lg:p-6 flex-1 flex flex-col min-h-[70vh] w-full max-w-full overflow-hidden ${showMessageView ? "flex" : "hidden lg:flex"}`}>
             {!selectedConversation ? (
               <div className="flex items-center justify-center h-full">
-                <p className="text-sm text-[#748A91] font-poppins-custom">Select a conversation to start messaging</p>
+                <p className="text-xs sm:text-sm text-[#748A91] font-poppins-custom px-2">Select a conversation to start messaging</p>
               </div>
             ) : (
               <>
                 {/* Mobile Back Button */}
                 <button
                   onClick={() => setShowMessageView(false)}
-                  className="lg:hidden flex items-center gap-2 mb-4 text-sm text-[#0A2A2E] font-poppins-custom hover:text-[#01373D]"
+                  className="lg:hidden flex items-center gap-2 mb-3 sm:mb-4 text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom hover:text-[#01373D]"
                 >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
                     <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  Back to Conversations
+                  <span className="truncate">Back to Conversations</span>
                 </button>
 
                 {/* Header */}
-                <header className="flex items-center justify-between border-b border-[#E5E7EB] pb-4 mb-4 gap-4">
-                  <div className="flex-1 min-w-0">
+                <header className="flex items-center justify-between border-b border-[#E5E7EB] pb-3 sm:pb-4 mb-3 sm:mb-4 gap-2 sm:gap-4 min-w-0">
+                  <div className="flex-1 min-w-0 overflow-hidden">
                     {(() => {
                       const participantInfo = selectedConversation.participant_info || selectedConversation.other_participant || {};
                       const name = participantInfo.name || participantInfo.first_name || "Unknown";
                       const role = participantInfo.role || selectedConversation.other_participant?.role || "User";
                       return (
                         <>
-                          <h2 className="text-base sm:text-lg font-medium text-[#0A2A2E] font-poppins-custom truncate">{name}</h2>
+                          <h2 className="text-sm sm:text-base lg:text-lg font-medium text-[#0A2A2E] font-poppins-custom truncate">{name}</h2>
                           <p className="text-xs text-[#748A91] font-poppins-custom truncate">
                             {role.charAt(0).toUpperCase() + role.slice(1)} · {selectedConversation.status || (isConnected ? "Online" : "Offline")}
                             {isConnected && (
-                              <span className="ml-2 inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+                              <span className="ml-1 sm:ml-2 inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-500 rounded-full"></span>
                             )}
                           </p>
                         </>
@@ -1225,7 +1225,7 @@ const Messages = () => {
                 </header>
 
                 {/* Messages */}
-                <div ref={messagesContainerRef} className="flex-1 overflow-y-auto space-y-4 pr-2 max-h-[calc(70vh-200px)] min-h-0" style={{ overflowX: 'hidden' }}>
+                <div ref={messagesContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden space-y-3 sm:space-y-4 pr-1 sm:pr-2 max-h-[calc(70vh-200px)] min-h-0 w-full" style={{ overflowX: 'hidden' }}>
                   {loadingMessages ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="text-sm text-[#748A91] font-poppins-custom">Loading messages...</div>
@@ -1244,9 +1244,9 @@ const Messages = () => {
                       const isEditing = editingMessage?.id === message.id;
                       
                 return (
-                  <div key={message.id} className={`flex ${isOwn ? "justify-end" : "justify-start"} group`}>
+                  <div key={message.id} className={`flex ${isOwn ? "justify-end" : "justify-start"} group w-full max-w-full`}>
                     <div
-                      className={`relative max-w-[85%] sm:max-w-lg rounded-2xl px-4 py-3 text-sm font-poppins-custom shadow-sm break-words ${
+                      className={`relative max-w-[90%] sm:max-w-[85%] lg:max-w-lg rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-poppins-custom shadow-sm break-words overflow-wrap-anywhere ${
                         isOwn ? "bg-[#D7F8F0] text-[#0A2A2E]" : "bg-[#F4F6F5] text-[#0A2A2E]"
                       } ${message.is_deleted ? "opacity-60 italic" : ""}`}
                       onMouseEnter={() => setSelectedMessage(message.id)}
@@ -1254,11 +1254,11 @@ const Messages = () => {
                     >
                       {/* Reply Preview */}
                       {message.parent_message_preview && (
-                        <div className="mb-2 pl-3 border-l-2 border-[#00F0C3] text-xs text-[#748A91]">
-                          <div className="font-semibold text-[#0A2A2E]">
+                        <div className="mb-2 pl-2 sm:pl-3 border-l-2 border-[#00F0C3] text-xs text-[#748A91] max-w-full overflow-hidden">
+                          <div className="font-semibold text-[#0A2A2E] truncate">
                             Replying to {message.parent_message_preview.sender_name || "Message"}
                           </div>
-                          <div className="truncate">{message.parent_message_preview.content}</div>
+                          <div className="truncate break-words">{message.parent_message_preview.content}</div>
                         </div>
                       )}
 
@@ -1268,11 +1268,11 @@ const Messages = () => {
 
                       {/* Message Content */}
                       {isEditing ? (
-                        <div className="space-y-2">
+                        <div className="space-y-2 max-w-full">
                           <textarea
                             data-edit-id={message.id}
                             defaultValue={message.content}
-                            className="w-full p-2 border border-[#00F0C3] rounded-lg text-sm"
+                            className="w-full max-w-full p-2 border border-[#00F0C3] rounded-lg text-xs sm:text-sm resize-none"
                             rows={3}
                             ref={(el) => {
                               if (el) {
@@ -1289,60 +1289,60 @@ const Messages = () => {
                               }
                             }}
                           />
-                          <div className="flex gap-2 text-xs">
+                          <div className="flex gap-1.5 sm:gap-2 text-xs flex-wrap">
                             <button
                               onClick={(e) => {
                                 const textarea = e.target.closest('div').previousElementSibling;
                                 if (textarea) editMessage(message.id, textarea.value);
                               }}
-                              className="px-3 py-1 bg-[#00F0C3] text-[#0A2A2E] rounded-lg"
+                              className="px-2 sm:px-3 py-1 bg-[#00F0C3] text-[#0A2A2E] rounded-lg whitespace-nowrap"
                             >
                               Save (Ctrl+Enter)
                             </button>
                             <button
                               onClick={() => setEditingMessage(null)}
-                              className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg"
+                              className="px-2 sm:px-3 py-1 bg-gray-200 text-gray-700 rounded-lg whitespace-nowrap"
                             >
                               Cancel (Esc)
                             </button>
                           </div>
                         </div>
                       ) : (
-                        <p className="mb-2 break-words overflow-wrap-anywhere">
+                        <p className="mb-2 break-words overflow-wrap-anywhere max-w-full">
                           {displayContent}
                           {message.is_edited && !message.is_deleted && (
-                            <span className="ml-2 text-xs text-[#748A91] italic">(edited)</span>
+                            <span className="ml-1 sm:ml-2 text-xs text-[#748A91] italic">(edited)</span>
                           )}
                         </p>
                       )}
 
                       {/* Attachments */}
                       {message.attachments && message.attachments.length > 0 && (
-                        <div className="mt-2 space-y-2">
+                        <div className="mt-2 space-y-2 max-w-full">
                           {message.attachments.map((attachment) => (
                             <a
                               key={attachment.id}
                               href={attachment.file_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-2 p-2 bg-white/50 rounded-lg hover:bg-white/80 transition-colors"
+                              className="flex items-center gap-2 p-2 bg-white/50 rounded-lg hover:bg-white/80 transition-colors max-w-full overflow-hidden"
                             >
                               {attachment.file_type === "image" && attachment.thumbnail_url ? (
                                 <img
                                   src={attachment.thumbnail_url}
                                   alt={attachment.file_name}
-                                  className="w-16 h-16 object-cover rounded"
+                                  className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded flex-shrink-0"
                                 />
                               ) : (
-                                <div className="w-10 h-10 bg-[#E5F1F0] rounded-lg flex items-center justify-center">
-                                  <svg className="w-6 h-6 text-[#0A2A2E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#E5F1F0] rounded-lg flex items-center justify-center flex-shrink-0">
+                                  <svg className="w-4 h-4 sm:w-6 sm:h-6 text-[#0A2A2E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                   </svg>
                                 </div>
                               )}
-                              <div className="flex-1 min-w-0">
+                              <div className="flex-1 min-w-0 overflow-hidden">
                                 <p className="text-xs font-medium text-[#0A2A2E] truncate">{attachment.file_name}</p>
-                                <p className="text-xs text-[#748A91]">{attachment.file_type_display || attachment.file_type}</p>
+                                <p className="text-xs text-[#748A91] truncate">{attachment.file_type_display || attachment.file_type}</p>
                               </div>
                             </a>
                           ))}
@@ -1351,27 +1351,27 @@ const Messages = () => {
 
                       {/* Reactions */}
                       {message.reactions_summary && message.reactions_summary.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1">
+                        <div className="mt-2 flex flex-wrap gap-1 max-w-full">
                           {message.reactions_summary.map((reaction, idx) => {
                             const hasReacted = reaction.users?.some(u => u.id === (currentUser?.user_id || currentUser?.id));
                             return (
                               <button
                                 key={idx}
                                 onClick={() => hasReacted ? removeReaction(message.id, reaction.emoji) : addReaction(message.id, reaction.emoji)}
-                                className={`px-2 py-1 rounded-full text-xs border ${
+                                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs border flex-shrink-0 ${
                                   hasReacted 
                                     ? "bg-[#00F0C3] border-[#00F0C3]" 
                                     : "bg-white/50 border-gray-300 hover:bg-white"
                                 }`}
                               >
-                                <span className="mr-1">{reaction.emoji}</span>
+                                <span className="mr-0.5 sm:mr-1">{reaction.emoji}</span>
                                 <span>{reaction.count}</span>
                               </button>
                             );
                           })}
                           <button
                             onClick={() => setShowReactionPicker(showReactionPicker === message.id ? null : message.id)}
-                            className="px-2 py-1 rounded-full text-xs border bg-white/50 border-gray-300 hover:bg-white"
+                            className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs border bg-white/50 border-gray-300 hover:bg-white flex-shrink-0"
                           >
                             +
                           </button>
@@ -1380,7 +1380,7 @@ const Messages = () => {
 
                       {/* Reaction Picker */}
                       {showReactionPicker === message.id && (
-                        <div className="reaction-picker-container absolute bottom-full left-0 mb-2 bg-white border border-gray-300 rounded-lg p-2 shadow-lg z-10 flex gap-1">
+                        <div className="reaction-picker-container absolute bottom-full left-0 mb-2 bg-white border border-gray-300 rounded-lg p-1.5 sm:p-2 shadow-lg z-10 flex gap-0.5 sm:gap-1 max-w-full overflow-hidden">
                           {["👍", "❤️", "😂", "😮", "😢", "🙏"].map((emoji) => (
                             <button
                               key={emoji}
@@ -1388,7 +1388,7 @@ const Messages = () => {
                                 addReaction(message.id, emoji);
                                 setShowReactionPicker(null);
                               }}
-                              className="text-xl hover:scale-125 transition-transform p-1"
+                              className="text-lg sm:text-xl hover:scale-125 transition-transform p-0.5 sm:p-1 flex-shrink-0"
                             >
                               {emoji}
                             </button>
@@ -1398,7 +1398,7 @@ const Messages = () => {
 
                       {/* Message Actions (Edit, Delete, Reply) */}
                       {selectedMessage === message.id && !message.is_deleted && (
-                        <div className="absolute top-2 right-2 flex gap-1 bg-white/90 rounded-lg p-1 shadow-md">
+                        <div className="absolute top-1 sm:top-2 right-1 sm:right-2 flex gap-0.5 sm:gap-1 bg-white/90 rounded-lg p-0.5 sm:p-1 shadow-md flex-shrink-0">
                           {isOwn && (
                             <>
                               <button
@@ -1434,12 +1434,12 @@ const Messages = () => {
                       )}
 
                       {/* Time and Read Receipts */}
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-1 sm:gap-2 mt-1 flex-wrap">
                         <span className="text-xs text-[#748A91] whitespace-nowrap">
                           {message.time_ago || formatTime(message.created_at)}
                         </span>
                         {isOwn && message.read_by && message.read_by.length > 0 && (
-                          <span className="text-xs text-[#748A91]">
+                          <span className="text-xs text-[#748A91] truncate">
                             Read by {message.read_by.map(r => r.name).join(", ")}
                           </span>
                         )}
@@ -1454,25 +1454,25 @@ const Messages = () => {
 
                 {/* Typing Indicator */}
                 {Object.keys(typingUsers).length > 0 && (
-                  <div className="text-xs text-[#748A91] font-poppins-custom py-2 px-2 italic">
+                  <div className="text-xs text-[#748A91] font-poppins-custom py-2 px-2 italic truncate">
                     {Object.values(typingUsers).join(", ")} {Object.keys(typingUsers).length === 1 ? "is" : "are"} typing...
                   </div>
                 )}
 
                 {/* Reply Indicator */}
                 {replyingTo && (
-                  <div className="mt-2 p-3 bg-[#F4FFFB] border border-[#00F0C3] rounded-lg flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="text-xs font-semibold text-[#0A2A2E] mb-1">
+                  <div className="mt-2 p-2 sm:p-3 bg-[#F4FFFB] border border-[#00F0C3] rounded-lg flex items-start justify-between gap-2 w-full max-w-full">
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <p className="text-xs font-semibold text-[#0A2A2E] mb-1 truncate">
                         Replying to {replyingTo.sender?.name || replyingTo.sender_name || "Message"}
                       </p>
-                      <p className="text-xs text-[#748A91] truncate">{replyingTo.content}</p>
+                      <p className="text-xs text-[#748A91] truncate break-words">{replyingTo.content}</p>
                     </div>
                     <button
                       onClick={() => setReplyingTo(null)}
-                      className="ml-2 text-[#748A91] hover:text-[#0A2A2E]"
+                      className="ml-1 sm:ml-2 text-[#748A91] hover:text-[#0A2A2E] flex-shrink-0"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
@@ -1481,26 +1481,26 @@ const Messages = () => {
 
                 {/* Selected Files Preview */}
                 {selectedFiles.length > 0 && (
-                  <div className="mt-2 p-3 bg-[#F4FFFB] border border-[#00F0C3] rounded-lg space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-[#0A2A2E]">
+                  <div className="mt-2 p-2 sm:p-3 bg-[#F4FFFB] border border-[#00F0C3] rounded-lg space-y-2 w-full max-w-full">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-semibold text-[#0A2A2E] truncate">
                         {selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''} selected
                       </p>
                       <button
                         onClick={() => setSelectedFiles([])}
-                        className="text-xs text-[#748A91] hover:text-[#0A2A2E]"
+                        className="text-xs text-[#748A91] hover:text-[#0A2A2E] flex-shrink-0 whitespace-nowrap"
                       >
                         Clear all
                       </button>
                     </div>
                     <div className="space-y-1">
                       {selectedFiles.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between p-2 bg-white rounded-lg">
+                        <div key={index} className="flex items-center justify-between p-2 bg-white rounded-lg gap-2">
                           <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <svg className="w-5 h-5 text-[#0A2A2E] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#0A2A2E] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <div className="flex-1 min-w-0">
+                            <div className="flex-1 min-w-0 overflow-hidden">
                               <p className="text-xs font-medium text-[#0A2A2E] truncate">{file.name}</p>
                               <p className="text-xs text-[#748A91]">
                                 {(file.size / 1024 / 1024).toFixed(2)} MB
@@ -1509,9 +1509,9 @@ const Messages = () => {
                           </div>
                           <button
                             onClick={() => removeFile(index)}
-                            className="ml-2 text-red-600 hover:text-red-800"
+                            className="ml-1 sm:ml-2 text-red-600 hover:text-red-800 flex-shrink-0"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                           </button>
@@ -1522,8 +1522,8 @@ const Messages = () => {
                 )}
 
                 {/* Message Input */}
-                <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
-                  <div className="flex items-center gap-3">
+                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-[#E5E7EB] w-full max-w-full">
+                  <div className="flex items-center gap-2 sm:gap-3 w-full max-w-full">
                     <input
                       type="file"
                       ref={fileInputRef}
@@ -1532,15 +1532,15 @@ const Messages = () => {
                       className="hidden"
                       accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
                     />
-                    <div className="relative flex-1">
-                      <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+                    <div className="relative flex-1 min-w-0 max-w-full">
+                      <div className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-10">
                         <button
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
-                          className="text-[#748A91] hover:text-[#0A2A2E] transition-colors"
+                          className="text-[#748A91] hover:text-[#0A2A2E] transition-colors flex-shrink-0"
                           title="Attach file"
                         >
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <svg width="20" height="20" className="sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="0.5" y="0.5" width="23" height="23" rx="6.5" fill="#00F0C3"/>
                             <rect x="0.5" y="0.5" width="23" height="23" rx="6.5" stroke="#00F0C3"/>
                             <path d="M16.7201 11.5268L12.1251 16.1218C11.5622 16.6847 10.7987 17.001 10.0026 17.001C9.20655 17.001 8.44307 16.6847 7.88014 16.1218C7.31722 15.5589 7.00098 14.7954 7.00098 13.9993C7.00098 13.2032 7.31722 12.4397 7.88014 11.8768L12.1651 7.59179C12.5404 7.21584 13.0497 7.00438 13.5809 7.00391C14.1121 7.00344 14.6217 7.21401 14.9976 7.58929C15.3736 7.96457 15.5851 8.47382 15.5855 9.00502C15.586 9.53622 15.3754 10.0458 15.0001 10.4218L10.7051 14.7068C10.5175 14.8944 10.263 14.9998 9.99764 14.9998C9.73228 14.9998 9.47779 14.8944 9.29014 14.7068C9.1025 14.5191 8.99709 14.2647 8.99709 13.9993C8.99709 13.7339 9.1025 13.4794 9.29014 13.2918L13.5351 9.05179" stroke="#001D21" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1563,7 +1563,7 @@ const Messages = () => {
                         }}
                         placeholder={replyingTo ? "Write a reply..." : "Write your message here..."}
                         disabled={sending}
-                        className="w-full bg-[#F4F6F5] border border-gray-300 rounded-2xl pl-12 pr-4 pt-4 text-sm font-poppins-custom focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none disabled:opacity-50"
+                        className="w-full max-w-full bg-[#F4F6F5] border border-gray-300 rounded-xl sm:rounded-2xl pl-9 sm:pl-12 pr-3 sm:pr-4 pt-3 sm:pt-4 pb-3 sm:pb-4 text-xs sm:text-sm font-poppins-custom focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none disabled:opacity-50 overflow-wrap-anywhere"
                         style={{ minHeight: '20px' }}
                       />
                     </div>
@@ -1571,7 +1571,7 @@ const Messages = () => {
                       type="button"
                       onClick={sendMessage}
                       disabled={sending || (!messageDraft.trim() && selectedFiles.length === 0)}
-                      className="disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                     >
                       <SendIcon />
                     </button>
