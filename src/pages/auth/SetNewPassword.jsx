@@ -2,6 +2,11 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import bgImage from "../../assets/img/bg-images.png";
 import loginLogo from "../../assets/img/loginlogo.png";
+import logo from "/src/assets/img/logo.png";
+
+import loginimg from "/src/assets/img/loginimg1.svg"; // Corrected typo: lgoinimg1 -> loginimg1
+import loginimg2 from "/src/assets/img/loginimg2.svg";
+import loginimg3 from "/src/assets/img/loginimg3.svg";
 
 const SetNewPassword = () => {
   const [formData, setFormData] = useState({
@@ -45,15 +50,29 @@ const SetNewPassword = () => {
 
       <div className="flex flex-col md:flex-row w-full max-w-5xl h-auto md:h-[650px] bg-white rounded-3xl overflow-hidden">
         {/* Left Panel */}
-        <div className="w-full md:w-1/2 flex items-center justify-center relative p-6 md:p-4 h-64 md:h-full">
-          {/* Purple background behind logo/image */}
-          <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col items-center justify-center relative overflow-hidden">
-            <h2 className="absolute top-4 left-4 md:top-6 md:left-6 text-lg md:text-2xl font-bold text-[#01373D] font-poppins-custom">Logo</h2>
-            <img
-              src={loginLogo}
-              alt="Profile"
-              className="w-40 h-40 md:w-60 md:h-[360px] object-cover rounded-xl"
-            />
+        <div className="w-full md:w-1/2 flex relative p-6 md:p-4 h-64 md:h-full">
+          {/* Purple background and content layout */}
+          <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col justify-between relative overflow-hidden p-8">
+            
+            {/* Logo/Branding (Top) */}
+            <img src={logo} alt="Login Logo" className="w-1/3 max-w-[150px] h-auto object-contain" />
+            
+            {/* Main Text Content (Middle - Takes up remaining space) */}
+            <div className="flex flex-col items-center justify-center flex-grow ">
+                <h1 className="text-[30px] font-semibold text-white font-poppins-custom">Invest Globally. <br />
+                Compliantly. Confidently.</h1>
+                <p className="text-white font-poppins-custom leading-tight mr-16 mt-2">Built for global accredited investors and <br />
+                syndicate leads.</p>
+            </div>
+            
+
+            {/* Image Content (Bottom - MOVED HERE) */}
+            <div className="flex justify-start items-end w-full space-x-3 mt-7">
+              <img src={loginimg} alt="Login Asset 1" className="w-1/3 max-w-[50px] h-auto object-contain" />
+              <img src={loginimg2} alt="Login Asset 2" className="w-1/3 max-w-[50px] h-auto object-contain" />
+              <img src={loginimg3} alt="Login Asset 3" className="w-1/3 max-w-[50px] h-auto object-contain" />
+            </div>
+            
           </div>
         </div>
 

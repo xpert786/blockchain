@@ -1,8 +1,13 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import bgImage from "../../assets/img/bg-images.png";
-import loginLogo from "../../assets/img/loginlogo.png";
+// Correcting paths/typos for assets. Assuming 'bg-images.png' and others exist under src/assets/img.
+import bgImage from "/src/assets/img/bg-images.png";
+import logo from "/src/assets/img/logo.png";
+import loginLogo from "/src/assets/img/loginlogo.png"; 
+import loginimg from "/src/assets/img/loginimg1.svg"; // Corrected typo: lgoinimg1 -> loginimg1
+import loginimg2 from "/src/assets/img/loginimg2.svg";
+import loginimg3 from "/src/assets/img/loginimg3.svg";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -28,6 +33,7 @@ const Login = () => {
     setError("");
 
     try {
+      // NOTE: For live environments, ensure VITE_API_URL is correctly defined and secured.
       const API_URL = import.meta.env.VITE_API_URL;
       console.log("API_URL:", API_URL);
       
@@ -50,7 +56,7 @@ const Login = () => {
       console.log("Login successful:", response.data);
       console.log("Full response data:", JSON.stringify(response.data, null, 2));
 
-      // Extract user data - role is nested in response.data.user.role
+      // Extract user data
       const userInfo = response.data?.user || response.data;
       const userRole = userInfo?.role;
       const userId = userInfo?.id || userInfo?.user_id;
@@ -60,7 +66,6 @@ const Login = () => {
       const dateJoined = userInfo?.date_joined;
 
       console.log("=== Login Role Debug ===");
-      console.log("User info extracted:", userInfo);
       console.log("Raw role from response:", userRole);
 
       // Save tokens if returned
@@ -91,10 +96,8 @@ const Login = () => {
       // Navigate based on user role - normalize the role value
       const normalizedRole = (userRole || "").toLowerCase().trim();
       console.log("Normalized role (lowercase, trimmed):", normalizedRole);
-      console.log("Checking role match...");
       
-      // Redirect syndicate users to LeadInfo page
-      // Check for various role formats: "syndicate", "syndicate_manager", etc.
+      // Redirect syndicate users 
       if (normalizedRole === "syndicate" || normalizedRole === "syndicate_manager" || normalizedRole.includes("syndicate")) {
         console.log("✅ Redirecting to syndicate creation (LeadInfo)");
         navigate("/syndicate-creation/lead-info");
@@ -123,20 +126,12 @@ const Login = () => {
             }
           });
 
-          console.log("Profile response:", profileResponse.data);
-
-          // Handle different response formats
-          let profileData = null;
-          if (profileResponse.data?.results && Array.isArray(profileResponse.data.results) && profileResponse.data.results.length > 0) {
-            profileData = profileResponse.data.results[0];
-          } else if (profileResponse.data && typeof profileResponse.data === 'object' && !Array.isArray(profileResponse.data)) {
-            profileData = profileResponse.data;
-          } else if (Array.isArray(profileResponse.data) && profileResponse.data.length > 0) {
-            profileData = profileResponse.data[0];
-          }
+          // Handle different response formats (single object or result array)
+          let profileData = profileResponse.data?.results?.[0] || 
+                            (profileResponse.data && typeof profileResponse.data === 'object' && !Array.isArray(profileResponse.data) ? profileResponse.data : null) ||
+                            (Array.isArray(profileResponse.data) ? profileResponse.data[0] : null);
 
           if (profileData) {
-            console.log("Profile data found:", profileData);
             
             // Check if all 6 steps are completed
             const stepsCompleted = [
@@ -150,15 +145,7 @@ const Login = () => {
 
             const allStepsCompleted = stepsCompleted.every(step => step === true);
             
-            console.log("Step completion status:", {
-              step1: profileData.step1_completed,
-              step2: profileData.step2_completed,
-              step3: profileData.step3_completed,
-              step4: profileData.step4_completed,
-              step5: profileData.step5_completed,
-              step6: profileData.step6_completed,
-              allCompleted: allStepsCompleted
-            });
+            console.log("Update: Step completion status:", { allCompleted: allStepsCompleted });
 
             if (allStepsCompleted) {
               console.log("✅ All onboarding steps completed, redirecting to dashboard");
@@ -172,38 +159,27 @@ const Login = () => {
             navigate("/investor-onboarding/basic-info");
           }
         } catch (profileError) {
-          console.error("Error fetching investor profile:", profileError);
-          // If profile check fails, default to onboarding
-          console.log("⚠️ Profile check failed, redirecting to onboarding");
+          console.error("Error fetching investor profile, redirecting to onboarding:", profileError);
           navigate("/investor-onboarding/basic-info");
         }
       } else {
-        console.log("⚠️ Unknown role, defaulting to home page");
-        console.log("Role value was:", normalizedRole);
-        console.log("Available user data:", userInfo);
+        console.log("⚠️ Unknown role, defaulting to home page. Role value:", normalizedRole);
         // Default fallback
         navigate("/");
       }
       
     } catch (err) {
       console.error("Login error:", err);
-      console.error("Error response:", err.response);
-      console.error("Error status:", err.response?.status);
-      // console.error("Error data:", err.response?.data);
       
       const backendData = err.response?.data;
       if (backendData) {
         if (typeof backendData === "object") {
           // Handle specific field errors
-          if (backendData.non_field_errors) {
-            setError(backendData.non_field_errors[0]);
-          } else if (backendData.username) {
-            setError(backendData.username[0]);
-          } else if (backendData.password) {
-            setError(backendData.password[0]);
-          } else {
-            setError(JSON.stringify(backendData));
-          }
+          const errorMsg = backendData.non_field_errors?.[0] || 
+                           backendData.email?.[0] || 
+                           backendData.password?.[0] || 
+                           JSON.stringify(backendData);
+          setError(errorMsg);
         } else {
           setError(String(backendData));
         }
@@ -219,34 +195,47 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
 
 
-      <div className="flex flex-col md:flex-row w-full max-w-5xl h-auto md:h-[600px] bg-white rounded-3xl overflow-hidden">
-        {/* Left Panel */}
-        <div className="w-full md:w-1/2 flex items-center justify-center relative p-6 md:p-4 h-64 md:h-full">
-          {/* Purple background behind logo/image */}
-          <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col items-center justify-center relative overflow-hidden">
-            <h2 className="absolute top-4 left-4 md:top-6 md:left-6 text-lg md:text-2xl font-bold text-[#01373D] font-poppins-custom">Logo</h2>
-            <img
-              src={loginLogo}
-              alt="Profile"
-              className="w-40 h-40 md:w-60 md:h-[360px] object-cover rounded-xl"
-            />
-          </div>
+      <div className="flex flex-col md:flex-row w-full max-w-5xl h-auto md:h-[600px] bg-white rounded-3xl overflow-hidden shadow-2xl">
+        {/* Left Panel - Visual/Marketing Section */}
+        <div className="w-full md:w-1/2 flex relative p-6 md:p-4 h-64 md:h-full">
+          {/* Purple background and content layout */}
+          <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col justify-between relative overflow-hidden p-8">
+            
+            {/* Logo/Branding (Top) */}
+            <img src={logo} alt="Login Logo" className="w-1/3 max-w-[150px] h-auto object-contain" />
+            
+            {/* Main Text Content (Middle - Takes up remaining space) */}
+            <div className="flex flex-col items-center justify-center flex-grow ">
+                <h1 className="text-[30px] font-semibold text-white font-poppins-custom">Invest Globally. <br />
+                Compliantly. Confidently.</h1>
+                <p className="text-white font-poppins-custom leading-tight mr-16 mt-2">Built for global accredited investors and <br />
+                syndicate leads.</p>
+            </div>
+            
 
+            {/* Image Content (Bottom - MOVED HERE) */}
+            <div className="flex justify-start items-end w-full space-x-3 mt-7">
+              <img src={loginimg} alt="Login Asset 1" className="w-1/3 max-w-[50px] h-auto object-contain" />
+              <img src={loginimg2} alt="Login Asset 2" className="w-1/3 max-w-[50px] h-auto object-contain" />
+              <img src={loginimg3} alt="Login Asset 3" className="w-1/3 max-w-[50px] h-auto object-contain" />
+            </div>
+            
+          </div>
         </div>
 
-        {/* Right Panel */}
-        <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-8 md:p-6">
+        {/* Right Panel - Login Form */}
+        <div className="w-full md:w-1/2 flex items-center justify-center p-7 sm:p-8 md:p-6">
           <div className="w-full max-w-md">
-            <div className="mb-8 text-center md:text-left">
-              <h1 className="text-3xl  text-[#001D21] mb-2">Welcome Back</h1>
+            <div className="mb-4 text-center md:text-left">
+              <h1 className="text-3xl text-[#001D21] mb-2 font-semibold">Welcome Back</h1>
               <p className="text-[#0A2A2E] font-poppins-custom">Sign in to your account to continue</p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {error && <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">{error}</div>}
+              {error && <div className="text-red-500 text-sm bg-red-50 p-2 rounded-lg border border-red-200">{error}</div>}
               
-              {/* Username */}
+              {/* Email */}
               <div>
-                <label htmlFor="username" className="block text-sm  text-[#0A2A2E] font-poppins-custom mb-2">
+                <label htmlFor="email" className="block text-sm text-[#0A2A2E] font-poppins-custom mb-1">
                   Email
                 </label>
                 <input
@@ -256,15 +245,15 @@ const Login = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="Enter your email"
-                  className="w-full px-4 py-3 !border !border-0.5px border-[#0A2A2E] bg-[#F4F6F5] rounded-lg outline-none "
+                  className="w-full px-4 py-3 border border-gray-300 bg-[#F4F6F5] rounded-lg outline-none focus:border-[#00F0C3] transition-colors"
                   required
                   disabled={loading}
                 />
               </div>
 
               {/* Password */}
-              <div>
-                <label htmlFor="password" className="block text-sm text-[#0A2A2E] font-poppins-custom mb-2 outline-none">
+              <div className="mb-3">
+                <label htmlFor="password" className="block text-sm text-[#0A2A2E] font-poppins-custom mb-1 outline-none">
                   Password
                 </label>
                 <div className="relative">
@@ -275,14 +264,15 @@ const Login = () => {
                     value={formData.password}
                     onChange={handleInputChange}
                     placeholder="Enter your password"
-                    className="w-full px-4 py-3 pr-12 !border border-0.5px border-[#0A2A2E] bg-[#F4F6F5] rounded-lg outline-none "
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 bg-[#F4F6F5] rounded-lg outline-none focus:border-[#00F0C3] transition-colors"
                     required
                     disabled={loading}
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer p-1"
                   >
+                    {/* Placeholder Eye Icon for visibility toggle */}
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
@@ -301,8 +291,8 @@ const Login = () => {
                 </div>
               </div>
 
-             
-              <div className="flex items-center justify-between">
+              
+              <div className="flex items-center justify-between mb-4 ">
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -310,13 +300,14 @@ const Login = () => {
                     name="rememberMe"
                     checked={formData.rememberMe}
                     onChange={handleInputChange}
-                    className="h-4 w-4 text-[#00FFC2] border-gray-300 rounded"
+                    // Tailwind uses accent color for checkbox styling in modern versions, but keeping inline color for compatibility
+                    className="h-4 w-4 text-[#00FFC2] border-gray-300 rounded focus:ring-[#00FFC2]"
                   />
                   <label htmlFor="rememberMe" className="ml-2 block text-sm text-[#0A2A2E] font-poppins-custom">
                     Remember me
                   </label>
                 </div>
-                <Link to="/forgot-password" className="text-sm text-[#ED1C24] hover:text-red-700">
+                <Link to="/forgot-password" className="text-sm text-[#ED1C24] hover:text-red-700 transition-colors">
                   Forgot password?
                 </Link>
               </div>
@@ -325,13 +316,67 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full md:w-30 bg-[#00F0C3] text-[#0A2A2E] font-semibold py-3 px-4 rounded-lg hover:bg-[#00E6B0] transition-colors duration-200 cursor-pointer disabled:opacity-50"
+                className="w-full bg-[#0A3A38] text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:bg-[#00E6B0] transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? "Logging In..." : "Log In"}
+                {loading ? (
+                  <svg className="animate-spin h-5 w-5 mx-auto text-[#0A2A2E]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : "Log In"}
               </button>
+
+          
 
 
             </form>
+
+
+            <div className="flex items-center mb-2 mt-2
+             ">
+              <div className="w-full h-[1px] bg-[#0A2A2E]"></div>
+              <span className="text-lg text-[#0A2A2E] mx-5 font-poppins-custom">or</span>
+              <div className="w-full h-[1px] bg-[#0A2A2E]"></div>
+            </div>
+
+            <div className="flex flex-row items-center justify-center">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex flex-row  items-center justify-center gap-1 w-full bg-white text-[#0A2A2E] font-semibold py-3 px-4 rounded-lg border-2 border-[#0A2A2E] hover:bg-[#00E6B0] transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g clip-path="url(#clip0_3034_1961)">
+                <path d="M5.57386 0.526248C3.97522 1.08083 2.59654 2.13346 1.64035 3.5295C0.684163 4.92554 0.200854 6.59143 0.261418 8.28245C0.321982 9.97348 0.923226 11.6005 1.97684 12.9246C3.03045 14.2486 4.48089 15.1999 6.11511 15.6387C7.44002 15.9806 8.82813 15.9956 10.1601 15.6825C11.3668 15.4115 12.4823 14.8317 13.3976 14C14.3502 13.1079 15.0417 11.9731 15.3976 10.7175C15.7845 9.35208 15.8534 7.91616 15.5989 6.52H8.15886V9.60625H12.4676C12.3815 10.0985 12.197 10.5683 11.9251 10.9875C11.6531 11.4068 11.2994 11.7669 10.8851 12.0462C10.359 12.3943 9.76586 12.6285 9.14387 12.7337C8.52005 12.8497 7.88019 12.8497 7.25636 12.7337C6.6241 12.603 6.02599 12.3421 5.50011 11.9675C4.6553 11.3695 4.02096 10.5199 3.68762 9.54C3.34863 8.54174 3.34863 7.45951 3.68762 6.46125C3.9249 5.76152 4.31716 5.12442 4.83511 4.5975C5.42785 3.98343 6.17828 3.54449 7.00406 3.32884C7.82984 3.11319 8.69906 3.12916 9.51637 3.375C10.1548 3.57099 10.7387 3.91342 11.2214 4.375C11.7072 3.89166 12.1922 3.40708 12.6764 2.92125C12.9264 2.66 13.1989 2.41125 13.4451 2.14375C12.7083 1.45809 11.8435 0.924569 10.9001 0.573748C9.18225 -0.0500151 7.30259 -0.0667781 5.57386 0.526248Z" fill="white"/>
+                <path d="M5.57397 0.526245C7.30254 -0.067184 9.1822 -0.0508623 10.9002 0.572495C11.8437 0.925699 12.7082 1.46179 13.444 2.14999C13.194 2.41749 12.9302 2.66749 12.6752 2.92749C12.1902 3.41166 11.7056 3.89416 11.2215 4.37499C10.7388 3.91342 10.1549 3.57098 9.51646 3.37499C8.69943 3.1283 7.83024 3.1114 7.00424 3.32617C6.17824 3.54094 5.42735 3.97907 4.83396 4.59249C4.31601 5.11941 3.92375 5.75652 3.68646 6.45624L1.09521 4.44999C2.02273 2.6107 3.62865 1.20377 5.57397 0.526245Z" fill="#E33629"/>
+                <path d="M0.407438 6.43745C0.546714 5.74719 0.777942 5.07873 1.09494 4.44995L3.68619 6.4612C3.34721 7.45946 3.34721 8.54169 3.68619 9.53995C2.82285 10.2066 1.9591 10.8766 1.09494 11.55C0.301376 9.97035 0.0593537 8.17058 0.407438 6.43745Z" fill="#F8BD00"/>
+                <path d="M8.15876 6.5188H15.5988C15.8533 7.91496 15.7844 9.35088 15.3975 10.7163C15.0416 11.9719 14.3501 13.1067 13.3975 13.9988C12.5613 13.3463 11.7213 12.6988 10.885 12.0463C11.2996 11.7666 11.6535 11.4062 11.9254 10.9865C12.1973 10.5668 12.3817 10.0965 12.4675 9.6038H8.15876C8.15751 8.5763 8.15876 7.54755 8.15876 6.5188Z" fill="#587DBD"/>
+                <path d="M1.09375 11.55C1.95792 10.8834 2.82167 10.2134 3.685 9.54004C4.01901 10.5203 4.65426 11.3699 5.5 11.9675C6.02751 12.3404 6.62691 12.5992 7.26 12.7275C7.88382 12.8435 8.52368 12.8435 9.1475 12.7275C9.76949 12.6223 10.3626 12.3881 10.8888 12.04C11.725 12.6925 12.565 13.34 13.4012 13.9925C12.4861 14.8247 11.3705 15.4049 10.1637 15.6763C8.83176 15.9894 7.44365 15.9744 6.11875 15.6325C5.07088 15.3528 4.09209 14.8595 3.24375 14.1838C2.34583 13.4709 1.61244 12.5725 1.09375 11.55Z" fill="#319F43"/>
+                </g>
+                <defs>
+                <clipPath id="clip0_3034_1961">
+                <rect width="16" height="16" fill="white"/>
+                </clipPath>
+                </defs>
+                </svg>
+
+
+                  </span>Login with Google
+              </button>
+            </div>
+
+            <div className="py-2">
+              <p>don't have an account? <Link to="/register" className="text-[#CEC6FF] decoration-underline hover:text-[#00E6B0] transition-colors"
+              style={{textDecoration: "underline"}}
+              >Create one</Link></p>
+            </div>
+
+            <div className="border-1 border-[#0A2A2E] rounded-lg p-2 bg-[#F4F6F5]">
+              <p className="text-xs p-1 text-[#0A2A2E] font-poppins-custom">
+              By logging in, you acknowledge that Unlocksley does not provide investment advice and is intended for accredited/HNW investors only. Compliance varies by jurisdiction.
+              </p>
+
+            </div>
 
           </div>
         </div>

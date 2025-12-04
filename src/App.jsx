@@ -21,6 +21,8 @@ import SecureAccount2FA from "./pages/auth/SecureAccount2FA";
 import VerifyEmail from "./pages/auth/VerifyEmail";
 import VerifyPhone from "./pages/auth/VerifyPhone";
 import TermsOfService from "./pages/auth/TermsOfService";
+import RoleSelect from "./pages/auth/RoleSelect";
+import QuickProfile from "./pages/auth/QuickProfile";
 
 // Syndicate Creation pages
 import SyndicateLayout from "./pages/syndicateCreation/SyndicateLayout";
@@ -97,6 +99,7 @@ const App = () => {
 
       {/* Auth Routes (without Layout) */}
       <Route path="/login" element={<Login />} />
+      <Route path="/role-select" element={<RoleSelect />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/create-password" element={<CreatePassword />} />
       <Route path="/secure-account-2fa" element={<SecureAccount2FA />} />
@@ -106,7 +109,8 @@ const App = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/otp-verification" element={<OTPVerification />} />
       <Route path="/set-new-password" element={<SetNewPassword />} />
-
+      <Route path="/quick-profile" element={<QuickProfile />} />
+    
       {/* Syndicate Creation Routes (with Layout) - Protected */}
       <Route
         path="/syndicate-creation"

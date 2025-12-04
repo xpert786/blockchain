@@ -1073,9 +1073,9 @@ const Messages = () => {
 
   return (
     <div className="min-h-screen bg-[#F4F6F5] overflow-x-hidden w-full max-w-full">
-      <main className="w-full max-w-full px-2 sm:px-4 lg:px-6 py-4 sm:py-8">
-        <div className="mb-4 sm:mb-6 lg:mb-8 mt-2 sm:mt-5">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-medium text-[#0A2A2E] font-poppins-custom">Messages</h1>
+      <main className="w-full max-w-full px-1.5 sm:px-3 lg:px-6 py-2 sm:py-4 lg:py-8">
+        <div className="mb-3 sm:mb-4 lg:mb-8 mt-1 sm:mt-3 lg:mt-5">
+          <h1 className="text-lg sm:text-xl lg:text-3xl font-medium text-[#0A2A2E] font-poppins-custom">Messages</h1>
           <p className="text-xs sm:text-sm text-[#748A91] font-poppins-custom">
             Communicate with investors and support team
           </p>
@@ -1090,21 +1090,21 @@ const Messages = () => {
           </div>
         )}
      
-        <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 lg:gap-6 w-full max-w-full">
+        <div className="flex flex-col lg:flex-row gap-2 sm:gap-3 lg:gap-6 w-full max-w-full">
           {/* Conversations List - Hidden on mobile when message view is shown */}
-          <aside className={`bg-white border border-[#E5E7EB] rounded-2xl sm:rounded-3xl p-3 sm:p-4 lg:p-6 w-full lg:w-1/3 max-w-full overflow-hidden ${showMessageView ? "hidden lg:block" : "block"}`}>
-            <div className="mb-3 sm:mb-4">
-              <p className="text-sm sm:text-md font-medium text-[#001D21] font-poppins-custom">
+          <aside className={`bg-white border border-[#E5E7EB] rounded-xl sm:rounded-2xl lg:rounded-3xl p-2 sm:p-3 lg:p-6 w-full lg:w-1/3 max-w-full overflow-hidden ${showMessageView ? "hidden lg:block" : "block"}`}>
+            <div className="mb-2 sm:mb-3 lg:mb-4">
+              <p className="text-xs sm:text-sm lg:text-md font-medium text-[#001D21] font-poppins-custom">
                 Conversations
               </p>
             </div>
-            <div className="mb-3 sm:mb-4 space-y-2">
+            <div className="mb-2 sm:mb-3 lg:mb-4 space-y-1.5 sm:space-y-2">
               <input
                 type="text"
                 placeholder="Search conversations..."
                 value={searchQuery}
                 onChange={handleSearch}
-                className="w-full max-w-full bg-[#F4F6F5] border border-gray-300 rounded-lg px-3 sm:px-4 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                className="w-full max-w-full bg-[#F4F6F5] border border-gray-300 rounded-lg px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
               />
               {selectedConversation && (
                 <input
@@ -1115,21 +1115,21 @@ const Messages = () => {
                     setMessageSearchQuery(e.target.value);
                     searchMessages(e.target.value);
                   }}
-                  className="w-full max-w-full bg-[#F4F6F5] border border-gray-300 rounded-lg px-3 sm:px-4 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  className="w-full max-w-full bg-[#F4F6F5] border border-gray-300 rounded-lg px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                 />
               )}
             </div>
             
             {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="text-sm text-[#748A91] font-poppins-custom">Loading conversations...</div>
+              <div className="flex items-center justify-center py-6 sm:py-8">
+                <div className="text-xs sm:text-sm text-[#748A91] font-poppins-custom">Loading conversations...</div>
               </div>
             ) : conversations.length === 0 ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="text-sm text-[#748A91] font-poppins-custom">No conversations found</div>
+              <div className="flex items-center justify-center py-6 sm:py-8">
+                <div className="text-xs sm:text-sm text-[#748A91] font-poppins-custom">No conversations found</div>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {conversations.map((conversation) => {
                   // The conversation ID is at the top level: conversation.id
                   const conversationId = conversation.id;
@@ -1147,19 +1147,19 @@ const Messages = () => {
                     <button
                       key={conversationId || `conv-${Math.random()}`}
                       onClick={() => handleConversationSelect(conversation)}
-                      className={`w-full max-w-full text-left border rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors ${
+                      className={`w-full max-w-full text-left border rounded-lg sm:rounded-xl lg:rounded-2xl px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 lg:py-3 transition-colors ${
                         isActive ? "border-[#00F0C3] bg-[#F4FFFB]" : "border-[#E5E7EB] bg-white hover:bg-[#F9FAFB]"
                       }`}
                     >
-                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 rounded-full bg-[#E5F1F0] flex items-center justify-center text-xs sm:text-sm font-medium text-[#0A2A2E]">
+                      <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 min-w-0">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 flex-shrink-0 rounded-full bg-[#E5F1F0] flex items-center justify-center text-xs sm:text-sm font-medium text-[#0A2A2E]">
                           {initials}
                         </div>
                         <div className="flex-1 min-w-0 overflow-hidden">
                           <div className="flex items-center justify-between gap-1 sm:gap-2">
                             <p className="text-xs sm:text-sm font-medium text-[#0A2A2E] font-poppins-custom truncate">{name}</p>
                             {conversation.unread_count > 0 && (
-                              <span className="flex-shrink-0 bg-[#00F0C3] text-[#0A2A2E] text-xs font-semibold rounded-full px-1.5 sm:px-2 py-0.5">
+                              <span className="flex-shrink-0 bg-[#00F0C3] text-[#0A2A2E] text-xs font-semibold rounded-full px-1 sm:px-1.5 lg:px-2 py-0.5">
                                 {conversation.unread_count}
                               </span>
                             )}
@@ -1170,7 +1170,7 @@ const Messages = () => {
                             )}
                           </div>
                           {lastMessage.content && (
-                            <p className="text-xs text-[#748A91] font-poppins-custom mt-1 truncate">
+                            <p className="text-xs text-[#748A91] font-poppins-custom mt-0.5 sm:mt-1 truncate">
                               {lastMessage.content}
                             </p>
                           )}
@@ -1184,7 +1184,7 @@ const Messages = () => {
           </aside>
 
           {/* Message View - Hidden on mobile when conversations list is shown */}
-          <section className={`bg-white border border-[#E5E7EB] rounded-2xl sm:rounded-3xl p-3 sm:p-4 lg:p-6 flex-1 flex flex-col min-h-[70vh] w-full max-w-full overflow-hidden ${showMessageView ? "flex" : "hidden lg:flex"}`}>
+          <section className={`bg-white border border-[#E5E7EB] rounded-xl sm:rounded-2xl lg:rounded-3xl p-2 sm:p-3 lg:p-6 flex-1 flex flex-col min-h-[70vh] w-full max-w-full overflow-hidden ${showMessageView ? "flex" : "hidden lg:flex"}`}>
             {!selectedConversation ? (
               <div className="flex items-center justify-center h-full">
                 <p className="text-xs sm:text-sm text-[#748A91] font-poppins-custom px-2">Select a conversation to start messaging</p>
@@ -1194,16 +1194,16 @@ const Messages = () => {
                 {/* Mobile Back Button */}
                 <button
                   onClick={() => setShowMessageView(false)}
-                  className="lg:hidden flex items-center gap-2 mb-3 sm:mb-4 text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom hover:text-[#01373D]"
+                  className="lg:hidden flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3 lg:mb-4 text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom hover:text-[#01373D]"
                 >
-                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+                  <svg width="12" height="12" className="sm:w-4 sm:h-4 flex-shrink-0" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <span className="truncate">Back to Conversations</span>
+                  <span className="truncate">Back</span>
                 </button>
 
                 {/* Header */}
-                <header className="flex items-center justify-between border-b border-[#E5E7EB] pb-3 sm:pb-4 mb-3 sm:mb-4 gap-2 sm:gap-4 min-w-0">
+                <header className="flex items-center justify-between border-b border-[#E5E7EB] pb-2 sm:pb-3 lg:pb-4 mb-2 sm:mb-3 lg:mb-4 gap-1.5 sm:gap-2 lg:gap-4 min-w-0">
                   <div className="flex-1 min-w-0 overflow-hidden">
                     {(() => {
                       const participantInfo = selectedConversation.participant_info || selectedConversation.other_participant || {};
@@ -1225,7 +1225,7 @@ const Messages = () => {
                 </header>
 
                 {/* Messages */}
-                <div ref={messagesContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden space-y-3 sm:space-y-4 pr-1 sm:pr-2 max-h-[calc(70vh-200px)] min-h-0 w-full" style={{ overflowX: 'hidden' }}>
+                <div ref={messagesContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden space-y-2 sm:space-y-3 lg:space-y-4 pr-1 sm:pr-2 max-h-[calc(70vh-200px)] min-h-0 w-full" style={{ overflowX: 'hidden' }}>
                   {loadingMessages ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="text-sm text-[#748A91] font-poppins-custom">Loading messages...</div>
@@ -1522,8 +1522,8 @@ const Messages = () => {
                 )}
 
                 {/* Message Input */}
-                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-[#E5E7EB] w-full max-w-full">
-                  <div className="flex items-center gap-2 sm:gap-3 w-full max-w-full">
+                <div className="mt-2 sm:mt-3 lg:mt-4 pt-2 sm:pt-3 lg:pt-4 border-t border-[#E5E7EB] w-full max-w-full">
+                  <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 w-full max-w-full">
                     <input
                       type="file"
                       ref={fileInputRef}
@@ -1533,14 +1533,14 @@ const Messages = () => {
                       accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
                     />
                     <div className="relative flex-1 min-w-0 max-w-full">
-                      <div className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-10">
+                      <div className="absolute left-1.5 sm:left-2.5 lg:left-3 top-1/2 -translate-y-1/2 z-10">
                         <button
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
                           className="text-[#748A91] hover:text-[#0A2A2E] transition-colors flex-shrink-0"
                           title="Attach file"
                         >
-                          <svg width="20" height="20" className="sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <svg width="18" height="18" className="sm:w-5 sm:h-5 lg:w-6 lg:h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="0.5" y="0.5" width="23" height="23" rx="6.5" fill="#00F0C3"/>
                             <rect x="0.5" y="0.5" width="23" height="23" rx="6.5" stroke="#00F0C3"/>
                             <path d="M16.7201 11.5268L12.1251 16.1218C11.5622 16.6847 10.7987 17.001 10.0026 17.001C9.20655 17.001 8.44307 16.6847 7.88014 16.1218C7.31722 15.5589 7.00098 14.7954 7.00098 13.9993C7.00098 13.2032 7.31722 12.4397 7.88014 11.8768L12.1651 7.59179C12.5404 7.21584 13.0497 7.00438 13.5809 7.00391C14.1121 7.00344 14.6217 7.21401 14.9976 7.58929C15.3736 7.96457 15.5851 8.47382 15.5855 9.00502C15.586 9.53622 15.3754 10.0458 15.0001 10.4218L10.7051 14.7068C10.5175 14.8944 10.263 14.9998 9.99764 14.9998C9.73228 14.9998 9.47779 14.8944 9.29014 14.7068C9.1025 14.5191 8.99709 14.2647 8.99709 13.9993C8.99709 13.7339 9.1025 13.4794 9.29014 13.2918L13.5351 9.05179" stroke="#001D21" strokeLinecap="round" strokeLinejoin="round"/>
@@ -1563,7 +1563,7 @@ const Messages = () => {
                         }}
                         placeholder={replyingTo ? "Write a reply..." : "Write your message here..."}
                         disabled={sending}
-                        className="w-full max-w-full bg-[#F4F6F5] border border-gray-300 rounded-xl sm:rounded-2xl pl-9 sm:pl-12 pr-3 sm:pr-4 pt-3 sm:pt-4 pb-3 sm:pb-4 text-xs sm:text-sm font-poppins-custom focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none disabled:opacity-50 overflow-wrap-anywhere"
+                        className="w-full max-w-full bg-[#F4F6F5] border border-gray-300 rounded-lg sm:rounded-xl lg:rounded-2xl pl-8 sm:pl-10 lg:pl-12 pr-2 sm:pr-3 lg:pr-4 pt-2 sm:pt-3 lg:pt-4 pb-2 sm:pb-3 lg:pb-4 text-xs sm:text-sm font-poppins-custom focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none disabled:opacity-50 overflow-wrap-anywhere"
                         style={{ minHeight: '20px' }}
                       />
                     </div>
