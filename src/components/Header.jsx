@@ -56,7 +56,7 @@ const Header = () => {
         {/* Desktop Buttons */}
         <div className="hidden sm:flex items-center gap-3">
         <Link
-            to="/signup"
+            to="/role-select"
             className="rounded-lg bg-white px-4 py-1 text-sm font-medium text-[#0A2A2E] transition hover:bg-white/90"
           >
             Sign Up
@@ -129,7 +129,7 @@ const Header = () => {
           <div className="flex flex-col gap-2">
 
             <Link
-              to="/signup"
+              to="/role-select"
               onClick={() => setIsMenuOpen(false)}
               className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-[#0A2A2E]"
             >
