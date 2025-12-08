@@ -9,6 +9,7 @@ const TermsOfService = () => {
     termsAndPrivacy: false,
     cookies: false,
   });
+  const [error, setError] = useState("");
 
   const handleCheckboxChange = (name) => {
     setAgreements({
@@ -22,9 +23,9 @@ const TermsOfService = () => {
     if (agreements.acknowledge && agreements.termsAndPrivacy && agreements.cookies) {
       console.log("All agreements accepted:", agreements);
       // Navigate to login page after accepting terms
-      navigate("/login");
+      navigate("/quick-profile-set");
     } else {
-      alert("Please accept all terms and conditions to continue.");
+      setError("Please accept all terms and conditions to continue.");
     }
   };
 
@@ -102,6 +103,7 @@ const TermsOfService = () => {
             </div>
 
             {/* Submit Button */}
+            {error && <div className="text-red-600 text-sm mb-2">{error}</div>}
             <div className="flex justify-start pt-4">
               <button
                 type="submit"

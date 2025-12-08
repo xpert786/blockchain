@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import bgImage from "../../assets/img/bg-images.png";
 import loginLogo from "../../assets/img/loginlogo.png";
 import logo from "/src/assets/img/logo.png";
@@ -9,69 +10,13 @@ import loginimg2 from "/src/assets/img/loginimg2.svg";
 import loginimg3 from "/src/assets/img/loginimg3.svg";
 
 const QuickProfile = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     country: "",
     taxResidency: "",
-    investorCategory: "Individual",
+    investorCategory: "individual",
   });
-  const [showComplianceAlert, setShowComplianceAlert] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(null);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-
-    // Show compliance alert for restricted jurisdictions
-    if (name === "country" && value) {
-      const restrictedCountries = ["Iran", "North Korea", "Syria"];
-      setShowComplianceAlert(restrictedCountries.includes(value));
-    }
-  };
-
-  const handleCategorySelect = (category) => {
-    setFormData({
-      ...formData,
-      investorCategory: category,
-    });
-    setOpenDropdown(null);
-  };
-
-  const handleCountrySelect = (country) => {
-    setFormData({
-      ...formData,
-      country: country,
-    });
-    setOpenDropdown(null);
-    
-    const restrictedCountries = ["Iran", "North Korea", "Syria"];
-    setShowComplianceAlert(restrictedCountries.includes(country));
-  };
-
-  const handleTaxResidencySelect = (residency) => {
-    setFormData({
-      ...formData,
-      taxResidency: residency,
-    });
-    setOpenDropdown(null);
-  };
-
-  const toggleDropdown = (dropdownName) => {
-    setOpenDropdown(openDropdown === dropdownName ? null : dropdownName);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (showComplianceAlert) {
-      alert("Cannot proceed: Your jurisdiction is not supported.");
-      return;
-    }
-    console.log("Quick Profile form submitted:", formData);
-  };
-
-  const countries = [
+  const [countries, setCountries] = useState([
     "United States",
     "Canada",
     "United Kingdom",
@@ -82,22 +27,168 @@ const QuickProfile = () => {
     "Singapore",
     "UAE",
     "India",
-  ];
+  ]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState({ visible: false, message: "", type: "info" });
+  const [showComplianceAlert, setShowComplianceAlert] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
 
-  const taxResidencies = [
-    "United States",
-    "Canada",
-    "United Kingdom",
-    "Germany",
-    "France",
-    "Australia",
-    "Japan",
-    "Singapore",
-    "UAE",
-    "Other",
-  ];
+  const restrictedCountries = ["Iran", "North Korea", "Syria"];
 
-  const investorCategories = ["Individual","Family Office", "Corporate Vehicle", "Trust / Foundation"];
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => {
+      // If country and taxResidency were same before change, keep them in sync
+      const wereSame = prev.country === prev.taxResidency;
+      const next = { ...prev, [name]: value };
+      if (name === "country" && wereSame) next.taxResidency = value;
+      return next;
+    });
+
+    // Show compliance alert for restricted jurisdictions
+    if (name === "country") {
+      setShowComplianceAlert(restrictedCountries.includes(value));
+    }
+  };
+
+  const handleCategorySelect = (category) => {
+    setFormData((prev) => ({ ...prev, investorCategory: category }));
+    setOpenDropdown(null);
+  };
+
+  const handleCountrySelect = (country) => {
+    setFormData((prev) => {
+      const wereSame = prev.country === prev.taxResidency;
+      const next = { ...prev, country };
+      if (wereSame) next.taxResidency = country;
+      return next;
+    });
+    setOpenDropdown(null);
+    setShowComplianceAlert(restrictedCountries.includes(country));
+  };
+
+  const handleTaxResidencySelect = (residency) => {
+    setFormData((prev) => ({ ...prev, taxResidency: residency }));
+    setOpenDropdown(null);
+  };
+
+  const formatBackendError = (err) => {
+    const backendData = err?.response?.data;
+    if (backendData) {
+      if (typeof backendData === "object" && (backendData.detail || backendData.error)) {
+        return backendData.detail || backendData.error;
+      }
+      return typeof backendData === "object" ? JSON.stringify(backendData) : String(backendData);
+    }
+    return err.message || "An unknown error occurred.";
+  };
+
+  const showToast = (message, type = "info", duration = 4000) => {
+    setToast({ visible: true, message, type });
+    setTimeout(() => setToast({ visible: false, message: "", type: "info" }), duration);
+  };
+
+  const toggleDropdown = (dropdownName) => {
+    setOpenDropdown(openDropdown === dropdownName ? null : dropdownName);
+  };
+
+  // Fetch country list and try to auto-detect user's country by IP
+  useEffect(() => {
+    (async () => {
+      setLoadingCountries(true);
+      try {
+        // Fetch countries from restcountries (public API) using fields to reduce payload
+        const resp = await axios.get("https://restcountries.com/v3.1/all?fields=name,cca2,flags");
+        const names = resp.data
+          .map((c) => c?.name?.common)
+          .filter(Boolean)
+          .sort((a, b) => a.localeCompare(b));
+        if (names && names.length) setCountries(names);
+      } catch (err) {
+        console.warn("Could not fetch countries list, using fallback list.", err);
+      }
+
+      try {
+        // Try to detect user's country via IP
+        const ipResp = await axios.get("https://ipapi.co/json/");
+        const detected = ipResp.data?.country_name || ipResp.data?.country;
+        if (detected) {
+          setFormData((prev) => ({
+            ...prev,
+            country: detected,
+            taxResidency: prev.taxResidency || detected,
+          }));
+        }
+      } catch (err) {
+        console.warn("Could not auto-detect country by IP:", err);
+      } finally {
+        setLoadingCountries(false);
+      }
+    })();
+  }, []);
+
+  // Submit quick profile to backend
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (showComplianceAlert) {
+      showToast("Cannot proceed: Your jurisdiction is not supported.", "error");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const finalUrl = `${API_URL.replace(/\/$/, "")}/profile/quick-setup/`;
+      const token = localStorage.getItem("accessToken");
+      const payload = {
+        country_of_residence: formData.country,
+        tax_residency: formData.taxResidency,
+        investor_type: (formData.investorCategory || "").toLowerCase(),
+      };
+
+      await axios.patch(finalUrl, payload, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : undefined,
+          "Content-Type": "application/json",
+        },
+      });
+
+      showToast("Profile saved successfully.", "success");
+      // After saving, if phone is not verified, send user to verify phone
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const statusUrl = `${API_URL.replace(/\/$/, "")}/api/registration-flow/get_registration_status/`;
+        if (token) {
+          const statusResp = await axios.get(statusUrl, { headers: { Authorization: `Bearer ${token}` } });
+          const status = statusResp.data || null;
+          if (status && status.phone_verified === false && status.email_verified === false) {
+            // If neither email nor phone are verified, send user to verify phone
+            navigate("/verify-phone");
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch registration status after quick profile save:', err);
+      }
+    } catch (err) {
+      console.error("Error saving quick profile:", err);
+      showToast(formatBackendError(err), "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  
+
+  const taxResidencies = [...countries, "Other"];
+
+  const investorCategories = [
+    { value: "individual", label: "Individual" },
+    { value: "family_office", label: "Family Office" },
+    { value: "corporate_vehicle", label: "Corporate Vehicle" },
+    { value: "trust_foundation", label: "Trust / Foundation" },
+  ];
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
@@ -150,7 +241,7 @@ const QuickProfile = () => {
                     onClick={() => toggleDropdown('country')}
                     className="w-full px-4 py-3 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg outline-none text-[#0A2A2E] font-poppins-custom cursor-pointer flex items-center justify-between"
                   >
-                    <span>{formData.country || "Enter your Country"}</span>
+                    <span>{formData.country || (loadingCountries ? 'Detecting country...' : "Enter your Country")}</span>
                     <svg 
                       className={`w-4 h-4 transition-transform ${openDropdown === 'country' ? 'rotate-180' : ''}`}
                       fill="#0A2A2E" 
@@ -236,7 +327,7 @@ const QuickProfile = () => {
                     onClick={() => toggleDropdown('category')}
                     className="w-full px-4 py-3 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg outline-none text-black font-poppins-custom appearance-none cursor-pointer flex items-center justify-between"
                   >
-                    <span>{formData.investorCategory}</span>
+                    <span>{investorCategories.find((c) => c.value === formData.investorCategory)?.label || 'Select Category'}</span>
                     <svg 
                       className={`w-4 h-4 transition-transform ${openDropdown === 'category' ? 'rotate-180' : ''}`}
                       fill="black" 
@@ -251,16 +342,16 @@ const QuickProfile = () => {
                     <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-[#E0E0E0] rounded-lg shadow-xl z-50">
                       {investorCategories.map((category, index) => (
                         <button
-                          key={category}
+                          key={category.value}
                           type="button"
-                          onClick={() => handleCategorySelect(category)}
+                          onClick={() => handleCategorySelect(category.value)}
                           className={`w-full px-4 py-3 text-left font-poppins-custom transition-colors whitespace-normal ${
-                            formData.investorCategory === category
+                            formData.investorCategory === category.value
                               ? 'bg-[#001D21] text-white font-medium'
                               : 'bg-white text-[#0A2A2E] hover:bg-[#F4F6F5]'
                           } ${index !== investorCategories.length - 1 ? 'border-b border-[#E0E0E0]' : ''}`}
                         >
-                          {category}
+                          {category.label}
                         </button>
                       ))}
                     </div>
@@ -282,20 +373,27 @@ const QuickProfile = () => {
 
               {/* Continue Button */}
               <button
-                type="submit"
-                disabled={showComplianceAlert}
+                type="button"
+                disabled={showComplianceAlert || saving}
+                onClick={() => navigate('/jurisdiction')}
                 className={`w-full py-3 px-4 rounded-lg font-semibold font-poppins-custom transition-colors duration-200 cursor-pointer ${
                   showComplianceAlert
                     ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                     : "bg-[#00866B] text-white hover:bg-[#006B54]"
                 }`}
               >
-                Continue
+                {saving ? 'Saving...' : 'Continue'}
               </button>
             </form>
           </div>
         </div>
       </div>
+      {/* Simple toast */}
+      {toast.visible && (
+        <div className={`fixed right-4 bottom-6 z-50 px-4 py-2 rounded shadow-lg ${toast.type === 'error' ? 'bg-red-600 text-white' : toast.type === 'success' ? 'bg-green-600 text-white' : 'bg-gray-800 text-white'}`}>
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 };

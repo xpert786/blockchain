@@ -81,6 +81,8 @@ import AccreditationOnboarding from "./pages/investerPanel/investerOnboarding/Ac
 import AcceptAgreements from "./pages/investerPanel/investerOnboarding/AcceptAgreements";
 import InvestorFinalReview from "./pages/investerPanel/investerOnboarding/FinalReview";
 import Confirmation from "./pages/investerPanel/investerOnboarding/Confirmation";
+import Juridiction from "./pages/auth/Juridiction";
+import QuickProfileSet from "./pages/auth/QuickProfileSet";
 
 const App = () => {
   return (
@@ -110,6 +112,10 @@ const App = () => {
       <Route path="/otp-verification" element={<OTPVerification />} />
       <Route path="/set-new-password" element={<SetNewPassword />} />
       <Route path="/quick-profile" element={<QuickProfile />} />
+      <Route path="/juridiction" element={<Juridiction />} />
+      {/* Historical/mistyped route - redirect to canonical path */}
+      <Route path="/jurisdiction" element={<Navigate to="/juridiction" replace />} />
+      <Route path="/quick-profile-set" element={<QuickProfileSet />} />
     
       {/* Syndicate Creation Routes (with Layout) - Protected */}
       <Route
@@ -283,9 +289,12 @@ const App = () => {
         }
       />
 
+      {/* Catch-all: redirect unknown routes to home to avoid "No routes matched" warnings */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
 
 export default App;
+
 

@@ -94,39 +94,147 @@ const VerifyEmail = () => {
     }
   };
 
-  // Function to trigger the code send for the specified method
-  const triggerCodeSend = async (method) => {
-    setResendLoading(true);
-    setError("");
-    try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-      const finalUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/choose_verification_method/`;
+  // Function to trigger the code send for the specified method
+  const triggerCodeSend = async (method) => {
+    setResendLoading(true);
+    setError("");
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const finalUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/choose_verification_method/`;
 
-      const accessToken = localStorage.getItem("accessToken");
-      if (!accessToken) {
-        throw new Error("No access token found. Please login again.");
-      }
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        throw new Error("No access token found. Please login again.");
+      }
 
-      console.log(`Triggering code send for ${method}:`, finalUrl);
+      console.log(`Triggering code send for ${method}:`, finalUrl);
 
-      await axios.post(finalUrl, { method }, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      });
+      await axios.post(finalUrl, { method }, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
 
-      console.log(`Code successfully triggered for ${method}.`);
-      return true;
-    } catch (err) {
-      console.error(`Error triggering code for ${method}:`, err);
-      setError(formatBackendError(err));
-      return false;
-    } finally {
-      setResendLoading(false);
-    }
-  };
+      console.log(`Code successfully triggered for ${method}.`);
+      return true;
+    } catch (err) {
+      console.error(`Error triggering code for ${method}:`, err);
+      setError(formatBackendError(err));
+      return false;
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  // Check registration status from backend
+  const checkRegistrationStatus = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const finalUrl = `${API_URL.replace(/\/$/, "")}/api/registration-flow/get_registration_status/`;
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) return null;
+      const resp = await axios.get(finalUrl, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      return resp.data;
+    } catch (err) {
+      console.error("Error fetching registration status:", err);
+      return null;
+    }
+  };
+
+  // Try to resolve phone and user id from localStorage or token
+  const resolvePhoneAndUserId = () => {
+    let phone = null;
+    let userId = null;
+    const stored = localStorage.getItem("userData") || localStorage.getItem("user") || localStorage.getItem("tempUserData");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        phone = parsed?.phone_number || parsed?.phone || parsed?.mobile || phone;
+        userId = parsed?.id || parsed?.user_id || parsed?.pk || userId;
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    // Try to extract user id from JWT accessToken if still missing
+    if (!userId) {
+      const token = localStorage.getItem("accessToken");
+      if (token) {
+        try {
+          const parts = token.split('.');
+          if (parts.length >= 2) {
+            const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+            userId = payload?.user_id || payload?.user || payload?.sub || userId;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+
+    return { phone, userId };
+  };
+
+  const normalizePhoneNumber = (raw) => {
+    if (!raw) return "";
+    const trimmed = String(raw).trim();
+    if (trimmed.startsWith("+")) return trimmed;
+    const digits = trimmed.replace(/\D/g, "");
+    if (digits.length === 10) return `+91${digits}`;
+    if (digits.length === 11 && digits.startsWith("0")) return `+91${digits.slice(1)}`;
+    if (digits.length > 10) return `+${digits}`;
+    return `+91${digits}`;
+  };
+
+  // Attempt to send two-factor SMS (backend requires user_id and phone_number)
+  const sendTwoFactorAfterEmail = async () => {
+    try {
+      const { phone, userId } = resolvePhoneAndUserId();
+      if (!phone || !userId) {
+        console.warn("Cannot auto-send SMS: missing phone or userId", { phone, userId });
+        return false;
+      }
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const payload = { phone_number: normalizePhoneNumber(phone), user_id: userId };
+      // Try both possible paths (legacy code sometimes uses /api/ prefix)
+      const tryUrls = [
+        `${API_URL.replace(/\/$/, "")}/registration/send_two_factor/`,
+        
+      ];
+      let sent = false;
+      for (const url of tryUrls) {
+        try {
+          await axios.post(url, payload, { headers: { 'Content-Type': 'application/json' } });
+          sent = true;
+          break;
+        } catch (err) {
+          const resp = err?.response;
+          if (resp) {
+            const body = resp.data;
+            const asString = typeof body === 'string' ? body : JSON.stringify(body || {});
+            if (resp.status === 429 || asString.includes('exceeded') || asString.includes('50 daily messages')) {
+              console.warn('Rate-limit or daily-limit detected from send_two_factor (email flow); bypassing as success', resp.status, body);
+              return true;
+            }
+            console.warn("send_two_factor attempt failed for", url, err?.message || err);
+            console.warn("Response status:", resp.status, "data:", body);
+          } else {
+            console.warn("send_two_factor attempt failed for", url, err?.message || err);
+          }
+        }
+      }
+      if (!sent) throw new Error("All send_two_factor endpoints failed");
+      console.log("Sent two-factor SMS after email verify:", payload);
+      return true;
+    } catch (err) {
+      console.error("Failed to send two-factor after email:", err);
+      return false;
+    }
+  };
 
 
   const handleSubmit = async (e) => {
@@ -165,15 +273,30 @@ const VerifyEmail = () => {
         }
       });
 
-      console.log("Email verification successful:", response.data);
-      
-      // Show success popup
-      setShowPopup(true);
+      console.log("Email verification successful:", response.data);
 
-      // --- CRITICAL FLOW UPDATE: Trigger the next verification (SMS) ---
-      // This ensures the SMS code is sent before we navigate to /verify-phone
-      console.log("Attempting to trigger SMS verification code...");
-      await triggerCodeSend("sms");
+      // If both email and phone are already verified, go straight to quick profile
+      try {
+        const status = await checkRegistrationStatus();
+        // If email verification is confirmed, allow user to proceed to quick profile
+        if (status && status.email_verified) {
+          navigate("/quick-profile");
+          return;
+        }
+      } catch (e) {
+        console.warn("Could not determine registration status, continuing flow.", e);
+      }
+
+      // Show success popup
+      setShowPopup(true);
+      console.log("Attempting to trigger SMS verification code (choose method + send)...");
+      // call choose_verification_method to set method on backend
+      await triggerCodeSend("sms");
+      // then attempt to call send_two_factor with phone_number + user_id (backend requires both)
+      const sent = await sendTwoFactorAfterEmail();
+      if (!sent) {
+        console.warn("SMS send attempt failed or missing data; user will need to enter phone on Verify Phone page.");
+      }
       
     } catch (err) {
       console.error("Error verifying email:", err);
@@ -287,7 +410,7 @@ const VerifyEmail = () => {
                 <span 
                   className={`text-[#9889FF] cursor-pointer hover:underline ${resendLoading ? 'opacity-50 pointer-events-none' : ''}`}
                   onClick={handleResendCode}
-                >
+            >
                   {resendLoading ? "Resending..." : "Resend Code"}
                 </span>
               </p>

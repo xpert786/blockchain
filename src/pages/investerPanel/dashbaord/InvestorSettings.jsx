@@ -1035,7 +1035,7 @@ const InvestorSettings = () => {
             confirm_password: passwordForm.confirm_password,
         };
 
-        const response = await fetch(`${API_URL.replace(/\/$/, "")}/investors/settings/change-password/`, {
+        const response = await fetch(`${API_URL.replace(/\/$/, "")}/settings/change-password/`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', },
             body: JSON.stringify(payload),

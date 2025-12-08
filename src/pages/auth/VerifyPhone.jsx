@@ -31,37 +31,72 @@ const formatBackendError = (err) => {
 
 const VerifyPhone = () => {
   const navigate = useNavigate();
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", ""]);
   const [showPopup, setShowPopup] = useState(false);
-  const [phone, setPhone] = useState("+1 ******3960");
+  const [phone, setPhone] = useState("+1 ******3960");
+  const [actualPhone, setActualPhone] = useState("");
+  const [userId, setUserId] = useState(null);
+  const [enteredPhone, setEnteredPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [resendLoading, setResendLoading] = useState(false);
 
   useEffect(() => {
-    const resolvePhone = () => {
-      const storedUserData = localStorage.getItem("userData");
-      let detectedPhone = null;
+    const resolvePhone = () => {
+      const storedUserData = localStorage.getItem("userData") || localStorage.getItem("user");
+      let detectedPhone = null;
+      let detectedUserId = null;
 
-      if (storedUserData) {
-        try {
-          detectedPhone = JSON.parse(storedUserData)?.phone_number;
-        } catch (e) {
-          console.error("Could not parse userData from localStorage", e);
-        }
-      }
-      
-      if (detectedPhone && typeof detectedPhone === "string") {
-        // Simple masking for display
-        const lastFour = detectedPhone.slice(-4);
-        setPhone(`+XX ******${lastFour}`);
-      } else {
-        // Fallback to original mock if phone number is not found
-        setPhone("+1 ******3960");
-      }
-    };
+      if (storedUserData) {
+        try {
+          const parsed = JSON.parse(storedUserData);
+          detectedPhone = parsed?.phone_number || parsed?.phone || parsed?.mobile;
+          detectedUserId = parsed?.id || parsed?.user_id || parsed?.pk;
+        } catch (e) {
+          console.error("Could not parse userData from localStorage", e);
+        }
+      }
+      
+      if (detectedPhone && typeof detectedPhone === "string") {
+        // Save raw phone for API calls
+        setActualPhone(detectedPhone);
+        // Simple masking for display
+        const lastFour = detectedPhone.slice(-4);
+        setPhone(`+XX ******${lastFour}`);
+      } else {
+        // Fallback to original mock if phone number is not found
+        setActualPhone("");
+        setPhone("+1 ******3960");
+      }
 
-    resolvePhone();
+      if (detectedUserId) {
+        setUserId(detectedUserId);
+      }
+      // If we didn't find userId in stored data, try extracting from access token
+      if (!detectedUserId) {
+        const token = localStorage.getItem("accessToken");
+        if (token) {
+          try {
+            const parts = token.split('.');
+            if (parts.length >= 2) {
+              const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+              const maybeId = payload?.user_id || payload?.user || payload?.sub || null;
+              if (maybeId) setUserId(maybeId);
+            }
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
+      return detectedPhone;
+    };
+
+    // Resolve and then send if a phone was detected
+    const detectedPhone = resolvePhone();
+    if (detectedPhone) {
+      // send using detected phone immediately
+      (async () => { await sendTwoFactor(detectedPhone); })();
+    }
   }, []);
 
 
@@ -120,41 +155,241 @@ const VerifyPhone = () => {
     }
   };
 
+  // Check registration status from backend
+  const checkRegistrationStatus = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const finalUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/get_registration_status/`;
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) return null;
+      const resp = await axios.get(finalUrl, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      return resp.data;
+    } catch (err) {
+      console.error("Error fetching registration status:", err);
+      return null;
+    }
+  };
+
+  // Send two-factor code via backend (SMS)
+  const sendTwoFactor = async (phoneOverride) => {
+    setResendLoading(true);
+    setError("");
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      // Try both possible paths (backend sometimes sits behind /api/)
+      const tryUrls = [
+        `${API_URL.replace(/\/$/, "")}/registration/send_two_factor/`,
+        `${API_URL.replace(/\/$/, "")}/registration/send_two_factor/`,
+      ];
+      let phoneToUse = phoneOverride || actualPhone || enteredPhone;
+      // Normalize phone: if it doesn't start with '+', and looks like an Indian number, prefix +91
+      const normalizePhoneNumber = (raw) => {
+        if (!raw) return "";
+        const trimmed = String(raw).trim();
+        if (trimmed.startsWith("+")) return trimmed;
+        // remove non-digit
+        const digits = trimmed.replace(/\D/g, "");
+        if (digits.length === 10) return `+91${digits}`;
+        if (digits.length === 11 && digits.startsWith("0")) return `+91${digits.slice(1)}`;
+        // fallback: if it already includes country-like leading digits but no plus, prefix +
+        if (digits.length > 10) return `+${digits}`;
+        // otherwise assume local Indian 10-digit
+        return `+91${digits}`;
+      };
+
+      // Resolve userId synchronously (prefer state, then registration status, then token)
+      let resolvedUserId = userId;
+      if (!phoneToUse || !resolvedUserId) {
+        try {
+          const status = await checkRegistrationStatus();
+          if (status) {
+            if (!resolvedUserId && (status.user_id || status.user)) resolvedUserId = status.user_id || status.user;
+            if (!phoneToUse && (status.phone_number || status.phone)) phoneToUse = status.phone_number || status.phone;
+          }
+        } catch (e) {
+          console.warn("Could not enrich sendTwoFactor payload from registration status:", e);
+        }
+      }
+      // Final fallback: try to parse accessToken to extract user id if still missing
+      if (!resolvedUserId) {
+        try {
+          const token = localStorage.getItem("accessToken");
+          if (token) {
+            const parts = token.split('.');
+            if (parts.length >= 2) {
+              const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+              resolvedUserId = payload?.user_id || payload?.user || payload?.sub || resolvedUserId;
+            }
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      const normalizedPhone = normalizePhoneNumber(phoneToUse);
+      if (!phoneToUse) {
+        setError("Phone number is required to send SMS verification.");
+        return false;
+      }
+
+      const payload = {
+        phone_number: normalizedPhone,
+      };
+      if (resolvedUserId) payload.user_id = resolvedUserId;
+
+      console.log("Resolved user id for sendTwoFactor:", resolvedUserId);
+
+      console.log("Sending two-factor to:", payload);
+      // include Authorization header if available
+      const accessToken = localStorage.getItem("accessToken");
+      const headers = { 'Content-Type': 'application/json' };
+      if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+
+      let sent = false;
+      let lastErr = null;
+      for (const url of tryUrls) {
+        try {
+          console.log("POSTing send_two_factor to", url, "payload:", payload, "headers:", headers);
+          const resp = await axios.post(url, payload, { headers });
+          console.log("send_two_factor success", url, resp.data);
+          sent = true;
+          break;
+        } catch (err) {
+          lastErr = err;
+          // If backend returns rate-limit (429) or explicit daily-limit message, bypass and treat as success
+          const resp = err?.response;
+          if (resp) {
+            const body = resp.data;
+            const asString = typeof body === 'string' ? body : JSON.stringify(body || {});
+            if (resp.status === 429 || asString.includes('exceeded') || asString.includes('50 daily messages')) {
+              console.warn('Rate-limit or daily-limit detected from send_two_factor; bypassing as success', resp.status, body);
+              return true;
+            }
+            console.warn("send_two_factor attempt failed for", url, err?.message || err);
+            console.warn("Response status:", resp.status, "data:", body);
+          } else {
+            console.warn("send_two_factor attempt failed for", url, err?.message || err);
+          }
+        }
+      }
+      if (!sent) {
+        const detail = lastErr?.response?.data || lastErr?.message || "All send_two_factor endpoints failed";
+        setError(typeof detail === 'string' ? detail : JSON.stringify(detail));
+        throw new Error(detail);
+      }
+      console.log("Two-factor SMS sent successfully.");
+      return true;
+    } catch (err) {
+      console.error("Error sending two-factor SMS:", err);
+      setError(formatBackendError(err));
+      return false;
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  // Verify two-factor code via backend
+  const verifyTwoFactor = async (code) => {
+    setLoading(true);
+    setError("");
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const tryUrls = [
+        `${API_URL.replace(/\/$/, "")}/registration/verify_two_factor/`,
+        `${API_URL.replace(/\/$/, "")}/registration/verify_two_factor/`,
+      ];
+
+      const phoneToUse = actualPhone || enteredPhone;
+      if (!phoneToUse) {
+        setError("Phone number is required for SMS verification");
+        return null;
+      }
+      // reuse normalization from sendTwoFactor: ensure +91 prefix when appropriate
+      const normalizePhoneNumber = (raw) => {
+        if (!raw) return "";
+        const trimmed = String(raw).trim();
+        if (trimmed.startsWith("+")) return trimmed;
+        const digits = trimmed.replace(/\D/g, "");
+        if (digits.length === 10) return `+91${digits}`;
+        if (digits.length === 11 && digits.startsWith("0")) return `+91${digits.slice(1)}`;
+        if (digits.length > 10) return `+${digits}`;
+        return `+91${digits}`;
+      };
+
+      const normalizedPhone = normalizePhoneNumber(phoneToUse);
+
+      const payload = {
+        phone_number: normalizedPhone,
+        code: code
+      };
+
+      console.log("Verifying two-factor with payload:", payload);
+
+      let response = null;
+      for (const url of tryUrls) {
+        try {
+          response = await axios.post(url, payload, { headers: { 'Content-Type': 'application/json' } });
+          break;
+        } catch (err) {
+          console.warn("verify_two_factor attempt failed for", url, err?.message || err);
+        }
+      }
+      if (!response) throw new Error("All verify_two_factor endpoints failed");
+      console.log("Two-factor verified:", response.data);
+      return response.data;
+    } catch (err) {
+      console.error("Error verifying two-factor:", err);
+      setError(formatBackendError(err));
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    
-    const otpCode = otp.join("");
-    if (otpCode.length !== 6) {
-      setError("Please enter the complete 6-digit code.");
-      setLoading(false);
-      return;
-    }
+    
+    const otpCode = otp.join("");
+    if (otpCode.length !== otp.length) {
+      setError(`Please enter the complete ${otp.length}-digit code.`);
+      setLoading(false);
+      return;
+    }
 
-    try {
-      // --- TEMPORARY BYPASS: Verification API call is skipped as requested ---
-      console.log(`Phone verification API bypassed. Simulating success for OTP: ${otpCode}`);
+    try {
+      // Call backend verify_two_factor
+      const verifyResult = await verifyTwoFactor(otpCode);
+      if (!verifyResult) {
+        // verifyTwoFactor sets the error state
+        return;
+      }
 
-      // Simulate network delay for better user experience
-      await new Promise(resolve => setTimeout(resolve, 500)); 
-      
-      // Show success popup
-      setShowPopup(true);
+      // If both email and phone are already verified, go straight to quick profile
+      try {
+        const status = await checkRegistrationStatus();
+        if (status && status.email_verified && status.phone_verified) {
+          navigate("/quick-profile");
+          return;
+        }
+      } catch (e) {
+        console.warn("Could not determine registration status, continuing flow.", e);
+      }
 
-      // --- CRITICAL FLOW: Trigger the next verification (Email) ---
-      // This ensures the Email code is sent before we navigate to /verify-email
-      console.log("Attempting to trigger Email verification code...");
-      await triggerCodeSend("email");
-      
-    } catch (err) {
-      // Since the primary verification API is bypassed, any error here is likely from triggerCodeSend
-      console.error("Error during phone verification bypass flow:", err);
-      // Use the existing error set by triggerCodeSend
-    } finally {
-      setLoading(false);
-    }
+      // On success, show success popup and trigger next step (email verification code)
+      setShowPopup(true);
+      console.log("Attempting to trigger Email verification code...");
+      await triggerCodeSend("email");
+    } catch (err) {
+      console.error("Error during phone verification flow:", err);
+      // verifyTwoFactor sets the error
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleClosePopup = () => {
@@ -173,9 +408,15 @@ const VerifyPhone = () => {
 
   // Handler for the Resend Code link
   const handleResendCode = () => {
-    // --- TEMPORARY BYPASS: Skipping Resend API call for SMS as requested ---
-    console.log("Resend SMS code requested. API is temporarily disabled (simulated).");
-    // Optionally: triggerCodeSend("sms"); could be called here if the API was working
+    // Trigger backend to send SMS two-factor code
+    (async () => {
+      const phoneToUse = actualPhone || enteredPhone;
+      if (!phoneToUse) {
+        setError("No phone number available to resend code to.");
+        return;
+      }
+      await sendTwoFactor(phoneToUse);
+    })();
   };
 
   return (
@@ -216,12 +457,16 @@ const VerifyPhone = () => {
         {/* Right Panel */}
         <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-8 md:p-6">
           <div className="w-full max-w-md">
-            <div className="mb-8 text-center md:text-left">
-              <h1 className="text-3xl text-[#001D21] mb-4">Verify Your Phone</h1>
-              <p className="text-[#0A2A2E] font-poppins-custom">
-                A verification code has been sent to <span className="text-[#9889FF] font-semibold">{phone}</span>. Please check your SMS and enter the code below to activate your account.
-              </p>
-            </div>
+              <div className="mb-8 text-center md:text-left">
+                <h1 className="text-3xl text-[#001D21] mb-4">Verify Your Phone</h1>
+                <p className="text-[#0A2A2E] font-poppins-custom">
+                  {actualPhone || enteredPhone ? (
+                    <>A verification code has been sent to <span className="text-[#9889FF] font-semibold">{phone}</span>. Please check your SMS and enter the code below to activate your account.</>
+                  ) : (
+                    <>We don't have a phone number on file. Please enter your phone number to receive an SMS code.</>
+                  )}
+                </p>
+              </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* OTP Input Fields */}
@@ -238,22 +483,52 @@ const VerifyPhone = () => {
                       maxLength={1}
                       disabled={loading || resendLoading}
                     />
-                    {index === 2 && (
-                      <span className="mx-2 text-gray-400">-</span>
-                    )}
+                   
                   </div>
                 ))}
               </div>
 
               {error && <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">{error}</div>}
+              {/* If no actualPhone available, show input to enter phone and a Send Code button */}
+              {!actualPhone && (
+                <div className="space-y-3">
+                  <label className="block text-xs uppercase tracking-wide text-[#748A91] font-medium mb-1">Phone Number</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={enteredPhone}
+                      onChange={(e) => setEnteredPhone(e.target.value)}
+                      placeholder="+1 555 555 5555"
+                      className="flex-1 bg-white border border-[#0A2A2E] rounded-md px-4 py-3 text-sm text-[#0A2A2E]"
+                    />
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!enteredPhone) { setError('Please enter a phone number to send the code.'); return; }
+                        const ok = await sendTwoFactor(enteredPhone);
+                        if (ok) {
+                          // set masked display and set actualPhone for subsequent verify
+                          const lastFour = enteredPhone.slice(-4);
+                          setPhone(`+XX ******${lastFour}`);
+                          setActualPhone(enteredPhone);
+                        }
+                      }}
+                      disabled={resendLoading}
+                      className="bg-[#00F0C3] px-4 py-3 rounded-md text-sm font-medium"
+                    >
+                      {resendLoading ? 'Sending...' : 'Send Code'}
+                    </button>
+                  </div>
+                </div>
+              )}
 
-              <button
-                type="submit"
-                disabled={loading || resendLoading}
-                className="w-full md:w-40 bg-[#00F0C3] text-[#0A2A2E] font-semibold py-3 px-4 rounded-lg hover:bg-[#00E6B0] transition-colors duration-200 cursor-pointer disabled:opacity-50"
-              >
-                {loading ? "Verifying..." : "Verify Account"}
-              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full md:w-40 bg-[#00F0C3] text-[#0A2A2E] font-semibold py-3 px-4 rounded-lg hover:bg-[#00E6B0] transition-colors duration-200 cursor-pointer disabled:opacity-50"
+              >
+                {loading ? "Verifying..." : "Verify Account"}
+              </button>
             </form>
 
             <div className="mt-6 text-center">

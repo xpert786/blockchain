@@ -16,30 +16,44 @@ const SecureAccount2FA = () => {
 
   // ✅ ONLY EMAIL CALLS API NOW
   const handleEmailMethod = async () => {
-    setLoading(true);
-    setError("");
-
+    // First check current registration status; if already verified, navigate appropriately
     try {
       const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-      const finalUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/choose_verification_method/`;
+      const statusUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/get_registration_status/`;
+      const accessToken = localStorage.getItem("accessToken");
+      if (accessToken) {
+        const st = await axios.get(statusUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
+        const status = st?.data;
+        if (status) {
+          if (status.email_verified) {
+            // If email is verified (even if phone isn't), allow user to continue to quick profile
+            navigate("/quick-profile");
+            return;
+          }
+        }
+      }
 
+      // Not verified yet (or couldn't determine) — proceed to request email method
+      setLoading(true);
+      setError("");
+
+      const finalUrl = `${(import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend").replace(/\/$/, "")}/registration-flow/choose_verification_method/`;
       const payload = { method: "email" };
 
-      const accessToken = localStorage.getItem("accessToken");
-      if (!accessToken) {
+      const access = localStorage.getItem("accessToken");
+      if (!access) {
         throw new Error("No access token found. Please login again.");
       }
 
       const response = await axios.post(finalUrl, payload, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${access}`,
           "Content-Type": "application/json",
           Accept: "application/json",
         },
       });
 
       console.log("Email verification method set:", response.data);
-
       navigate("/verify-email");
     } catch (err) {
       console.error("Error setting email verification:", err);
@@ -55,8 +69,30 @@ const SecureAccount2FA = () => {
     }
   };
 
-  // ❌ PHONE NO LONGER USES API — ONLY NAVIGATION
-  const handlePhoneClick = () => {
+  // ❌ PHONE NO LONGER USES API — ONLY NAVIGATION, but pre-check status first
+  const handlePhoneClick = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const statusUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/get_registration_status/`;
+      const accessToken = localStorage.getItem("accessToken");
+      if (accessToken) {
+        const st = await axios.get(statusUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
+        const status = st?.data;
+        if (status) {
+          if (status.phone_verified) {
+            if (status.email_verified) {
+              navigate("/quick-profile");
+              return;
+            }
+            navigate("/verify-email");
+            return;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Could not fetch registration status before phone navigation:", err);
+      // fall-through to default navigation
+    }
     navigate("/verify-phone");
   };
 
