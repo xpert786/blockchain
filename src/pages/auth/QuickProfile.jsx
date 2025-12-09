@@ -11,6 +11,20 @@ import loginimg3 from "/src/assets/img/loginimg3.svg";
 
 const QuickProfile = () => {
   const navigate = useNavigate();
+  
+  // Check user role on mount - redirect syndicate users
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+    const userRole = (userData?.role || "").toLowerCase();
+    
+    if (userRole === "syndicate" || userRole.includes("syndicate")) {
+      // Syndicate users should not see quick profile - redirect to syndicate creation
+      console.log("Syndicate user detected, redirecting to syndicate creation");
+      navigate("/syndicate-creation/lead-info");
+      return;
+    }
+  }, [navigate]);
+  
   const [formData, setFormData] = useState({
     country: "",
     taxResidency: "",
@@ -155,22 +169,9 @@ const QuickProfile = () => {
       });
 
       showToast("Profile saved successfully.", "success");
-      // After saving, if phone is not verified, send user to verify phone
-      try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-        const statusUrl = `${API_URL.replace(/\/$/, "")}/api/registration-flow/get_registration_status/`;
-        if (token) {
-          const statusResp = await axios.get(statusUrl, { headers: { Authorization: `Bearer ${token}` } });
-          const status = statusResp.data || null;
-          if (status && status.phone_verified === false && status.email_verified === false) {
-            // If neither email nor phone are verified, send user to verify phone
-            navigate("/verify-phone");
-            return;
-          }
-        }
-      } catch (err) {
-        console.warn('Could not fetch registration status after quick profile save:', err);
-      }
+      // After saving quick profile, navigate to Jurisdiction page (phone verification bypassed)
+      console.log("✅ Quick profile saved - navigating to jurisdiction");
+      navigate("/jurisdiction");
     } catch (err) {
       console.error("Error saving quick profile:", err);
       showToast(formatBackendError(err), "error");
@@ -373,9 +374,8 @@ const QuickProfile = () => {
 
               {/* Continue Button */}
               <button
-                type="button"
+                type="submit"
                 disabled={showComplianceAlert || saving}
-                onClick={() => navigate('/jurisdiction')}
                 className={`w-full py-3 px-4 rounded-lg font-semibold font-poppins-custom transition-colors duration-200 cursor-pointer ${
                   showComplianceAlert
                     ? "bg-gray-300 text-gray-500 cursor-not-allowed"

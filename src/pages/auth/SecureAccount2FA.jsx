@@ -16,7 +16,7 @@ const SecureAccount2FA = () => {
 
   // ✅ ONLY EMAIL CALLS API NOW
   const handleEmailMethod = async () => {
-    // First check current registration status; if already verified, navigate appropriately
+    // First check current registration status; if email verified, navigate appropriately (phone bypassed)
     try {
       const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
       const statusUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/get_registration_status/`;
@@ -25,9 +25,19 @@ const SecureAccount2FA = () => {
         const st = await axios.get(statusUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
         const status = st?.data;
         if (status) {
+          // Redirect if email is verified (phone verification bypassed)
           if (status.email_verified) {
-            // If email is verified (even if phone isn't), allow user to continue to quick profile
-            navigate("/quick-profile");
+            // Check user role
+            const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+            const userRole = (userData?.role || "").toLowerCase();
+            
+            if (userRole === "syndicate" || userRole.includes("syndicate")) {
+              // Syndicate users go to terms of service after email verification
+              navigate("/terms-of-service");
+            } else {
+              // Investors go to quick profile
+              navigate("/quick-profile");
+            }
             return;
           }
         }
@@ -42,8 +52,18 @@ const SecureAccount2FA = () => {
 
       const access = localStorage.getItem("accessToken");
       if (!access) {
-        throw new Error("No access token found. Please login again.");
+        const errorMsg = "No access token found. Please complete your registration or login again.";
+        setError(errorMsg);
+        setLoading(false);
+        console.error("❌ No access token in localStorage");
+        console.log("Available localStorage keys:", Object.keys(localStorage));
+        return;
       }
+
+      console.log("🔐 Attempting to set email verification method...");
+      console.log("API URL:", finalUrl);
+      console.log("Token exists:", !!access);
+      console.log("Token length:", access.length);
 
       const response = await axios.post(finalUrl, payload, {
         headers: {
@@ -56,13 +76,41 @@ const SecureAccount2FA = () => {
       console.log("Email verification method set:", response.data);
       navigate("/verify-email");
     } catch (err) {
-      console.error("Error setting email verification:", err);
+      console.error("❌ Error setting email verification:", err);
+      console.error("Error response:", err.response);
+      console.error("Error status:", err.response?.status);
+      console.error("Error data:", err.response?.data);
+      
       const backendData = err.response?.data;
-
-      if (backendData) {
-        setError(typeof backendData === "object" ? JSON.stringify(backendData) : String(backendData));
+      
+      // Handle 401 Unauthorized specifically
+      if (err.response?.status === 401) {
+        const errorMsg = "Your session has expired or the access token is invalid. Please try logging in again or complete your registration.";
+        setError(errorMsg);
+        
+        // Optionally clear invalid token
+        console.warn("⚠️ Clearing potentially invalid access token");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+      } else if (backendData) {
+        // Format backend error message
+        let errorMsg = "";
+        if (typeof backendData === "object") {
+          if (backendData.detail) {
+            errorMsg = backendData.detail;
+          } else if (backendData.error) {
+            errorMsg = backendData.error;
+          } else if (backendData.message) {
+            errorMsg = backendData.message;
+          } else {
+            errorMsg = JSON.stringify(backendData);
+          }
+        } else {
+          errorMsg = String(backendData);
+        }
+        setError(errorMsg || "Failed to set verification method.");
       } else {
-        setError(err.message || "Failed to set verification method.");
+        setError(err.message || "Failed to set verification method. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -79,11 +127,23 @@ const SecureAccount2FA = () => {
         const st = await axios.get(statusUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
         const status = st?.data;
         if (status) {
-          if (status.phone_verified) {
-            if (status.email_verified) {
+          // Only redirect if BOTH email and phone are verified
+          if (status.phone_verified && status.email_verified) {
+            // Check user role
+            const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+            const userRole = (userData?.role || "").toLowerCase();
+            
+            if (userRole === "syndicate" || userRole.includes("syndicate")) {
+              // Syndicate users go to terms of service after both verifications
+              navigate("/terms-of-service");
+            } else {
+              // Investors go to quick profile
               navigate("/quick-profile");
-              return;
             }
+            return;
+          }
+          // If phone verified but email not, go to email verification
+          if (status.phone_verified && !status.email_verified) {
             navigate("/verify-email");
             return;
           }

@@ -83,6 +83,7 @@ import InvestorFinalReview from "./pages/investerPanel/investerOnboarding/FinalR
 import Confirmation from "./pages/investerPanel/investerOnboarding/Confirmation";
 import Juridiction from "./pages/auth/Juridiction";
 import QuickProfileSet from "./pages/auth/QuickProfileSet";
+import GoogleOAuthCallback from "./pages/auth/GoogleOAuthCallback";
 
 const App = () => {
   return (
@@ -115,6 +116,7 @@ const App = () => {
       <Route path="/juridiction" element={<Juridiction />} />
       {/* Historical/mistyped route - redirect to canonical path */}
       <Route path="/jurisdiction" element={<Navigate to="/juridiction" replace />} />
+      <Route path="/oauth2callback" element={<GoogleOAuthCallback />} />
       <Route path="/quick-profile-set" element={<QuickProfileSet />} />
     
       {/* Syndicate Creation Routes (with Layout) - Protected */}

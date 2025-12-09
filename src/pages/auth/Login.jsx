@@ -191,6 +191,211 @@ const Login = () => {
     }
   };
 
+  // Google OAuth login handler
+  const handleGoogleLogin = async () => {
+    setError("");
+    try {
+      setLoading(true);
+      
+      // Google OAuth Client ID from your credentials
+      const clientId = "514125135351-t9d89tav43rcqqe90km3i5hb3e60ubav.apps.googleusercontent.com";
+      
+      // Redirect URI - must match EXACTLY what's configured in Google Cloud Console
+      // Build redirect URI with base path
+      const basePath = import.meta.env.BASE_URL || '/blockchain-frontend/';
+      const cleanBase = basePath.replace(/\/$/, ''); // Remove trailing slash if present
+      const redirectUri = `${window.location.origin}${cleanBase}/oauth2callback`;
+      
+      console.log("🔐 Google OAuth Configuration:");
+      console.log("═══════════════════════════════════════");
+      console.log("Client ID:", clientId);
+      console.log("Current Origin:", window.location.origin);
+      console.log("Base Path:", basePath);
+      console.log("═══════════════════════════════════════");
+      console.log("🔴 REDIRECT URI (COPY THIS EXACTLY):");
+      console.log(redirectUri);
+      console.log("═══════════════════════════════════════");
+      console.log("⚠️ Add this EXACT URI to Google Cloud Console:");
+      console.log("   1. Go to: https://console.cloud.google.com/apis/credentials");
+      console.log("   2. Find OAuth client:", clientId);
+      console.log("   3. Click 'Edit'");
+      console.log("   4. Under 'Authorized redirect URIs', click 'ADD URI'");
+      console.log("   5. Paste:", redirectUri);
+      console.log("   6. Click 'SAVE'");
+      console.log("═══════════════════════════════════════");
+      
+      // Build Google OAuth URL
+      const scope = encodeURIComponent("openid profile email");
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${scope}&prompt=consent&include_granted_scopes=true`;
+
+      // Open popup window
+      const width = 600, height = 700;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2.5;
+      const popup = window.open(authUrl, "google_oauth", `width=${width},height=${height},left=${left},top=${top}`);
+      
+      if (!popup) {
+        setError("Popup blocked. Please allow popups for this site.");
+        setLoading(false);
+        return;
+      }
+
+      // Listen for message from callback page
+      const handleMessage = async (event) => {
+        // Security check: ensure message comes from same origin
+        if (event.origin !== window.origin) return;
+        
+        const msg = event.data || {};
+        if (msg.type !== "google_auth") return;
+        
+        // Clean up
+        window.removeEventListener("message", handleMessage);
+        popup.close();
+
+        // Handle errors
+        if (msg.error) {
+          let errorMsg = String(msg.error);
+          if (errorMsg.includes("invalid_client") || errorMsg.includes("OAuth client") || errorMsg.includes("not found")) {
+            errorMsg = `OAuth Configuration Error: Please add "${redirectUri}" to Google Cloud Console under "Authorized redirect URIs". Error: ${msg.error}`;
+          }
+          setError(errorMsg);
+          setLoading(false);
+          return;
+        }
+
+        const accessToken = msg.access_token;
+        if (!accessToken) {
+          setError("No access token received from Google.");
+          setLoading(false);
+          return;
+        }
+
+        // Send token to your backend API
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+          const url = `${API_URL.replace(/\/$/, "")}/auth/google/`;
+          
+          // For LOGIN (not signup), don't send role - backend will return user's existing role
+          // Only send access_token for login
+          const payload = {
+            access_token: accessToken
+          };
+          
+          console.log("📤 Google Login - Sending to backend:", url);
+          console.log("Payload:", { access_token: "***" });
+
+          const response = await axios.post(url, payload, {
+            headers: {
+              "Content-Type": "application/json"
+            }
+          });
+
+          console.log("✅ Backend response:", response.data);
+          console.log("📋 Full response:", JSON.stringify(response.data, null, 2));
+
+          // Save tokens if returned
+          if (response.data?.tokens || response.data?.access) {
+            const access = response.data?.tokens?.access || response.data?.access;
+            const refresh = response.data?.tokens?.refresh || response.data?.refresh;
+            if (access) localStorage.setItem("accessToken", access);
+            if (refresh) localStorage.setItem("refreshToken", refresh);
+          }
+
+          // Save user data - get role from backend response
+          const userInfo = response.data?.user || response.data;
+          const userRole = userInfo?.role;
+          const userId = userInfo?.id || userInfo?.user_id;
+          const username = userInfo?.username;
+          const email = userInfo?.email;
+          
+          console.log("📋 User role from backend:", userRole);
+          console.log("📋 User info:", userInfo);
+          
+          const userData = {
+            user_id: userId,
+            username: username,
+            email: email,
+            role: userRole
+          };
+          localStorage.setItem("userData", JSON.stringify(userData));
+          console.log("✅ Saved userData to localStorage:", userData);
+
+          // Navigate based on role from backend (same logic as regular login)
+          const normalizedRole = (userRole || "").toLowerCase().trim();
+          console.log("📋 Normalized role:", normalizedRole);
+          
+          if (normalizedRole === "syndicate" || normalizedRole.includes("syndicate")) {
+            console.log("✅ Redirecting syndicate user to syndicate creation");
+            navigate("/syndicate-creation/lead-info");
+          } else if (normalizedRole === "investor") {
+            console.log("✅ Investor role detected, checking onboarding status...");
+            // Check if onboarding is complete
+            try {
+              const accessToken = localStorage.getItem("accessToken");
+              if (accessToken) {
+                const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+                const profileUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
+                const profileResponse = await axios.get(profileUrl, {
+                  headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                
+                const profileData = profileResponse.data?.results?.[0] || profileResponse.data;
+                const allStepsCompleted = profileData && [
+                  profileData.step1_completed,
+                  profileData.step2_completed,
+                  profileData.step3_completed,
+                  profileData.step4_completed,
+                  profileData.step5_completed,
+                  profileData.step6_completed
+                ].every(step => step === true);
+                
+                if (allStepsCompleted) {
+                  console.log("✅ All onboarding steps completed, redirecting to dashboard");
+                  navigate("/investor-panel/dashboard");
+                } else {
+                  console.log("⚠️ Onboarding incomplete, redirecting to onboarding");
+                  navigate("/investor-onboarding/basic-info");
+                }
+              } else {
+                console.log("⚠️ No access token, redirecting to onboarding");
+                navigate("/investor-onboarding/basic-info");
+              }
+            } catch (err) {
+              console.error("Error checking onboarding status:", err);
+              navigate("/investor-onboarding/basic-info");
+            }
+          } else {
+            console.warn("⚠️ Unknown role, defaulting to home. Role value:", normalizedRole);
+            navigate("/");
+          }
+
+        } catch (err) {
+          console.error("Backend API error:", err);
+          const backend = err.response?.data;
+          setError(backend ? (typeof backend === "object" ? JSON.stringify(backend) : String(backend)) : err.message || "Google login failed");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      window.addEventListener("message", handleMessage);
+      
+      // Cleanup if popup is closed manually
+      const checkClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkClosed);
+          window.removeEventListener("message", handleMessage);
+          setLoading(false);
+        }
+      }, 1000);
+      
+    } catch (e) {
+      console.error("Google login flow error:", e);
+      setError(String(e));
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}>
 
@@ -341,7 +546,8 @@ const Login = () => {
 
             <div className="flex flex-row items-center justify-center">
               <button
-                type="submit"
+                type="button"
+                onClick={handleGoogleLogin}
                 disabled={loading}
                 className="flex flex-row  items-center justify-center gap-1 w-full bg-white text-[#0A2A2E] font-semibold py-3 px-4 rounded-lg border-2 border-[#0A2A2E] hover:bg-[#00E6B0] transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >

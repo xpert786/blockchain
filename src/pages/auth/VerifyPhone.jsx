@@ -369,11 +369,26 @@ const VerifyPhone = () => {
         return;
       }
 
-      // If both email and phone are already verified, go straight to quick profile
+      // If both email and phone are already verified, navigate based on role
       try {
         const status = await checkRegistrationStatus();
         if (status && status.email_verified && status.phone_verified) {
-          navigate("/quick-profile");
+          // Check user role
+          const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+          const userRole = (userData?.role || "").toLowerCase();
+          
+          console.log("📋 User role check after phone verification:", userRole);
+          console.log("📋 User data:", userData);
+          
+          if (userRole === "syndicate" || userRole.includes("syndicate")) {
+            // Syndicate users go to terms of service after both verifications
+            console.log("✅ Both verifications complete - redirecting syndicate user to terms of service");
+            navigate("/terms-of-service");
+          } else {
+            // Investors go to quick profile
+            console.log("✅ Redirecting investor to quick profile");
+            navigate("/quick-profile");
+          }
           return;
         }
       } catch (e) {

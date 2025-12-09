@@ -38,7 +38,7 @@ const Juridiction = () => {
   const [jurisdictionCode, setJurisdictionCode] = useState("default");
   const [rules, setRules] = useState([]);
   const [selectedRules, setSelectedRules] = useState([]);
-  const [profileId, setProfileId] = useState(5);
+  const [profileId, setProfileId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -46,25 +46,48 @@ const Juridiction = () => {
   const [submitMode, setSubmitMode] = useState("complete"); // 'complete' or 'partial'
 
   useEffect(() => {
-    // Attempt to fetch quick profile to determine country
+    // Fetch investor profile ID and quick profile data
     (async () => {
       try {
         const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
         const token = localStorage.getItem("accessToken");
         if (!token) return;
-        const resp = await axios.get(`${API_URL.replace(/\/$/, "")}/profile/quick-setup/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const country = resp.data?.country_of_residence || resp.data?.country || "";
-        if (country) {
-          setDetectedCountry(country);
-          const code = mapCountryToJurisdiction(country);
-          setJurisdictionCode(code);
-          const ruleSet = accreditationRules[code] || accreditationRules["default"];
-          setRules(ruleSet?.natural_person_rules || []);
+
+        // Get investor_id from /api/investor-progress/ endpoint
+        try {
+          const progressResp = await axios.get(`${API_URL.replace(/\/$/, "")}/investor-progress/`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          
+          // Get investor_id from response
+          if (progressResp.data?.investor_id) {
+            setProfileId(progressResp.data.investor_id);
+            console.log("✅ Found investor_id from investor-progress:", progressResp.data.investor_id);
+          } else {
+            console.warn("⚠️ No investor_id found in investor-progress response");
+          }
+        } catch (progressErr) {
+          console.warn("Could not fetch investor progress:", progressErr?.message || progressErr);
+        }
+
+        // Attempt to fetch quick profile to determine country
+        try {
+          const resp = await axios.get(`${API_URL.replace(/\/$/, "")}/profile/quick-setup/`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const country = resp.data?.country_of_residence || resp.data?.country || "";
+          if (country) {
+            setDetectedCountry(country);
+            const code = mapCountryToJurisdiction(country);
+            setJurisdictionCode(code);
+            const ruleSet = accreditationRules[code] || accreditationRules["default"];
+            setRules(ruleSet?.natural_person_rules || []);
+          }
+        } catch (err) {
+          console.warn("Could not fetch quick profile for jurisdiction detection:", err?.message || err);
         }
       } catch (err) {
-        console.warn("Could not fetch quick profile for jurisdiction detection:", err?.message || err);
+        console.warn("Error in useEffect:", err?.message || err);
       }
     })();
   }, []);
@@ -97,7 +120,41 @@ const Juridiction = () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
       const token = localStorage.getItem("accessToken");
-      const url = `${API_URL.replace(/\/$/, "")}/investors/profiles/${profileId}/accreditation_check/`;
+      
+      if (!token) {
+        setError("No access token found. Please login again.");
+        setSaving(false);
+        return;
+      }
+
+      // Get investor_id if not already set
+      let currentProfileId = profileId;
+      if (!currentProfileId) {
+        try {
+          const progressResp = await axios.get(`${API_URL.replace(/\/$/, "")}/investor-progress/`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          
+          if (progressResp.data?.investor_id) {
+            currentProfileId = progressResp.data.investor_id;
+            setProfileId(currentProfileId);
+            console.log("✅ Found investor_id from investor-progress:", currentProfileId);
+          } else {
+            setError("No investor profile found. Please complete your profile setup first.");
+            setSaving(false);
+            return;
+          }
+        } catch (progressErr) {
+          console.error("Could not fetch investor progress:", progressErr);
+          setError("Could not find your investor profile. Please try again or contact support.");
+          setSaving(false);
+          return;
+        }
+      }
+
+      const url = `${API_URL.replace(/\/$/, "")}/investors/profiles/${currentProfileId}/accreditation_check/`;
+      console.log("📋 Submitting accreditation check to:", url);
+      console.log("📋 Profile ID:", currentProfileId);
 
       // Build payload depending on submitMode
       let payload = { accreditation_jurisdiction: jurisdictionCode };
@@ -109,18 +166,33 @@ const Juridiction = () => {
         };
       }
 
+      console.log("📋 Payload:", payload);
+
       // Use PATCH only. If server returns any error, show it to the user.
-      await axios.patch(url, payload, { headers: { Authorization: token ? `Bearer ${token}` : undefined, "Content-Type": "application/json" } });
+      await axios.patch(url, payload, { 
+        headers: { 
+          Authorization: `Bearer ${token}`, 
+          "Content-Type": "application/json" 
+        } 
+      });
+      
       setSuccess("Accreditation check updated.");
       // navigate to Terms of Service after successful submission
       navigate("/terms-of-service");
     } catch (patchErr) {
       console.error("PATCH failed for accreditation check:", patchErr);
+      console.error("Error response:", patchErr.response);
       // Surface backend response body where available
       const backendBody = patchErr?.response?.data;
       const status = patchErr?.response?.status;
       let message = patchErr?.message || String(patchErr);
-      if (backendBody) message = JSON.stringify(backendBody);
+      if (backendBody) {
+        if (typeof backendBody === "object") {
+          message = backendBody.detail || backendBody.error || JSON.stringify(backendBody);
+        } else {
+          message = String(backendBody);
+        }
+      }
       if (status) message = `(${status}) ${message}`;
       setError(message);
     } finally {

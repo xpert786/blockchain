@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import bgImage from "../../assets/img/bg-images.png";
 
 const QuickProfileSet = () => {
@@ -7,6 +8,8 @@ const QuickProfileSet = () => {
   const [progressData, setProgressData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isSyndicate, setIsSyndicate] = useState(false);
+  const [roleChecked, setRoleChecked] = useState(false);
 
   const [agreements, setAgreements] = useState({
     acknowledge: false,
@@ -14,8 +17,72 @@ const QuickProfileSet = () => {
     cookies: false,
   });
 
-  // 🔥 Fetch Investor Progress API
+  // Check user role FIRST - redirect syndicate users away immediately
   useEffect(() => {
+    const checkRoleAndRedirect = async () => {
+      // First try localStorage
+      let userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      let userRole = (userData?.role || "").toLowerCase();
+      
+      console.log("📋 QuickProfileSet: Checking role from localStorage:", userRole);
+      
+      // If role not found, try registration status API
+      if (!userRole) {
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+          const statusUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/get_registration_status/`;
+          const accessToken = localStorage.getItem("accessToken");
+          
+          if (accessToken) {
+            const resp = await axios.get(statusUrl, {
+              headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            const status = resp.data;
+            console.log("📋 QuickProfileSet: Registration status response:", status);
+            
+            // Try to get role from status response
+            userRole = (status?.role || status?.user?.role || status?.user_role || "").toLowerCase();
+            console.log("📋 QuickProfileSet: Role from API:", userRole);
+            
+            // Update localStorage if role found
+            if (userRole) {
+              userData.role = userRole;
+              localStorage.setItem("userData", JSON.stringify(userData));
+            }
+          }
+        } catch (e) {
+          console.warn("Could not fetch role from registration status:", e);
+        }
+      }
+      
+      // Check if syndicate user
+      const isSyndicateUser = userRole === "syndicate" || userRole.includes("syndicate");
+      setIsSyndicate(isSyndicateUser);
+      setRoleChecked(true);
+      
+      // Redirect syndicate users immediately
+      if (isSyndicateUser) {
+        console.log("⚠️ Syndicate user detected on QuickProfileSet - redirecting to syndicate creation");
+        navigate("/syndicate-creation/lead-info", { replace: true });
+        return;
+      }
+      
+      console.log("✅ User is investor, proceeding with investor progress fetch");
+    };
+    
+    checkRoleAndRedirect();
+  }, [navigate]);
+
+  // 🔥 Fetch Investor Progress API - ONLY for investors, AFTER role check
+  useEffect(() => {
+    // Don't fetch if role not checked yet or if user is syndicate
+    if (!roleChecked || isSyndicate) {
+      if (isSyndicate) {
+        setLoading(false);
+      }
+      return;
+    }
+
     const fetchProgress = async () => {
       try {
         const token = localStorage.getItem("accessToken");
@@ -61,7 +128,7 @@ const QuickProfileSet = () => {
     };
 
     fetchProgress();
-  }, []);
+  }, [roleChecked, isSyndicate, navigate]);
 
   const handleCheckboxChange = (name) => {
     setAgreements({ ...agreements, [name]: !agreements[name] });
@@ -72,17 +139,22 @@ const QuickProfileSet = () => {
     console.log("QuickProfileSet: handleSubmit", agreements);
     if (agreements.acknowledge && agreements.termsAndPrivacy && agreements.cookies) {
       setError(null);
-      // navigate to Terms of Service
-      console.log("QuickProfileSet: navigating to /terms-of-service");
-      navigate("/terms-of-service");
+      // navigate to investor onboarding step 1 (BasicInfo)
+      console.log("QuickProfileSet: navigating to investor onboarding step 1");
+      navigate("/investor-onboarding/basic-info");
     } else {
       setError("Please accept all terms and conditions to continue.");
     }
   };
 
- if (loading) {
-  return <div className="text-center p-6">Loading...</div>;
-}
+  // Don't render if syndicate user (should be redirected)
+  if (isSyndicate) {
+    return <div className="text-center p-6">Redirecting...</div>;
+  }
+
+  if (loading || !roleChecked) {
+    return <div className="text-center p-6">Loading...</div>;
+  }
 
 const documents = progressData
   ? [

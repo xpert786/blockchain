@@ -132,7 +132,7 @@ const VerifyEmail = () => {
   const checkRegistrationStatus = async () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-      const finalUrl = `${API_URL.replace(/\/$/, "")}/api/registration-flow/get_registration_status/`;
+      const finalUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/get_registration_status/`;
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) return null;
       const resp = await axios.get(finalUrl, {
@@ -274,28 +274,89 @@ const VerifyEmail = () => {
       });
 
       console.log("Email verification successful:", response.data);
+      console.log("📋 Verify code response:", JSON.stringify(response.data, null, 2));
 
-      // If both email and phone are already verified, go straight to quick profile
-      try {
-        const status = await checkRegistrationStatus();
-        // If email verification is confirmed, allow user to proceed to quick profile
-        if (status && status.email_verified) {
-          navigate("/quick-profile");
-          return;
+      // After email verification, navigate based on role (phone verification bypassed)
+      // Get role from multiple sources: verify_code response, registration status API, or localStorage
+      let userRole = null;
+      let userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      
+      // First, try to get role from verify_code response (this is the most reliable source)
+      if (response.data?.user?.role) {
+        userRole = response.data.user.role;
+        console.log("📋 Role from verify_code response.user.role:", userRole);
+        
+        // IMPORTANT: Save role to localStorage immediately
+        userData.role = userRole;
+        // Also save other user data from response
+        if (response.data.user) {
+          userData.user_id = response.data.user.id || userData.user_id;
+          userData.email = response.data.user.email || userData.email;
+          userData.username = response.data.user.username || userData.username;
         }
-      } catch (e) {
-        console.warn("Could not determine registration status, continuing flow.", e);
+        localStorage.setItem("userData", JSON.stringify(userData));
+        console.log("✅ Saved role to localStorage:", userRole);
+      } else if (response.data?.role) {
+        userRole = response.data.role;
+        console.log("📋 Role from verify_code response.role:", userRole);
+        
+        // Save role to localStorage
+        userData.role = userRole;
+        localStorage.setItem("userData", JSON.stringify(userData));
+        console.log("✅ Saved role to localStorage:", userRole);
       }
-
-      // Show success popup
-      setShowPopup(true);
-      console.log("Attempting to trigger SMS verification code (choose method + send)...");
-      // call choose_verification_method to set method on backend
-      await triggerCodeSend("sms");
-      // then attempt to call send_two_factor with phone_number + user_id (backend requires both)
-      const sent = await sendTwoFactorAfterEmail();
-      if (!sent) {
-        console.warn("SMS send attempt failed or missing data; user will need to enter phone on Verify Phone page.");
+      
+      // Second, try registration status API (where account was created)
+      if (!userRole) {
+        try {
+          const status = await checkRegistrationStatus();
+          console.log("📋 Registration status response:", JSON.stringify(status, null, 2));
+          
+          // Get role from registration status API (this is where account was created)
+          if (status) {
+            // Try multiple possible paths for role in status response
+            userRole = status?.role || status?.user?.role || status?.user_role || status?.user_role_name;
+            console.log("📋 Role from registration status:", userRole);
+            
+            // If role found in status, update localStorage
+            if (userRole) {
+              userData.role = userRole;
+              localStorage.setItem("userData", JSON.stringify(userData));
+            }
+          }
+        } catch (e) {
+          console.warn("Could not fetch registration status:", e);
+        }
+      }
+      
+      // Third, fallback to localStorage (saved during signup)
+      if (!userRole) {
+        userRole = userData?.role;
+        console.log("📋 Role from localStorage:", userRole);
+      }
+      
+      // Normalize role to lowercase
+      const normalizedRole = (userRole || "").toLowerCase().trim();
+      console.log("📋 Final normalized role:", normalizedRole);
+      console.log("📋 Full userData:", userData);
+      
+      // Navigate based on role
+      if (normalizedRole === "syndicate" || normalizedRole.includes("syndicate")) {
+        // Syndicate users go to terms of service after email verification (phone bypassed)
+        console.log("✅ Email verified - redirecting syndicate user to terms of service");
+        navigate("/terms-of-service");
+        return;
+      } else if (normalizedRole === "investor" || normalizedRole.includes("investor")) {
+        // Investors go to quick profile setup
+        console.log("✅ Email verified - redirecting investor to quick profile");
+        navigate("/quick-profile");
+        return;
+      } else {
+        // If role not found, default to quick profile (but log warning)
+        console.warn("⚠️ Role not found or invalid, defaulting to quick profile. Role was:", normalizedRole);
+        console.warn("⚠️ Available userData keys:", Object.keys(userData));
+        navigate("/quick-profile");
+        return;
       }
       
     } catch (err) {
@@ -306,19 +367,33 @@ const VerifyEmail = () => {
     }
   };
 
-  const handleClosePopup = () => {
-    setShowPopup(false);
-    // Navigate to Verify Phone page after closing popup
-    navigate("/verify-phone");
-  };
+  const handleClosePopup = () => {
+    setShowPopup(false);
+    // Phone verification bypassed - navigate based on role
+    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+    const userRole = (userData?.role || "").toLowerCase();
+    
+    if (userRole === "syndicate" || userRole.includes("syndicate")) {
+      navigate("/terms-of-service");
+    } else {
+      navigate("/quick-profile");
+    }
+  };
 
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      setShowPopup(false);
-      // Navigate to Verify Phone page after closing popup
-      navigate("/verify-phone");
-    }
-  };
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      setShowPopup(false);
+      // Phone verification bypassed - navigate based on role
+      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+      const userRole = (userData?.role || "").toLowerCase();
+      
+      if (userRole === "syndicate" || userRole.includes("syndicate")) {
+        navigate("/terms-of-service");
+      } else {
+        navigate("/quick-profile");
+      }
+    }
+  };
 
   // Handler for the Resend Code link
   const handleResendCode = () => {
