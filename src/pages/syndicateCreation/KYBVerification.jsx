@@ -3,41 +3,47 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {UpsyndicateIcon} from "../../components/Icons";
 
-
 const KYBVerification = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [hasExistingData, setHasExistingData] = useState(false);
-  const [isLoadingExistingData, setIsLoadingExistingData] = useState(true);
-  const [currentKycRecordId, setCurrentKycRecordId] = useState(null); // Store the most recent record ID for PATCH
-  const [fileUrls, setFileUrls] = useState({
-    incorporationCertificate: null,
-    bankStatement: null,
-    proofOfAddress: null,
-    beneficiaryIdentity: null,
-    beneficiaryProofOfAddress: null
-  });
+  
   const [formData, setFormData] = useState({
-    companyLegalName: "",
-    fullName: "",
-    position: "",
-    incorporationCertificate: null,
-    bankStatement: null,
-    addressLine1: "",
-    addressLine2: "",
-    townCity: "",
-    postalCode: "",
-    country: "",
-    proofOfAddress: null,
-    beneficiaryIdentity: null,
-    beneficiaryProofOfAddress: null,
-    soeEligibility: "Hidden",
-    notarySigning: "NO",
-    deedOfAdherence: "NO",
-    contactNumber: "",
-    contactEmail: "",
-    agreeToTerms: false
+    entityLegalName: "",
+    entityType: "Individual",
+    countryOfIncorporation: "",
+    registrationNumber: "",
+    // Registered Address
+    registeredStreetAddress: "",
+    registeredPostalCode: "",
+    registeredState: "",
+    registeredArea: "",
+    registeredCity: "",
+    registeredCountry: "",
+    // Operating Address (Optional)
+    operatingStreetAddress: "",
+    operatingPostalCode: "",
+    operatingState: "",
+    operatingArea: "",
+    operatingCity: "",
+    operatingCountry: "",
+    // Company Documents
+    certOfIncorporation: null,
+    registeredAddressDoc: null,
+    directorsRegister: null,
+    // Trust / Foundation Documents
+    trustDeed: null,
+    // Partnership Documents
+    partnershipAgreement: null
+  });
+
+  // Store existing file URLs from API
+  const [existingFiles, setExistingFiles] = useState({
+    certOfIncorporation: null,
+    registeredAddressDoc: null,
+    directorsRegister: null,
+    trustDeed: null,
+    partnershipAgreement: null
   });
 
   const handleInputChange = (field, value) => {
@@ -52,305 +58,123 @@ const KYBVerification = () => {
       ...prev,
       [field]: file
     }));
-    // Clear file URL when new file is selected
-    setFileUrls(prev => ({
-      ...prev,
-      [field]: null
-    }));
   };
 
-  // Helper function to construct file URL from API response
-  const constructFileUrl = (filePath) => {
-    if (!filePath) return null;
-    
-    const baseDomain = "http://168.231.121.7";
-    
-    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
-      return filePath;
-    } else if (filePath.startsWith('/')) {
-      if (filePath.startsWith('/api/blockchain-backend/')) {
-        return `${baseDomain}${filePath.replace(/^\/api/, '')}`;
-      } else if (filePath.startsWith('/blockchain-backend/')) {
-        return `${baseDomain}${filePath}`;
-      } else if (filePath.startsWith('/media/')) {
-        return `${baseDomain}/blockchain-backend${filePath}`;
-      } else {
-        return `${baseDomain}/blockchain-backend${filePath}`;
-      }
-    } else {
-      return `${baseDomain}/blockchain-backend/${filePath}`;
-    }
-  };
-
-  // Fetch existing KYC data on mount
+  // Fetch existing step3a data on mount
   useEffect(() => {
     const fetchExistingData = async () => {
       try {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
-          setIsLoadingExistingData(false);
           return;
         }
 
         const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-        // Try /api/kyc/ first (for POST), fallback to /kyc/my_kyc/ (for GET)
-        const kycUrl = `${API_URL.replace(/\/$/, "")}/kyc/`;
-        const kycGetUrl = `${API_URL.replace(/\/$/, "")}/kyc/my_kyc/`;
+        const step3aUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step3a/`;
 
-        console.log("=== Fetching KYC Data ===");
-        console.log("API URL:", kycUrl);
+        console.log("=== Fetching Step3a Data ===");
+        console.log("API URL:", step3aUrl);
 
-        try {
-          // For GET, try /kyc/my_kyc/ first (which returns array), fallback to /api/kyc/ if needed
-          let kycResponse;
-          try {
-            kycResponse = await axios.get(kycGetUrl, {
-              headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              }
-            });
-          } catch (getError) {
-            // If /kyc/my_kyc/ fails, try /api/kyc/ (might be different endpoint structure)
-            if (getError.response?.status === 404 || getError.response?.status === 405) {
-              console.log("⚠️ /kyc/my_kyc/ not available, trying /api/kyc/");
-              kycResponse = await axios.get(kycUrl, {
+        const response = await axios.get(step3aUrl, {
                 headers: {
                   'Authorization': `Bearer ${accessToken}`,
                   'Content-Type': 'application/json',
                   'Accept': 'application/json'
                 }
               });
-            } else {
-              throw getError;
-            }
-          }
 
-          console.log("KYC response:", kycResponse.data);
+        console.log("Step3a response:", response.data);
+        console.log("Step3a response structure:", JSON.stringify(response.data, null, 2));
 
-          if (kycResponse.data && kycResponse.status === 200) {
-            const responseData = kycResponse.data;
-            
-            console.log("📦 Full KYC response structure:", JSON.stringify(responseData, null, 2));
-            
-            // API returns an array of KYC records - get the most recent one
-            let kycData = null;
-            
-            if (Array.isArray(responseData) && responseData.length > 0) {
-              // Sort by submitted_at (most recent first) or by id (highest first)
-              const sortedRecords = [...responseData].sort((a, b) => {
-                // First try to sort by submitted_at
-                if (a.submitted_at && b.submitted_at) {
-                  return new Date(b.submitted_at) - new Date(a.submitted_at);
-                }
-                // Fall back to id (higher id = more recent)
-                return (b.id || 0) - (a.id || 0);
-              });
-              
-              // Get the most recent record
-              kycData = sortedRecords[0];
-              const recordId = kycData.id;
-              setCurrentKycRecordId(recordId);
-              console.log("✅ Found array of KYC records, using most recent:", recordId);
-              console.log("✅ Total records:", responseData.length);
-              console.log("✅ Most recent record submitted_at:", kycData.submitted_at);
-            } else if (typeof responseData === 'object' && !Array.isArray(responseData)) {
-              // Handle single object response (fallback)
-              const stepData = responseData.step_data || {};
-              const profile = responseData.profile || {};
-              
-              if (Object.keys(stepData).length > 0) {
-                kycData = stepData;
+        if (response.data && response.status === 200) {
+          const responseData = response.data;
+          // API response has data nested under 'data' key: { data: { entity_legal_name: ... } }
+          const nestedData = responseData.data || {};
+          const profile = responseData.profile || {};
+          const stepData = responseData.step_data || {};
+          
+          // Check nested data first (most common structure), then root level, then step_data, then profile
+          const hasNestedData = nestedData.entity_legal_name !== undefined || 
+                                nestedData.registration_number !== undefined || 
+                                nestedData.registered_street_address !== undefined ||
+                                nestedData.operating_street_address !== undefined;
+          
+          const hasRootData = responseData.entity_legal_name !== undefined || 
+                             responseData.registration_number !== undefined || 
+                             responseData.registered_street_address !== undefined ||
+                             responseData.operating_street_address !== undefined;
+          
+          // Priority: nested data > root level > step_data > profile
+          let sourceData = {};
+          if (hasNestedData) {
+            sourceData = nestedData;
+            console.log("✅ Using nested data.data");
+          } else if (hasRootData) {
+            sourceData = responseData;
+            console.log("✅ Using root level data");
+          } else if (Object.keys(stepData).length > 0) {
+            sourceData = stepData;
                 console.log("✅ Using step_data");
-              } else if (Object.keys(profile).length > 0) {
-                kycData = profile;
+          } else {
+            sourceData = profile;
                 console.log("✅ Using profile");
-              } else {
-                kycData = responseData;
-                console.log("✅ Using root level data");
-              }
-            }
-            
-            if (!kycData) {
-              console.log("⚠️ No KYC data found in response");
-              setHasExistingData(false);
-              return;
-            }
-            
-            console.log("✅ kycData:", JSON.stringify(kycData, null, 2));
-            console.log("✅ kycData keys:", Object.keys(kycData));
-            
-            // Extract all fields from API response
-            // Note: Based on the API response, fields are directly on the KYC object
-            const companyLegalName = kycData.company_legal_name || kycData.company_name || kycData.legal_name || "";
-            
-            // Get full name from user_details if available, or from direct fields
-            const userDetails = kycData.user_details || {};
-            const fullName = kycData.full_name || 
-                            kycData.owner_name || 
-                            kycData.name || 
-                            kycData.owner_full_name ||
-                            (userDetails.first_name && userDetails.last_name 
-                              ? `${userDetails.first_name} ${userDetails.last_name}`.trim()
-                              : userDetails.first_name || userDetails.username || "") || "";
-            const position = kycData.position || kycData.owner_position || "";
-            const addressLine1 = kycData.address_1 || kycData.address_line_1 || kycData.address_line1 || "";
-            const addressLine2 = kycData.address_2 || kycData.address_line_2 || kycData.address_line2 || "";
-            const townCity = kycData.city || kycData.town_city || kycData.town || "";
-            const postalCode = kycData.zip_code || kycData.postal_code || kycData.zip || "";
-            const country = kycData.country || "";
-            const soeEligibility = kycData.sie_eligibilty || kycData.sie_eligibility || kycData.soe_eligibility || "Hidden";
-            const notarySigning = kycData.notary || kycData.notary_signing || "NO";
-            
-            // Convert deedOfAdherence from boolean/string to "YES"/"NO"
-            let deedOfAdherence = "NO";
-            if (kycData.Unlocksley_To_Sign_a_Deed_Of_adherence === "true" || 
-                kycData.Unlocksley_To_Sign_a_Deed_Of_adherence === true ||
-                kycData.Unlocksley_To_Sign_a_Deed_Of_adherence === "YES" ||
-                kycData.deed_of_adherence === "YES" ||
-                kycData.deed_of_adherence === true) {
-              deedOfAdherence = "YES";
-            }
-            
-            const contactNumber = kycData.Investee_Company_Contact_Number || 
-                                 kycData.contact_number || 
-                                 kycData.phone || 
-                                 kycData.contact_phone || "";
-            const contactEmail = kycData.Investee_Company_Email || 
-                                kycData.contact_email || 
-                                kycData.email || 
-                                kycData.contact_email_address || "";
-            
-            // Convert agreeToTerms from boolean/string to boolean
-            const agreeToTerms = kycData.I_Agree_To_Investee_Terms === "true" || 
-                                kycData.I_Agree_To_Investee_Terms === true || 
-                                kycData.I_Agree_To_Investee_Terms === "1" ||
-                                kycData.agree_to_terms === true ||
-                                kycData.agree_to_terms === "true";
-            
-            // Extract file URLs (check multiple field name variations)
-            const incorporationCertificateUrl = constructFileUrl(
-              kycData.certificate_of_incorporation || 
-              kycData.incorporation_certificate ||
-              kycData.company_certificate_of_incorporation
-            );
-            const bankStatementUrl = constructFileUrl(
-              kycData.company_bank_statement || 
-              kycData.bank_statement ||
-              kycData.company_bank_statement_file
-            );
-            const proofOfAddressUrl = constructFileUrl(
-              kycData.company_proof_of_address || 
-              kycData.proof_of_address ||
-              kycData.company_proof_of_address_file
-            );
-            const beneficiaryIdentityUrl = constructFileUrl(
-              kycData.owner_identity_doc || 
-              kycData.beneficiary_identity ||
-              kycData.owner_identity_document ||
-              kycData.beneficiary_identity_doc
-            );
-            const beneficiaryProofOfAddressUrl = constructFileUrl(
-              kycData.owner_proof_of_address || 
-              kycData.beneficiary_proof_of_address ||
-              kycData.owner_proof_of_address_file ||
-              kycData.beneficiary_proof_of_address_file
-            );
-            
-            console.log("✅ Extracted form data:", {
-              companyLegalName,
-              fullName,
-              position,
-              addressLine1,
-              addressLine2,
-              townCity,
-              postalCode,
-              country,
-              soeEligibility,
-              notarySigning,
-              deedOfAdherence,
-              contactNumber,
-              contactEmail,
-              agreeToTerms
-            });
-            
-            console.log("✅ File URLs:", {
-              incorporationCertificate: incorporationCertificateUrl,
-              bankStatement: bankStatementUrl,
-              proofOfAddress: proofOfAddressUrl,
-              beneficiaryIdentity: beneficiaryIdentityUrl,
-              beneficiaryProofOfAddress: beneficiaryProofOfAddressUrl
-            });
-            
-            // Check if we have any data (at least one field filled)
-            // Even if companyLegalName, fullName, position are empty, we still have data if address or files exist
-            if (addressLine1 || addressLine2 || townCity || postalCode || country || 
-                incorporationCertificateUrl || bankStatementUrl || proofOfAddressUrl || 
-                beneficiaryIdentityUrl || beneficiaryProofOfAddressUrl || contactNumber || 
-                contactEmail || soeEligibility !== "Hidden" || notarySigning !== "NO") {
-              setHasExistingData(true);
-              
-              // Populate form with existing data
-              setFormData({
-                companyLegalName: companyLegalName || "", // May be empty, that's okay
-                fullName: fullName || "", // May be empty, that's okay
-                position: position || "", // May be empty, that's okay
-                incorporationCertificate: null, // Don't set file, just URL
-                bankStatement: null,
-                addressLine1: addressLine1 || "",
-                addressLine2: addressLine2 || "",
-                townCity: townCity || "",
-                postalCode: postalCode || "",
-                country: country || "",
-                proofOfAddress: null,
-                beneficiaryIdentity: null,
-                beneficiaryProofOfAddress: null,
-                soeEligibility: soeEligibility || "Hidden",
-                notarySigning: notarySigning || "NO",
-                deedOfAdherence: deedOfAdherence || "NO",
-                contactNumber: contactNumber || "",
-                contactEmail: contactEmail || "",
-                agreeToTerms: agreeToTerms || false
-              });
-              
-              // Set file URLs for display
-              setFileUrls({
-                incorporationCertificate: incorporationCertificateUrl,
-                bankStatement: bankStatementUrl,
-                proofOfAddress: proofOfAddressUrl,
-                beneficiaryIdentity: beneficiaryIdentityUrl,
-                beneficiaryProofOfAddress: beneficiaryProofOfAddressUrl
-              });
-              
-              console.log("✅ Form populated with existing KYC data");
-              console.log("✅ Record ID:", kycData.id);
-              console.log("✅ Record submitted_at:", kycData.submitted_at);
-            } else {
-              console.log("⚠️ No valid KYC data found in response");
-              setHasExistingData(false);
-            }
-          } else {
-            setHasExistingData(false);
           }
-        } catch (kycErr) {
-          // If KYC data doesn't exist (404) or array is empty, it's fine - user will create new
-          if (kycErr.response?.status === 404) {
-            console.log("No existing KYC data found - will create new");
-            setHasExistingData(false);
-          } else if (Array.isArray(kycResponse?.data) && kycResponse.data.length === 0) {
-            console.log("KYC array is empty - will create new");
-            setHasExistingData(false);
-          } else {
-            console.error("Error fetching existing KYC data:", kycErr);
-            console.error("Error details:", kycErr.response?.data);
-            console.error("Error status:", kycErr.response?.status);
-          }
+
+          console.log("✅ Source data:", JSON.stringify(sourceData, null, 2));
+          console.log("✅ Source data keys:", Object.keys(sourceData));
+
+          // Helper function to capitalize entity type
+          const capitalizeEntityType = (type) => {
+            if (!type) return "Individual";
+            const lower = String(type).toLowerCase();
+            return lower.charAt(0).toUpperCase() + lower.slice(1);
+          };
+
+          // Map API response to form data - use same pattern as EntityProfile.jsx
+          setFormData(prev => ({
+            ...prev,
+            entityLegalName: sourceData.entity_legal_name || prev.entityLegalName,
+            entityType: sourceData.entity_type ? capitalizeEntityType(sourceData.entity_type) : prev.entityType,
+            countryOfIncorporation: sourceData.country_of_incorporation || prev.countryOfIncorporation,
+            registrationNumber: sourceData.registration_number || prev.registrationNumber,
+            registeredStreetAddress: sourceData.registered_street_address || prev.registeredStreetAddress,
+            registeredArea: sourceData.registered_area_landmark || prev.registeredArea,
+            registeredPostalCode: sourceData.registered_postal_code || prev.registeredPostalCode,
+            registeredCity: sourceData.registered_city || prev.registeredCity,
+            registeredState: sourceData.registered_state || prev.registeredState,
+            registeredCountry: sourceData.registered_country || prev.registeredCountry,
+            operatingStreetAddress: sourceData.operating_street_address || prev.operatingStreetAddress,
+            operatingArea: sourceData.operating_area_landmark || prev.operatingArea,
+            operatingPostalCode: sourceData.operating_postal_code || prev.operatingPostalCode,
+            operatingCity: sourceData.operating_city || prev.operatingCity,
+            operatingState: sourceData.operating_state || prev.operatingState,
+            operatingCountry: sourceData.operating_country || prev.operatingCountry,
+            // Keep file fields as null (files are not pre-filled, only URLs would be)
+            certOfIncorporation: null,
+            registeredAddressDoc: null,
+            directorsRegister: null,
+            trustDeed: null,
+            partnershipAgreement: null
+          }));
+
+          // Store existing file URLs from API
+          setExistingFiles({
+            certOfIncorporation: sourceData.certificate_of_incorporation_url || null,
+            registeredAddressDoc: sourceData.registered_address_proof_url || null,
+            directorsRegister: sourceData.directors_register_url || null,
+            trustDeed: sourceData.trust_deed_url || null,
+            partnershipAgreement: sourceData.partnership_agreement_url || null
+          });
+
+          console.log("✅ Form populated with existing Step3a data");
         }
       } catch (err) {
-        console.error("Error in fetchExistingData:", err);
-      } finally {
-        setIsLoadingExistingData(false);
+        // If 404, no existing data - that's fine
+        if (err.response?.status === 404) {
+          console.log("No existing Step3a data found - will create new");
+        } else {
+          console.error("Error fetching existing Step3a data:", err);
+        }
       }
     };
 
@@ -358,268 +182,141 @@ const KYBVerification = () => {
   }, []);
 
   const handleNext = async () => {
-    setLoading(true);
     setError("");
+    setLoading(true);
+
+    // Basic validation
+    if (!formData.entityLegalName.trim()) {
+      setError("Entity Legal Name is required.");
+      setLoading(false);
+      return;
+    }
 
     try {
-      // Get access token and user ID from localStorage
       const accessToken = localStorage.getItem("accessToken");
-      const userDataStr = localStorage.getItem("userData");
-      const userData = userDataStr ? JSON.parse(userDataStr) : null;
-      const userId = userData?.user_id || userData?.id;
-
       if (!accessToken) {
         throw new Error("No access token found. Please login again.");
       }
 
-      if (!userId) {
-        throw new Error("User ID not found. Please login again.");
-      }
-
-      // Create FormData for file uploads
-      const formDataToSend = new FormData();
-      
-      // Add user ID
-      formDataToSend.append("user", userId.toString());
-
-      // Add files only if new files are selected
-      // For PATCH: If no new file, don't send file field (keeps existing file)
-      // For POST: Send file if exists, otherwise don't send (optional fields)
-      if (formData.incorporationCertificate) {
-        formDataToSend.append("certificate_of_incorporation", formData.incorporationCertificate);
-        console.log("Incorporation certificate file will be uploaded:", formData.incorporationCertificate.name);
-      } else if (!hasExistingData) {
-        // For new data, file is optional - don't send if not provided
-        console.log("No incorporation certificate file for new data");
-      } else {
-        console.log("No new incorporation certificate file, keeping existing file");
-      }
-      
-      if (formData.bankStatement) {
-        formDataToSend.append("company_bank_statement", formData.bankStatement);
-        console.log("Bank statement file will be uploaded:", formData.bankStatement.name);
-      } else if (!hasExistingData) {
-        console.log("No bank statement file for new data");
-      } else {
-        console.log("No new bank statement file, keeping existing file");
-      }
-      
-      if (formData.proofOfAddress) {
-        formDataToSend.append("company_proof_of_address", formData.proofOfAddress);
-        console.log("Proof of address file will be uploaded:", formData.proofOfAddress.name);
-      } else if (!hasExistingData) {
-        console.log("No proof of address file for new data");
-      } else {
-        console.log("No new proof of address file, keeping existing file");
-      }
-      
-      if (formData.beneficiaryIdentity) {
-        formDataToSend.append("owner_identity_doc", formData.beneficiaryIdentity);
-        console.log("Beneficiary identity file will be uploaded:", formData.beneficiaryIdentity.name);
-      } else if (!hasExistingData) {
-        console.log("No beneficiary identity file for new data");
-      } else {
-        console.log("No new beneficiary identity file, keeping existing file");
-      }
-      
-      if (formData.beneficiaryProofOfAddress) {
-        formDataToSend.append("owner_proof_of_address", formData.beneficiaryProofOfAddress);
-        console.log("Beneficiary proof of address file will be uploaded:", formData.beneficiaryProofOfAddress.name);
-      } else if (!hasExistingData) {
-        console.log("No beneficiary proof of address file for new data");
-      } else {
-        console.log("No new beneficiary proof of address file, keeping existing file");
-      }
-
-      // Add required text fields (always send if they exist, even if empty string for PATCH)
-      formDataToSend.append("company_legal_name", formData.companyLegalName || "");
-      formDataToSend.append("full_name", formData.fullName || "");
-      formDataToSend.append("position", formData.position || "");
-      
-      // Add address fields
-      if (formData.addressLine1) {
-        formDataToSend.append("address_1", formData.addressLine1);
-      }
-      if (formData.addressLine2) {
-        formDataToSend.append("address_2", formData.addressLine2);
-      }
-      if (formData.townCity) {
-        formDataToSend.append("city", formData.townCity);
-      }
-      if (formData.postalCode) {
-        formDataToSend.append("zip_code", formData.postalCode);
-      }
-      if (formData.country) {
-        formDataToSend.append("country", formData.country);
-      }
-
-      // Add dropdown/select fields
-      formDataToSend.append("sie_eligibilty", formData.soeEligibility);
-      formDataToSend.append("notary", formData.notarySigning);
-
-      // Convert deedOfAdherence from "YES"/"NO" to "true"/"false"
-      const deedOfAdherenceValue = formData.deedOfAdherence === "YES" ? "true" : "false";
-      formDataToSend.append("Unlocksley_To_Sign_a_Deed_Of_adherence", deedOfAdherenceValue);
-
-      // Add contact fields (only if provided)
-      if (formData.contactNumber) {
-        formDataToSend.append("Investee_Company_Contact_Number", formData.contactNumber);
-      }
-      if (formData.contactEmail) {
-        formDataToSend.append("Investee_Company_Email", formData.contactEmail);
-      }
-
-      // Convert agreeToTerms boolean to string
-      formDataToSend.append("I_Agree_To_Investee_Terms", formData.agreeToTerms ? "true" : "false");
-
-      // Get API URL
       const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-      // Use /api/kyc/ for POST (create new)
-      // Try /api/kyc/{id}/ first for PATCH, fallback to /kyc/{id}/
-      const postUrl = `${API_URL.replace(/\/$/, "")}/kyc/`;
-      const patchUrlApi = `${API_URL.replace(/\/$/, "")}/kyc/${currentKycRecordId}/`;
-      const patchUrlKyc = `${API_URL.replace(/\/$/, "")}/kyc/${currentKycRecordId}/`;
+      const step3aUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step3a/`;
 
-      console.log("=== KYB Verification API Call ===");
-      console.log("Has Existing Data:", hasExistingData);
-      console.log("Current KYC Record ID:", currentKycRecordId);
-      console.log("Form Data:", {
-        companyLegalName: formData.companyLegalName,
-        fullName: formData.fullName,
-        position: formData.position,
-        hasFiles: {
-          incorporationCertificate: !!formData.incorporationCertificate,
-          bankStatement: !!formData.bankStatement,
-          proofOfAddress: !!formData.proofOfAddress,
-          beneficiaryIdentity: !!formData.beneficiaryIdentity,
-          beneficiaryProofOfAddress: !!formData.beneficiaryProofOfAddress
-        }
-      });
+      // Check if any files are being uploaded
+      const hasFiles = formData.certOfIncorporation || 
+                       formData.registeredAddressDoc || 
+                       formData.directorsRegister || 
+                       formData.trustDeed || 
+                       formData.partnershipAgreement;
 
-      let response;
-      
-      // Use PATCH to update existing record if we have a record ID, otherwise POST to create new
-      if (hasExistingData && currentKycRecordId) {
-        console.log("🔄 Updating existing KYC record with PATCH, ID:", currentKycRecordId);
-        console.log("Trying PATCH URL (API):", patchUrlApi);
-        try {
-          // Try /api/kyc/{id}/ first
-          response = await axios.patch(patchUrlApi, formDataToSend, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Accept': 'application/json'
-            }
-          });
-          console.log("✅ KYB verification updated successfully via /api/kyc/{id}/:", response.data);
-        } catch (patchError1) {
-          // If /api/kyc/{id}/ fails, try /kyc/{id}/
-          if (patchError1.response?.status === 405 || patchError1.response?.status === 404) {
-            console.log("⚠️ PATCH to /api/kyc/{id}/ failed, trying /kyc/{id}/");
-            try {
-              response = await axios.patch(patchUrlKyc, formDataToSend, {
-                headers: {
-                  'Authorization': `Bearer ${accessToken}`,
-                  'Accept': 'application/json'
-                }
-              });
-              console.log("✅ KYB verification updated successfully via /kyc/{id}/:", response.data);
-            } catch (patchError2) {
-              // If PATCH fails entirely, try POST to /api/kyc/ (some APIs allow POST for updates)
-              if (patchError2.response?.status === 405 || patchError2.response?.status === 404) {
-                console.log("⚠️ PATCH not allowed, trying POST to /api/kyc/ instead");
-                response = await axios.post(postUrl, formDataToSend, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json'
+      if (hasFiles) {
+        // Use FormData for file uploads
+        const formDataToSend = new FormData();
+        
+        // Add text fields
+        formDataToSend.append("entity_legal_name", formData.entityLegalName);
+        formDataToSend.append("entity_type", formData.entityType.toLowerCase());
+        formDataToSend.append("country_of_incorporation", formData.countryOfIncorporation || "");
+        formDataToSend.append("registration_number", formData.registrationNumber || "");
+        formDataToSend.append("registered_street_address", formData.registeredStreetAddress || "");
+        formDataToSend.append("registered_area_landmark", formData.registeredArea || "");
+        formDataToSend.append("registered_postal_code", formData.registeredPostalCode || "");
+        formDataToSend.append("registered_city", formData.registeredCity || "");
+        formDataToSend.append("registered_state", formData.registeredState || "");
+        formDataToSend.append("registered_country", formData.registeredCountry || "");
+        formDataToSend.append("operating_street_address", formData.operatingStreetAddress || "");
+        formDataToSend.append("operating_area_landmark", formData.operatingArea || "");
+        formDataToSend.append("operating_postal_code", formData.operatingPostalCode || "");
+        formDataToSend.append("operating_city", formData.operatingCity || "");
+        formDataToSend.append("operating_state", formData.operatingState || "");
+        formDataToSend.append("operating_country", formData.operatingCountry || "");
+
+        // Add files if they exist
+        if (formData.certOfIncorporation) {
+          formDataToSend.append("certificate_of_incorporation", formData.certOfIncorporation);
         }
-                });
-                console.log("✅ KYB verification created/updated successfully via POST:", response.data);
-                // Update record ID if response includes it
-                if (response.data?.id) {
-                  setCurrentKycRecordId(response.data.id);
-                }
-                setHasExistingData(true);
-              } else {
-                throw patchError2;
-              }
-            }
-          } else {
-            throw patchError1;
-          }
+        if (formData.registeredAddressDoc) {
+          formDataToSend.append("registered_address_proof", formData.registeredAddressDoc);
         }
-      } else {
-        console.log("➕ Creating new KYC record with POST");
-        console.log("POST URL:", postUrl);
-        console.log("Full URL will be:", postUrl);
-        try {
-          response = await axios.post(postUrl, formDataToSend, {
+        if (formData.directorsRegister) {
+          formDataToSend.append("directors_register", formData.directorsRegister);
+        }
+        if (formData.trustDeed) {
+          formDataToSend.append("trust_deed", formData.trustDeed);
+        }
+        if (formData.partnershipAgreement) {
+          formDataToSend.append("partnership_agreement", formData.partnershipAgreement);
+        }
+
+        console.log("=== PATCH Step3a Data (with files) ===");
+        console.log("API URL:", step3aUrl);
+
+        const response = await axios.patch(step3aUrl, formDataToSend, {
             headers: {
               'Authorization': `Bearer ${accessToken}`,
               'Accept': 'application/json'
               // Note: Don't set Content-Type header - axios will set it automatically with boundary for FormData
             }
           });
-          console.log("✅ KYB verification created successfully:", response.data);
-          console.log("✅ Response status:", response.status);
-          // If response includes the new record ID, store it
-          if (response.data?.id) {
-            setCurrentKycRecordId(response.data.id);
-            console.log("✅ Stored new KYC record ID:", response.data.id);
-          }
-          // Mark that data now exists for future fetches
-          setHasExistingData(true);
-        } catch (postError) {
-          console.error("❌ POST error details:", {
-            status: postError.response?.status,
-            statusText: postError.response?.statusText,
-            data: postError.response?.data,
-            message: postError.message
-          });
-          
-          // If POST to /api/kyc/ fails with 405 (Method Not Allowed), try /kyc/my_kyc/ as fallback
-          if (postError.response?.status === 405) {
-            console.log("⚠️ POST to /api/kyc/ returned 405 (Method Not Allowed), trying /kyc/my_kyc/ as fallback");
-            const fallbackUrl = `${API_URL.replace(/\/$/, "")}/kyc/my_kyc/`;
-            try {
-              response = await axios.post(fallbackUrl, formDataToSend, {
+
+        console.log("✅ Step3a updated successfully:", response.data);
+      } else {
+        // Use JSON for text-only updates
+        const requestData = {
+          entity_legal_name: formData.entityLegalName,
+          entity_type: formData.entityType.toLowerCase(),
+          country_of_incorporation: formData.countryOfIncorporation || "",
+          registration_number: formData.registrationNumber || "",
+          registered_street_address: formData.registeredStreetAddress || "",
+          registered_area_landmark: formData.registeredArea || "",
+          registered_postal_code: formData.registeredPostalCode || "",
+          registered_city: formData.registeredCity || "",
+          registered_state: formData.registeredState || "",
+          registered_country: formData.registeredCountry || "",
+          operating_street_address: formData.operatingStreetAddress || "",
+          operating_area_landmark: formData.operatingArea || "",
+          operating_postal_code: formData.operatingPostalCode || "",
+          operating_city: formData.operatingCity || "",
+          operating_state: formData.operatingState || "",
+          operating_country: formData.operatingCountry || ""
+        };
+
+        console.log("=== PATCH Step3a Data (JSON) ===");
+        console.log("API URL:", step3aUrl);
+        console.log("Request Data:", requestData);
+
+        const response = await axios.patch(step3aUrl, requestData, {
                 headers: {
                   'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
                   'Accept': 'application/json'
                 }
               });
-              console.log("✅ KYB verification created successfully via fallback:", response.data);
-              if (response.data?.id) {
-                setCurrentKycRecordId(response.data.id);
-              }
-              setHasExistingData(true);
-            } catch (fallbackError) {
-              console.error("❌ Fallback POST also failed:", fallbackError.response?.status, fallbackError.response?.data);
-              throw fallbackError;
-            }
-          } else {
-            throw postError;
-          }
-        }
+
+        console.log("✅ Step3a updated successfully:", response.data);
       }
 
       // Navigate to next step on success
+      // If Entity Type is "Individual", skip Beneficial Owners and go directly to Compliance Attestation
+      // Otherwise, go to Beneficial Owners first
+      if (formData.entityType.toLowerCase() === "individual") {
       navigate("/syndicate-creation/compliance-attestation");
-
+      } else {
+        navigate("/syndicate-creation/beneficial-owners");
+      }
     } catch (err) {
-      console.error("KYB verification error:", err);
+      console.error("Error updating Step3a:", err);
       const backendData = err.response?.data;
       if (backendData) {
         if (typeof backendData === "object") {
           // Handle specific field errors
           const errorMessages = Object.values(backendData).flat();
-          setError(errorMessages.join(", ") || "Failed to submit KYB verification.");
+          setError(errorMessages.join(", ") || "Failed to update KYB verification.");
         } else {
           setError(String(backendData));
         }
       } else {
-        setError(err.message || "Failed to submit KYB verification. Please try again.");
+        setError(err.message || "Failed to update KYB verification. Please try again.");
       }
-    } finally {
       setLoading(false);
     }
   };
@@ -628,15 +325,25 @@ const KYBVerification = () => {
     navigate("/syndicate-creation/entity-profile");
   };
 
-  const FileUploadArea = ({ label, field, accept = ".pdf,.jpg,.jpeg,.png" }) => {
-    const fileUrl = fileUrls[field];
+  const FileUploadArea = ({ label, field, accept = ".pdf,.jpg,.jpeg,.png", optional = false }) => {
     const file = formData[field];
-    const hasFile = file || fileUrl;
+    const existingFileUrl = existingFiles[field];
+    
+    // Extract filename from URL
+    const getFileNameFromUrl = (url) => {
+      if (!url) return null;
+      try {
+        const urlParts = url.split('/');
+        return urlParts[urlParts.length - 1] || 'Uploaded file';
+      } catch {
+        return 'Uploaded file';
+      }
+    };
     
     return (
     <div>
       <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
-        {label}
+          {label} {optional && <span className="text-gray-500">(optional)</span>}
       </label>
       <label htmlFor={field} className="cursor-pointer">
         <div className="border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg p-8 text-center hover:bg-[#F0F2F1] transition-colors">
@@ -654,29 +361,29 @@ const KYBVerification = () => {
             {file && (
               <p className="text-green-600 mt-2">✓ {file.name}</p>
             )}
-            {fileUrl && !file && (
+            {!file && existingFileUrl && (
               <div className="mt-2">
-                <p className="text-blue-600 text-sm">✓ File loaded from server</p>
+                <p className="text-green-600">✓ {getFileNameFromUrl(existingFileUrl)}</p>
                 <a 
-                  href={fileUrl} 
+                  href={existingFileUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="text-blue-500 text-xs underline mt-1 inline-block"
+                  className="text-blue-600 hover:text-blue-800 text-sm underline"
                 >
-                  View existing file
+                  View file
                 </a>
               </div>
           )}
         </div>
       </label>
-        {hasFile && (
+        {(file || existingFileUrl) && (
           <button
             type="button"
             onClick={(e) => {
               e.preventDefault();
               setFormData(prev => ({ ...prev, [field]: null }));
-              setFileUrls(prev => ({ ...prev, [field]: null }));
+              setExistingFiles(prev => ({ ...prev, [field]: null }));
               const fileInput = document.getElementById(field);
               if (fileInput) fileInput.value = "";
             }}
@@ -693,8 +400,8 @@ const KYBVerification = () => {
     <div className="bg-white rounded-xl shadow-sm p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl  text-[#001D21] mb-2">Step 3: KYB Verification</h1>
-        <p className="text-gray-600">Trustworthy business starts here with fast, accurate KYB verification</p>
+        <h1 className="text-2xl text-[#001D21] mb-2">Step 3a: Required Business Info</h1>
+        <p className="text-gray-600">Trustworthy business starts here with fast, accurate KYB verification.</p>
       </div>
 
       {/* Error Message */}
@@ -706,223 +413,295 @@ const KYBVerification = () => {
 
       {/* Form Fields */}
       <div className="space-y-8">
-        {/* Company Information Section */}
+        {/* Business Information */}
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium  text-[#0A2A2E] mb-2">
-              Company Legal Name *
+            <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
+              Entity Legal Name
             </label>
             <input
               type="text"
-              value={formData.companyLegalName}
-              onChange={(e) => handleInputChange("companyLegalName", e.target.value)}
+              value={formData.entityLegalName}
+              onChange={(e) => handleInputChange("entityLegalName", e.target.value)}
               className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="Enter name"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium  text-[#0A2A2E] mb-2">
-              Your Full Name *
-            </label>
-            <input
-              type="text"
-              value={formData.fullName}
-              onChange={(e) => handleInputChange("fullName", e.target.value)}
-              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="Enter name"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium  text-[#0A2A2E] mb-2">
-              Your Position *
-            </label>
-            <input
-              type="text"
-              value={formData.position}
-              onChange={(e) => handleInputChange("position", e.target.value)}
-              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="Enter name"
-            />
-          </div>
-
-          <FileUploadArea 
-            label="Company certificate of incorporation" 
-            field="incorporationCertificate" 
-          />
-
-          <FileUploadArea 
-            label="Company bank statement of the account you wish to receive The invest in" 
-            field="bankStatement" 
-          />
-        </div>
-
-        {/* Address Information Section */}
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium  text-[#0A2A2E] mb-2">
-              Address Line 1
-            </label>
-            <input
-              type="text"
-              value={formData.addressLine1}
-              onChange={(e) => handleInputChange("addressLine1", e.target.value)}
-              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="Enter name"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium  text-[#0A2A2E] mb-2">
-              Address Line 2
-            </label>
-            <input
-              type="text"
-              value={formData.addressLine2}
-              onChange={(e) => handleInputChange("addressLine2", e.target.value)}
-              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="Enter name"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium  text-[#0A2A2E] mb-2">
-              Town/City
-            </label>
-            <input
-              type="text"
-              value={formData.townCity}
-              onChange={(e) => handleInputChange("townCity", e.target.value)}
-              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="Enter name"
+              placeholder="Entity name"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
-              Postal Code/Zip Code
+              Entity Type
+            </label>
+            <div className="relative">
+              <select
+                value={formData.entityType}
+                onChange={(e) => handleInputChange("entityType", e.target.value)}
+                className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none pr-10"
+              >
+                <option value="Individual">Individual</option>
+                <option value="Company">Company</option>
+                <option value="Partnership">Partnership</option>
+                <option value="Trust">Trust</option>
+              </select>
+              <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
+              Country of Incorporation
             </label>
             <input
               type="text"
-              value={formData.postalCode}
-              onChange={(e) => handleInputChange("postalCode", e.target.value)}
+              value={formData.countryOfIncorporation}
+              onChange={(e) => handleInputChange("countryOfIncorporation", e.target.value)}
               className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="Enter code"
+              placeholder="Autofill"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium  text-[#0A2A2E] mb-2">
+            <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
+              Registration Number / Company Number
+            </label>
+            <div className="relative">
+            <input
+              type="text"
+                value={formData.registrationNumber}
+                onChange={(e) => handleInputChange("registrationNumber", e.target.value)}
+                className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent pr-10"
+                placeholder="Enter the number"
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                title="Help"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Registered Address */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-medium text-[#0A2A2E]">Registered Address</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Left Column */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
+                  Street Address
+                </label>
+                <input
+                  type="text"
+                  value={formData.registeredStreetAddress}
+                  onChange={(e) => handleInputChange("registeredStreetAddress", e.target.value)}
+                  className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Flat No"
+                />
+              </div>
+          <div>
+                <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
+                  Postal Code
+            </label>
+            <input
+              type="text"
+                  value={formData.registeredPostalCode}
+                  onChange={(e) => handleInputChange("registeredPostalCode", e.target.value)}
+              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Code"
+            />
+          </div>
+          <div>
+                <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
+                  State
+            </label>
+            <input
+              type="text"
+                  value={formData.registeredState}
+                  onChange={(e) => handleInputChange("registeredState", e.target.value)}
+              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Enter State name"
+            />
+          </div>
+            </div>
+            {/* Right Column */}
+            <div className="space-y-4">
+          <div>
+                <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
+                  Area/ landmark
+            </label>
+            <input
+              type="text"
+                  value={formData.registeredArea}
+                  onChange={(e) => handleInputChange("registeredArea", e.target.value)}
+              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Enter Area"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
+                  City
+            </label>
+            <input
+              type="text"
+                  value={formData.registeredCity}
+                  onChange={(e) => handleInputChange("registeredCity", e.target.value)}
+              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Enter City Name"
+            />
+          </div>
+          <div>
+                <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
               Country
             </label>
             <input
               type="text"
-              value={formData.country}
-              onChange={(e) => handleInputChange("country", e.target.value)}
+                  value={formData.registeredCountry}
+                  onChange={(e) => handleInputChange("registeredCountry", e.target.value)}
               className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="Enter name"
+                  placeholder="Enter Country name"
             />
+              </div>
+            </div>
           </div>
-
-          <FileUploadArea 
-            label="Company Proof Of Address" 
-            field="proofOfAddress" 
-          />
         </div>
 
-        {/* Beneficiary Owner & Eligibility Section */}
-        <div className="space-y-6">
-          <FileUploadArea 
-            label="Beneficiary Owner Identity Document" 
-            field="beneficiaryIdentity" 
-          />
-
-          <FileUploadArea 
-            label="Beneficiary Owner Proof Of Address" 
-            field="beneficiaryProofOfAddress" 
-          />
-
+        {/* Operating Address (Optional) */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-medium text-[#0A2A2E]">Operating Address (Optional)</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Left Column */}
+            <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium  text-[#0A2A2E] mb-2">
-              S/SIE Eligibility
+                <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
+                  Street Address
             </label>
-            <select
-              value={formData.soeEligibility}
-              onChange={(e) => handleInputChange("soeEligibility", e.target.value)}
+                <input
+                  type="text"
+                  value={formData.operatingStreetAddress}
+                  onChange={(e) => handleInputChange("operatingStreetAddress", e.target.value)}
               className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            >
-              <option value="Hidden">Hidden</option>
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </select>
+                  placeholder="Flat No"
+                />
           </div>
-
           <div>
-            <label className="block text-sm font-medium  text-[#0A2A2E] mb-2">
-              Is Notary / Wet Signing Of Document At Close Or Conversion Of Share
+                <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
+                  Postal Code
             </label>
-            <select
-              value={formData.notarySigning}
-              onChange={(e) => handleInputChange("notarySigning", e.target.value)}
+                <input
+                  type="text"
+                  value={formData.operatingPostalCode}
+                  onChange={(e) => handleInputChange("operatingPostalCode", e.target.value)}
               className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            >
-              <option value="NO">NO</option>
-              <option value="YES">YES</option>
-            </select>
+                  placeholder="Code"
+                />
           </div>
-
           <div>
-            <label className="block text-sm font-medium  text-[#0A2A2E] mb-2">
-              Will You Required Unlocksley To Sign a Deed Of adherence in Order To Close The Deal
+                <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
+                  State
             </label>
-            <select
-              value={formData.deedOfAdherence}
-              onChange={(e) => handleInputChange("deedOfAdherence", e.target.value)}
+                <input
+                  type="text"
+                  value={formData.operatingState}
+                  onChange={(e) => handleInputChange("operatingState", e.target.value)}
               className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            >
-              <option value="NO">NO</option>
-              <option value="YES">YES</option>
-            </select>
+                  placeholder="Enter State name"
+                />
+              </div>
           </div>
-
+            {/* Right Column */}
+            <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium  text-[#0A2A2E] mb-2">
-              Investee Company Contact Number
+                <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
+                  Area/ landmark
             </label>
             <input
-              type="tel"
-              value={formData.contactNumber}
-              onChange={(e) => handleInputChange("contactNumber", e.target.value)}
+                  type="text"
+                  value={formData.operatingArea}
+                  onChange={(e) => handleInputChange("operatingArea", e.target.value)}
               className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="Enter contact number (e.g., +1234567890)"
+                  placeholder="Enter Area"
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium  text-[#0A2A2E] mb-2">
-              Investee Company Email
+                <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
+                  City
             </label>
             <input
-              type="email"
-              value={formData.contactEmail}
-              onChange={(e) => handleInputChange("contactEmail", e.target.value)}
+                  type="text"
+                  value={formData.operatingCity}
+                  onChange={(e) => handleInputChange("operatingCity", e.target.value)}
               className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="Enter email address (e.g., contact@company.com)"
+                  placeholder="Enter City Name"
             />
           </div>
-
           <div>
-            <label className="flex items-center">
+                <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
+                  Country
+                </label>
               <input
-                type="checkbox"
-                checked={formData.agreeToTerms}
-                onChange={(e) => handleInputChange("agreeToTerms", e.target.checked)}
-                className="mr-3"
-              />
-              <span className="text-gray-700">I Agree To Investee Terms</span>
-            </label>
+                  type="text"
+                  value={formData.operatingCountry}
+                  onChange={(e) => handleInputChange("operatingCountry", e.target.value)}
+                  className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Enter Country name"
+                />
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* Document Upload Sections */}
+        <div className="space-y-6">
+          {/* Company Documents */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-[#0A2A2E]">Company</h2>
+            <FileUploadArea 
+              label="Cert of Incorporation" 
+              field="certOfIncorporation" 
+            />
+            <FileUploadArea 
+              label="Registered address" 
+              field="registeredAddressDoc" 
+            />
+            <FileUploadArea 
+              label="Directors register" 
+              field="directorsRegister" 
+              optional={true}
+            />
+          </div>
+
+          {/* Trust / Foundation Documents */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-[#0A2A2E]">Trust / Foundation</h2>
+            <FileUploadArea 
+              label="Trust deed" 
+              field="trustDeed" 
+            />
+          </div>
+
+          {/* Partnership Documents */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-[#0A2A2E]">Partnership</h2>
+            <FileUploadArea 
+              label="Partnership agreement" 
+              field="partnershipAgreement" 
+            />
+          </div>
+        </div>
+
+        {/* Compliance Text */}
+        <div className="bg-gray-100 border border-gray-200 rounded-lg p-4">
+          <p className="text-sm font-medium text-gray-700 mb-1">Compliance Text:</p>
+          <p className="text-sm text-gray-600">
+            Unlocksley uses regulated KYB/KYC providers to verify your entity and its beneficial owners.
+          </p>
         </div>
       </div>
 
@@ -955,5 +734,3 @@ const KYBVerification = () => {
 };
 
 export default KYBVerification;
-
-

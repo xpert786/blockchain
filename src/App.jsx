@@ -29,6 +29,7 @@ import SyndicateLayout from "./pages/syndicateCreation/SyndicateLayout";
 import LeadInfo from "./pages/syndicateCreation/LeadInfo";
 import EntityProfile from "./pages/syndicateCreation/EntityProfile";
 import KYBVerification from "./pages/syndicateCreation/KYBVerification";
+import BeneficialOwners from "./pages/syndicateCreation/BeneficialOwners";
 import ComplianceAttestation from "./pages/syndicateCreation/ComplianceAttestation";
 import FinalReview from "./pages/syndicateCreation/FinalReview";
 import SyndicateSuccess from "./pages/syndicateCreation/SyndicateSuccess";
@@ -132,6 +133,7 @@ const App = () => {
         <Route path="lead-info" element={<LeadInfo />} />
         <Route path="entity-profile" element={<EntityProfile />} />
         <Route path="kyb-verification" element={<KYBVerification />} />
+        <Route path="beneficial-owners" element={<BeneficialOwners />} />
         <Route path="compliance-attestation" element={<ComplianceAttestation />} />
         <Route path="final-review" element={<FinalReview />} />
       </Route>

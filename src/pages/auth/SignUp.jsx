@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import bgImage from "../../assets/img/bg-images.png";
@@ -22,6 +22,21 @@ const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showRoleSelectModal, setShowRoleSelectModal] = useState(false);
+
+  // Check role on component mount
+  useEffect(() => {
+    const tempUserData = JSON.parse(localStorage.getItem("tempUserData") || "{}");
+    console.log("=== SignUp Component Mounted ===");
+    console.log("tempUserData from localStorage:", tempUserData);
+    console.log("Role in localStorage:", tempUserData.role);
+    
+    if (!tempUserData.role) {
+      console.warn("⚠️ No role found in localStorage on mount. User should have selected role from RoleSelect page.");
+    } else {
+      console.log("✅ Role found on mount:", tempUserData.role);
+    }
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -67,18 +82,28 @@ const SignUp = () => {
       // Get temp user data from localStorage (saved during RoleSelect)
       const tempUserData = JSON.parse(localStorage.getItem("tempUserData") || "{}");
       
+      console.log("=== SignUp Form Submit - Role Check ===");
+      console.log("tempUserData from localStorage:", tempUserData);
+      console.log("Role value:", tempUserData.role);
+      
       // Verify role is present and valid
       if (!tempUserData.role) {
+        console.warn("⚠️ Role is missing from localStorage");
         setError("Role is missing. Please go back and select a role.");
         return;
       }
       
       // Ensure role is in correct format (lowercase: "investor" or "syndicate")
-      const role = tempUserData.role.toLowerCase();
+      const role = String(tempUserData.role).toLowerCase().trim();
+      console.log("Normalized role:", role);
+      
       if (role !== "investor" && role !== "syndicate") {
+        console.warn("⚠️ Invalid role:", role);
         setError(`Invalid role: ${tempUserData.role}. Role must be "investor" or "syndicate".`);
         return;
       }
+      
+      console.log("✅ Role validation passed:", role);
       
       // Complete payload with SignUp data + Password - using correct endpoint format
       const payload = {
@@ -185,17 +210,53 @@ const SignUp = () => {
   // Google OAuth signup handler
   const handleGoogleLogin = async () => {
     setError("");
+    setShowRoleSelectModal(false);
     try {
       setLoading(true);
       
       // Check if role is selected before proceeding (for signup, role should be selected first)
-      const tempUserData = JSON.parse(localStorage.getItem("tempUserData") || "{}");
-      if (!tempUserData.role) {
-        setError("Please select a role first. Redirecting to role selection...");
+      // Try to get role from localStorage - it should be saved from RoleSelect page
+      let tempUserData = {};
+      try {
+        const storedData = localStorage.getItem("tempUserData");
+        console.log("=== Google SignUp - Role Check ===");
+        console.log("Raw localStorage tempUserData:", storedData);
+        
+        if (storedData) {
+          tempUserData = JSON.parse(storedData);
+        }
+      } catch (e) {
+        console.error("Error parsing tempUserData from localStorage:", e);
+        tempUserData = {};
+      }
+      
+      console.log("Parsed tempUserData:", tempUserData);
+      console.log("Role value:", tempUserData.role);
+      console.log("Role type:", typeof tempUserData.role);
+      
+      // Check if role exists and is valid
+      const role = tempUserData?.role;
+      if (!role || (typeof role === "string" && role.trim() === "")) {
+        console.warn("⚠️ Role is missing or empty, showing modal");
+        console.warn("This should not happen if user came from RoleSelect page");
+        console.warn("Please check if RoleSelect.jsx is saving the role correctly");
+        setShowRoleSelectModal(true);
+        setError(""); // Clear inline error for this case
         setLoading(false);
-        setTimeout(() => navigate("/role-select"), 2000);
         return;
       }
+      
+      // Validate role value
+      const normalizedRole = String(role).toLowerCase().trim();
+      if (normalizedRole !== "investor" && normalizedRole !== "syndicate") {
+        console.warn("⚠️ Invalid role value:", normalizedRole);
+        setShowRoleSelectModal(true);
+        setError("");
+        setLoading(false);
+        return;
+      }
+      
+      console.log("✅ Role found and validated:", normalizedRole);
       
       // Google OAuth Client ID from your credentials
       const clientId = "514125135351-t9d89tav43rcqqe90km3i5hb3e60ubav.apps.googleusercontent.com";
@@ -276,13 +337,30 @@ const SignUp = () => {
           const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
           const url = `${API_URL.replace(/\/$/, "")}/auth/google/`;
           
-          // Get role from localStorage (user selected it on role-select page)
-          const role = String(tempUserData.role).toLowerCase();
+          // Get role from localStorage again (user selected it on role-select page)
+          // We validated it exists earlier, but get it fresh here to ensure it's still there
+          let roleToSend = normalizedRole; // Use the validated role from outer scope
+          
+          // Fallback: get from localStorage if normalizedRole is not available
+          if (!roleToSend) {
+            const currentTempData = JSON.parse(localStorage.getItem("tempUserData") || "{}");
+            roleToSend = String(currentTempData.role || "").toLowerCase().trim();
+          }
+          
+          if (!roleToSend || (roleToSend !== "investor" && roleToSend !== "syndicate")) {
+            console.error("❌ Role is missing or invalid when sending to backend:", roleToSend);
+            setError("Role is missing. Please select a role first.");
+            setShowRoleSelectModal(true);
+            setLoading(false);
+            return;
+          }
+          
+          console.log("📤 Sending role to backend:", roleToSend);
           
           // Prepare payload as per your curl example
           const payload = {
             access_token: accessToken,
-            role: role
+            role: roleToSend
           };
           
           console.log("📤 Sending to backend:", url);
@@ -328,7 +406,36 @@ const SignUp = () => {
         } catch (err) {
           console.error("Backend API error:", err);
           const backend = err.response?.data;
-          setError(backend ? (typeof backend === "object" ? JSON.stringify(backend) : String(backend)) : err.message || "Google signup failed");
+          
+          // Check if error is about missing role (user hasn't selected role yet)
+          // Handle multiple error formats:
+          // 1. {"success":false,"detail":{"id_token":["This field is required."]}}
+          // 2. {"success":false,"detail":"Role is required for signup. Provide \"investor\" or \"syndicate\"."}
+          const detail = backend?.detail;
+          const detailString = typeof detail === "string" ? detail : JSON.stringify(detail || {});
+          
+          const isMissingRoleError = 
+            backend?.detail?.id_token || // Old format: id_token field error
+            (typeof detail === "string" && (
+              detail.toLowerCase().includes("role is required") ||
+              detail.toLowerCase().includes("provide \"investor\" or \"syndicate\"") ||
+              detail.toLowerCase().includes("role is required for signup")
+            )) || // New format: role required message
+            (typeof backend === "object" && backend.detail && 
+              (detailString.includes("id_token") || 
+               detailString.includes("This field is required") ||
+               detailString.includes("Role is required")));
+          
+          console.log("Error check - isMissingRoleError:", isMissingRoleError);
+          console.log("Backend error detail:", detail);
+          
+          if (isMissingRoleError) {
+            setShowRoleSelectModal(true);
+            setError(""); // Clear inline error for this case
+          } else {
+            setError(backend ? (typeof backend === "object" ? JSON.stringify(backend) : String(backend)) : err.message || "Google signup failed");
+            setShowRoleSelectModal(false);
+          }
         } finally {
           setLoading(false);
         }
@@ -552,6 +659,54 @@ const SignUp = () => {
           </div>
         </div>
       </div>
+
+      {/* Role Selection Modal */}
+      {showRoleSelectModal && (
+        <div className="fixed inset-0 bg-transparent backdrop-blur-[3px] bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 md:p-8">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-[#001D21] mb-2">
+                Role Selection Required
+              </h3>
+              <p className="text-sm text-[#0A2A2E] mb-6 font-poppins-custom">
+                You didn't sign in. Please select a role first before signing in with Google.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => {
+                    setShowRoleSelectModal(false);
+                    navigate("/role-select");
+                  }}
+                  className="flex-1 bg-[#0A3A38] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[#00E6B0] transition-colors duration-200"
+                >
+                  Go to Role Selection
+                </button>
+                <button
+                  onClick={() => setShowRoleSelectModal(false)}
+                  className="flex-1 bg-gray-200 text-[#0A2A2E] font-semibold py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

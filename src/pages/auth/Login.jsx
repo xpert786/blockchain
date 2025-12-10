@@ -18,6 +18,7 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showRoleSelectModal, setShowRoleSelectModal] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -56,17 +57,24 @@ const Login = () => {
       console.log("Login successful:", response.data);
       console.log("Full response data:", JSON.stringify(response.data, null, 2));
 
-      // Extract user data
+      // Extract user data - check multiple possible locations for role
       const userInfo = response.data?.user || response.data;
-      const userRole = userInfo?.role;
-      const userId = userInfo?.id || userInfo?.user_id;
-      const username = userInfo?.username;
-      const email = userInfo?.email;
-      const isActive = userInfo?.is_active;
-      const dateJoined = userInfo?.date_joined;
+      // Check for role in tokens object first, then root level, then user object
+      const userRole = response.data?.tokens?.role || response.data?.role || userInfo?.role;
+      const userId = userInfo?.id || userInfo?.user_id || response.data?.user_id;
+      const username = userInfo?.username || response.data?.username;
+      const email = userInfo?.email || response.data?.email;
+      const isActive = userInfo?.is_active || response.data?.is_active;
+      const dateJoined = userInfo?.date_joined || response.data?.date_joined;
 
       console.log("=== Login Role Debug ===");
+      console.log("Full response data:", response.data);
+      console.log("response.data.tokens:", response.data?.tokens);
+      console.log("response.data.tokens.role:", response.data?.tokens?.role);
+      console.log("response.data.role:", response.data?.role);
+      console.log("userInfo.role:", userInfo?.role);
       console.log("Raw role from response:", userRole);
+      console.log("User info:", userInfo);
 
       // Save tokens if returned
       if (response.data?.tokens || response.data?.access) {
@@ -93,80 +101,32 @@ const Login = () => {
       localStorage.setItem("userData", JSON.stringify(userData));
       console.log("User data saved to localStorage:", userData);
 
-      // Navigate based on user role - normalize the role value
+      // Navigate to dashboard based on user role - simple redirect
       const normalizedRole = (userRole || "").toLowerCase().trim();
+      console.log("=== Navigation Decision ===");
+      console.log("User role:", userRole);
       console.log("Normalized role (lowercase, trimmed):", normalizedRole);
+      console.log("Is empty?", !normalizedRole || normalizedRole === "");
       
-      // Redirect syndicate users 
-      if (normalizedRole === "syndicate" || normalizedRole === "syndicate_manager" || normalizedRole.includes("syndicate")) {
-        console.log("✅ Redirecting to syndicate creation (LeadInfo)");
-        navigate("/syndicate-creation/lead-info");
+      // Determine target path based on role
+      let targetPath = "/";
+      if (normalizedRole && (normalizedRole === "syndicate" || normalizedRole === "syndicate_manager" || normalizedRole.includes("syndicate"))) {
+        targetPath = "/manager-panel/dashboard";
+        console.log("✅ Redirecting syndicate user to manager panel dashboard");
       } else if (normalizedRole === "investor") {
-        console.log("✅ Investor role detected, checking onboarding status...");
-        
-        // Check investor profile to see if all onboarding steps are completed
-        try {
-          const accessToken = localStorage.getItem("accessToken");
-          if (!accessToken) {
-            console.log("⚠️ No access token found, redirecting to onboarding");
-            navigate("/investor-onboarding/basic-info");
-            return;
-          }
-
-          const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-          const profileUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
-          
-          console.log("Fetching investor profile from:", profileUrl);
-          
-          const profileResponse = await axios.get(profileUrl, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            }
-          });
-
-          // Handle different response formats (single object or result array)
-          let profileData = profileResponse.data?.results?.[0] || 
-                            (profileResponse.data && typeof profileResponse.data === 'object' && !Array.isArray(profileResponse.data) ? profileResponse.data : null) ||
-                            (Array.isArray(profileResponse.data) ? profileResponse.data[0] : null);
-
-          if (profileData) {
-            
-            // Check if all 6 steps are completed
-            const stepsCompleted = [
-              profileData.step1_completed,
-              profileData.step2_completed,
-              profileData.step3_completed,
-              profileData.step4_completed,
-              profileData.step5_completed,
-              profileData.step6_completed
-            ];
-
-            const allStepsCompleted = stepsCompleted.every(step => step === true);
-            
-            console.log("Update: Step completion status:", { allCompleted: allStepsCompleted });
-
-            if (allStepsCompleted) {
-              console.log("✅ All onboarding steps completed, redirecting to dashboard");
-              navigate("/investor-panel/dashboard");
-            } else {
-              console.log("⚠️ Onboarding incomplete, redirecting to onboarding");
-              navigate("/investor-onboarding/basic-info");
-            }
-          } else {
-            console.log("⚠️ No profile data found, redirecting to onboarding");
-            navigate("/investor-onboarding/basic-info");
-          }
-        } catch (profileError) {
-          console.error("Error fetching investor profile, redirecting to onboarding:", profileError);
-          navigate("/investor-onboarding/basic-info");
-        }
+        targetPath = "/investor-panel/dashboard";
+        console.log("✅ Redirecting investor user to dashboard");
       } else {
-        console.log("⚠️ Unknown role, defaulting to home page. Role value:", normalizedRole);
-        // Default fallback
-        navigate("/");
+        console.warn("⚠️ Unknown or missing role, defaulting to home page.");
+        console.warn("Role value:", normalizedRole);
+        console.warn("Full userData:", userData);
+        targetPath = "/";
       }
+      
+      console.log("Target path:", targetPath);
+      
+      // Navigate immediately - same as email/password login
+      navigate(targetPath, { replace: true });
       
     } catch (err) {
       console.error("Login error:", err);
@@ -194,6 +154,7 @@ const Login = () => {
   // Google OAuth login handler
   const handleGoogleLogin = async () => {
     setError("");
+    setShowRoleSelectModal(false);
     try {
       setLoading(true);
       
@@ -293,88 +254,108 @@ const Login = () => {
           console.log("✅ Backend response:", response.data);
           console.log("📋 Full response:", JSON.stringify(response.data, null, 2));
 
-          // Save tokens if returned
+          // Save tokens if returned - EXACT SAME AS EMAIL/PASSWORD LOGIN
           if (response.data?.tokens || response.data?.access) {
-            const access = response.data?.tokens?.access || response.data?.access;
-            const refresh = response.data?.tokens?.refresh || response.data?.refresh;
-            if (access) localStorage.setItem("accessToken", access);
-            if (refresh) localStorage.setItem("refreshToken", refresh);
+            const accessToken = response.data?.tokens?.access || response.data?.access;
+            const refreshToken = response.data?.tokens?.refresh || response.data?.refresh;
+            
+            if (accessToken) {
+              localStorage.setItem("accessToken", accessToken);
+            }
+            if (refreshToken) {
+              localStorage.setItem("refreshToken", refreshToken);
+            }
           }
 
-          // Save user data - get role from backend response
+          // Extract user data - EXACT SAME AS EMAIL/PASSWORD LOGIN
           const userInfo = response.data?.user || response.data;
-          const userRole = userInfo?.role;
-          const userId = userInfo?.id || userInfo?.user_id;
-          const username = userInfo?.username;
-          const email = userInfo?.email;
+          // Check for role in tokens object first, then root level, then user object
+          const userRole = response.data?.tokens?.role || response.data?.role || userInfo?.role;
+          const userId = userInfo?.id || userInfo?.user_id || response.data?.user_id;
+          const username = userInfo?.username || response.data?.username;
+          const email = userInfo?.email || response.data?.email;
+          const isActive = userInfo?.is_active || response.data?.is_active;
+          const dateJoined = userInfo?.date_joined || response.data?.date_joined;
+
+          console.log("=== Google Login Role Debug ===");
+          console.log("Full response data:", response.data);
+          console.log("response.data.tokens:", response.data?.tokens);
+          console.log("response.data.tokens.role:", response.data?.tokens?.role);
+          console.log("response.data.role:", response.data?.role);
+          console.log("userInfo.role:", userInfo?.role);
+          console.log("Raw role from response:", userRole);
+          console.log("User info:", userInfo);
           
-          console.log("📋 User role from backend:", userRole);
-          console.log("📋 User info:", userInfo);
-          
+          // Save user data - EXACT SAME AS EMAIL/PASSWORD LOGIN
           const userData = {
             user_id: userId,
             username: username,
             email: email,
-            role: userRole
+            role: userRole,
+            is_active: isActive,
+            date_joined: dateJoined,
           };
           localStorage.setItem("userData", JSON.stringify(userData));
-          console.log("✅ Saved userData to localStorage:", userData);
+          console.log("User data saved to localStorage:", userData);
 
-          // Navigate based on role from backend (same logic as regular login)
+          // Navigate to dashboard - EXACT SAME LOGIC AS EMAIL/PASSWORD LOGIN
           const normalizedRole = (userRole || "").toLowerCase().trim();
-          console.log("📋 Normalized role:", normalizedRole);
+          console.log("=== Navigation Decision ===");
+          console.log("User role:", userRole);
+          console.log("Normalized role (lowercase, trimmed):", normalizedRole);
+          console.log("Is empty?", !normalizedRole || normalizedRole === "");
           
-          if (normalizedRole === "syndicate" || normalizedRole.includes("syndicate")) {
-            console.log("✅ Redirecting syndicate user to syndicate creation");
-            navigate("/syndicate-creation/lead-info");
+          // Simple dashboard redirect based on role
+          if (normalizedRole && (normalizedRole === "syndicate" || normalizedRole === "syndicate_manager" || normalizedRole.includes("syndicate"))) {
+            console.log("✅ Redirecting syndicate user to manager panel dashboard");
+            setLoading(false); // Stop loading before navigation
+            navigate("/manager-panel/dashboard", { replace: true });
           } else if (normalizedRole === "investor") {
-            console.log("✅ Investor role detected, checking onboarding status...");
-            // Check if onboarding is complete
-            try {
-              const accessToken = localStorage.getItem("accessToken");
-              if (accessToken) {
-                const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-                const profileUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
-                const profileResponse = await axios.get(profileUrl, {
-                  headers: { 'Authorization': `Bearer ${accessToken}` }
-                });
-                
-                const profileData = profileResponse.data?.results?.[0] || profileResponse.data;
-                const allStepsCompleted = profileData && [
-                  profileData.step1_completed,
-                  profileData.step2_completed,
-                  profileData.step3_completed,
-                  profileData.step4_completed,
-                  profileData.step5_completed,
-                  profileData.step6_completed
-                ].every(step => step === true);
-                
-                if (allStepsCompleted) {
-                  console.log("✅ All onboarding steps completed, redirecting to dashboard");
-                  navigate("/investor-panel/dashboard");
-                } else {
-                  console.log("⚠️ Onboarding incomplete, redirecting to onboarding");
-                  navigate("/investor-onboarding/basic-info");
-                }
-              } else {
-                console.log("⚠️ No access token, redirecting to onboarding");
-                navigate("/investor-onboarding/basic-info");
-              }
-            } catch (err) {
-              console.error("Error checking onboarding status:", err);
-              navigate("/investor-onboarding/basic-info");
-            }
+            console.log("✅ Redirecting investor user to dashboard");
+            setLoading(false); // Stop loading before navigation
+            navigate("/investor-panel/dashboard", { replace: true });
           } else {
-            console.warn("⚠️ Unknown role, defaulting to home. Role value:", normalizedRole);
-            navigate("/");
+            console.warn("⚠️ Unknown or missing role, defaulting to home page.");
+            console.warn("Role value:", normalizedRole);
+            console.warn("Full userData:", userData);
+            setLoading(false); // Stop loading before navigation
+            navigate("/", { replace: true });
           }
 
         } catch (err) {
           console.error("Backend API error:", err);
           const backend = err.response?.data;
-          setError(backend ? (typeof backend === "object" ? JSON.stringify(backend) : String(backend)) : err.message || "Google login failed");
-        } finally {
-          setLoading(false);
+          
+          // Check if error is about missing role (user hasn't selected role yet)
+          // Handle multiple error formats:
+          // 1. {"success":false,"detail":{"id_token":["This field is required."]}}
+          // 2. {"success":false,"detail":"Role is required for signup. Provide \"investor\" or \"syndicate\"."}
+          const detail = backend?.detail;
+          const detailString = typeof detail === "string" ? detail : JSON.stringify(detail || {});
+          
+          const isMissingRoleError = 
+            backend?.detail?.id_token || // Old format: id_token field error
+            (typeof detail === "string" && (
+              detail.toLowerCase().includes("role is required") ||
+              detail.toLowerCase().includes("provide \"investor\" or \"syndicate\"") ||
+              detail.toLowerCase().includes("role is required for signup")
+            )) || // New format: role required message
+            (typeof backend === "object" && backend.detail && 
+              (detailString.includes("id_token") || 
+               detailString.includes("This field is required") ||
+               detailString.includes("Role is required")));
+          
+          console.log("Error check - isMissingRoleError:", isMissingRoleError);
+          console.log("Backend error detail:", detail);
+          
+          if (isMissingRoleError) {
+            setShowRoleSelectModal(true);
+            setError(""); // Clear inline error for this case
+          } else {
+            setError(backend ? (typeof backend === "object" ? JSON.stringify(backend) : String(backend)) : err.message || "Google login failed");
+            setShowRoleSelectModal(false);
+            setLoading(false);
+          }
         }
       };
 
@@ -436,7 +417,11 @@ const Login = () => {
               <p className="text-[#0A2A2E] font-poppins-custom">Sign in to your account to continue</p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {error && <div className="text-red-500 text-sm bg-red-50 p-2 rounded-lg border border-red-200">{error}</div>}
+              {error && (
+                <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg border border-red-200">
+                  <p>{error}</p>
+                </div>
+              )}
               
               {/* Email */}
               <div>
@@ -587,6 +572,54 @@ const Login = () => {
           </div>
         </div>
       </div>
+
+      {/* Role Selection Modal */}
+      {showRoleSelectModal && (
+        <div className="fixed inset-0 bg-transparent backdrop-blur-[3px] bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 md:p-8">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-[#001D21] mb-2">
+                Role Selection Required
+              </h3>
+              <p className="text-sm text-[#0A2A2E] mb-6 font-poppins-custom">
+                You didn't sign in. Please select a role first before signing in with Google.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => {
+                    setShowRoleSelectModal(false);
+                    navigate("/role-select");
+                  }}
+                  className="flex-1 bg-[#0A3A38] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[#00E6B0] transition-colors duration-200"
+                >
+                  sign in
+                </button>
+                <button
+                  onClick={() => setShowRoleSelectModal(false)}
+                  className="flex-1 bg-gray-200 text-[#0A2A2E] font-semibold py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
 
   );

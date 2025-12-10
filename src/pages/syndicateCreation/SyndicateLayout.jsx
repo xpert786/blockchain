@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 import unlockLogo from "../../assets/img/unlocklogo.png";
 
 const SyndicateLayout = () => {
   const [activeStep, setActiveStep] = useState("lead-info");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [entityType, setEntityType] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -103,13 +105,96 @@ const SyndicateLayout = () => {
     verifySyndicateUser();
   }, [navigate]);
 
-  const steps = [
+  // Fetch entity type from step3a to determine if Beneficial Owners step should be shown
+  useEffect(() => {
+    const fetchEntityType = async () => {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          return;
+        }
+
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const step3aUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step3a/`;
+
+        const response = await axios.get(step3aUrl, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+
+        console.log("=== Fetching Entity Type for Sidebar ===");
+        console.log("Step3a response:", response.data);
+
+        if (response.data && response.status === 200) {
+          const data = response.data;
+          const nestedData = data.data || {};
+          const stepData = data.step_data || {};
+          const profile = data.profile || {};
+          
+          // Get entity type from various possible locations
+          const entityTypeValue = nestedData.entity_type || 
+                                 stepData.entity_type || 
+                                 profile.entity_type || 
+                                 data.entity_type;
+          
+          if (entityTypeValue) {
+            const normalizedType = String(entityTypeValue).toLowerCase().trim();
+            setEntityType(normalizedType);
+            console.log("✅ Entity type fetched and normalized:", normalizedType);
+            console.log("✅ Will hide beneficial-owners:", normalizedType === "individual");
+          } else {
+            console.log("⚠️ No entity type found in response");
+          }
+        }
+      } catch (err) {
+        // If 404 or error, entity type not set yet - that's fine
+        if (err.response?.status === 404) {
+          console.log("No step3a data found yet - beneficial owners will show by default");
+        } else {
+          console.error("Error fetching entity type:", err);
+        }
+      }
+    };
+
+    fetchEntityType();
+    
+    // Also listen for location changes to refetch when navigating to/from kyb-verification
+    const interval = setInterval(() => {
+      if (location.pathname.includes('kyb-verification')) {
+        fetchEntityType();
+      }
+    }, 2000); // Check every 2 seconds when on kyb-verification page
+
+    return () => clearInterval(interval);
+  }, [location.pathname]);
+
+  // Define all steps
+  const allSteps = [
     { id: "lead-info", name: "Lead Info", path: "/syndicate-creation/lead-info" },
     { id: "entity-profile", name: "Syndicate Profile", path: "/syndicate-creation/entity-profile" },
     { id: "kyb-verification", name: "KYB Verification", path: "/syndicate-creation/kyb-verification" },
+    { id: "beneficial-owners", name: "Beneficial Owners (UBOs)", path: "/syndicate-creation/beneficial-owners" },
     { id: "compliance-attestation", name: "Compliance & Attestation", path: "/syndicate-creation/compliance-attestation" },
     { id: "final-review", name: "Final Review & Submit", path: "/syndicate-creation/final-review" }
   ];
+
+  // Filter steps: hide beneficial-owners if entity type is "individual"
+  const steps = allSteps.filter(step => {
+    if (step.id === "beneficial-owners") {
+      // Only show if entity type is NOT "individual"
+      // If entityType is null (not fetched yet), show it by default
+      if (entityType === null) {
+        return true; // Show by default until we know the entity type
+      }
+      const isIndividual = entityType === "individual";
+      console.log("🔍 Filtering beneficial-owners step. Entity type:", entityType, "Is Individual:", isIndividual, "Will show:", !isIndividual);
+      return !isIndividual;
+    }
+    return true;
+  });
 
   const handleLogout = () => {
     ["accessToken", "refreshToken", "userData", "tempUserData"].forEach((key) => localStorage.removeItem(key));
@@ -150,7 +235,7 @@ const SyndicateLayout = () => {
       setMenuOpen(false);
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [location.pathname]);
+  }, [location.pathname, steps]);
 
   const handleStepClick = (step) => {
     setActiveStep(step.id);

@@ -13,7 +13,6 @@ const ComplianceAttestation = () => {
   const [additionalPoliciesUrl, setAdditionalPoliciesUrl] = useState(null); // Store file URL from API
   const [formData, setFormData] = useState({
     regulatoryCompliance: false,
-    antiMoneyLaundering: false,
     dataProtection: false,
     termsAndConditions: false,
     privacyPolicy: false,
@@ -98,28 +97,28 @@ const ComplianceAttestation = () => {
             console.log("✅ step_data:", stepData);
             console.log("✅ profile:", profile);
             
-            // Get compliance data from step_data or profile
-            const riskRegulatoryAttestation = stepData.risk_regulatory_attestation || 
+            // Get compliance data from step_data, profile, or root level
+            const nestedData = responseData.data || {};
+            const riskRegulatoryAttestation = nestedData.risk_regulatory_attestation || 
+                                             stepData.risk_regulatory_attestation || 
                                              profile.risk_regulatory_attestation || 
+                                             responseData.risk_regulatory_attestation || 
                                              false;
-            const jurisdictionalComplianceAcknowledged = stepData.jurisdictional_compliance_acknowledged || 
-                                                         profile.jurisdictional_compliance_acknowledged || 
-                                                         false;
-            const additionalPoliciesPath = stepData.additional_compliance_policies || 
-                                          profile.additional_compliance_policies;
+            const additionalPoliciesPath = nestedData.additional_compliance_policies || 
+                                          stepData.additional_compliance_policies || 
+                                          profile.additional_compliance_policies ||
+                                          responseData.additional_compliance_policies;
             
             console.log("✅ Risk Regulatory Attestation:", riskRegulatoryAttestation);
-            console.log("✅ Jurisdictional Compliance Acknowledged:", jurisdictionalComplianceAcknowledged);
             console.log("✅ Additional Policies Path:", additionalPoliciesPath);
             
             // Check if we have any data
-            if (riskRegulatoryAttestation || jurisdictionalComplianceAcknowledged || additionalPoliciesPath) {
+            if (riskRegulatoryAttestation || additionalPoliciesPath) {
               setHasExistingData(true);
               
               // Populate form with existing data
               setFormData({
                 regulatoryCompliance: riskRegulatoryAttestation || false,
-                antiMoneyLaundering: jurisdictionalComplianceAcknowledged || false,
                 dataProtection: false,
                 termsAndConditions: false,
                 privacyPolicy: false,
@@ -179,31 +178,6 @@ const ComplianceAttestation = () => {
         throw new Error("Please acknowledge the Risk & Regulatory Attestation.");
       }
 
-      if (!formData.antiMoneyLaundering) {
-        throw new Error("Please acknowledge the jurisdictional compliance requirements.");
-      }
-
-      // Create FormData for file uploads
-      const formDataToSend = new FormData();
-
-      // Add required fields - convert boolean to string "true"/"false"
-      formDataToSend.append("risk_regulatory_attestation", formData.regulatoryCompliance ? "true" : "false");
-      formDataToSend.append("jurisdictional_compliance_acknowledged", formData.antiMoneyLaundering ? "true" : "false");
-
-      // Handle additional policies file
-      // For PATCH: If no new file, don't send file field (keeps existing file)
-      // For POST: Send file if exists, otherwise don't send (optional field)
-      if (additionalPolicies) {
-        formDataToSend.append("additional_compliance_policies", additionalPolicies);
-        console.log("Additional policies file will be uploaded:", additionalPolicies.name);
-      } else if (!hasExistingData) {
-        // For new data, file is optional - don't send if not provided
-        console.log("No additional policies file for new data");
-      } else {
-        // For existing data, don't send file field (keeps existing file)
-        console.log("No new additional policies file, keeping existing file");
-      }
-
       // Get API URL
       const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
       const finalUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step3/`;
@@ -219,29 +193,40 @@ const ComplianceAttestation = () => {
       });
 
       let response;
-      
-      // Use PATCH if data exists, POST if it's new
-      if (hasExistingData) {
-        console.log("🔄 Updating existing data with PATCH");
+
+      // If there's a file to upload, use FormData; otherwise use JSON
+      if (additionalPolicies) {
+        // Use FormData for file uploads
+        const formDataToSend = new FormData();
+        formDataToSend.append("risk_regulatory_attestation", formData.regulatoryCompliance);
+        formDataToSend.append("additional_compliance_policies", additionalPolicies);
+        
+        console.log("🔄 Sending with FormData (file included)");
         response = await axios.patch(finalUrl, formDataToSend, {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Accept': 'application/json'
           }
         });
-        console.log("Compliance attestation updated successfully:", response.data);
       } else {
-        console.log("➕ Creating new data with POST");
-        response = await axios.post(finalUrl, formDataToSend, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json'
-        }
-      });
-        console.log("Compliance attestation created successfully:", response.data);
-        // Mark that data now exists for future updates
-        setHasExistingData(true);
+        // Use JSON format (as shown in curl command)
+        const requestData = {
+          risk_regulatory_attestation: formData.regulatoryCompliance
+        };
+        
+        console.log("🔄 Sending with JSON (no file)");
+        response = await axios.patch(finalUrl, requestData, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
       }
+      
+      console.log("Compliance attestation saved successfully:", response.data);
+      // Mark that data now exists for future updates
+      setHasExistingData(true);
 
       // Navigate to next step on success
       navigate("/syndicate-creation/final-review");
@@ -286,30 +271,7 @@ const ComplianceAttestation = () => {
 
       {/* Form Fields */}
       <div className="space-y-8">
-        {/* Risk & Regulatory Attestation */}
-        <div>
-          <label className="flex items-start gap-3">
-            <input
-              type="checkbox"
-              checked={formData.regulatoryCompliance}
-              onChange={(e) => handleInputChange("regulatoryCompliance", e.target.checked)}
-              className="mt-1"
-            />
-            <span className="font-medium text-gray-800">Risk & Regulatory Attestation</span>
-          </label>
-          
-          <div className="mt-4 p-4 bg-[#F9F8FF] rounded-lg">
-            <p className="text-gray-700 mb-3">I acknowledge and understand that:</p>
-            <ul className="text-gray-700 space-y-1 text-sm">
-              <li>• Leading syndicates involves significant regulatory responsibilities.</li>
-              <li>• I must comply with all applicable securities laws and regulations.</li>
-              <li>• I am responsible for ensuring all investors meet accreditation requirements.</li>
-              <li>• I understand the risks associated with private investment activities.</li>
-              <li>• I will maintain proper records and documentation as required by law.</li>
-              <li>• I may be subject to regulatory examination and enforcement actions.</li>
-            </ul>
-          </div>
-        </div>
+      
 
         {/* Risk & Regulatory Attestation Warning */}
         <div>
@@ -334,13 +296,14 @@ const ComplianceAttestation = () => {
           <label className="flex items-start gap-3 mt-4">
             <input
               type="checkbox"
-              checked={formData.antiMoneyLaundering}
-              onChange={(e) => handleInputChange("antiMoneyLaundering", e.target.checked)}
+              checked={formData.regulatoryCompliance}
+              onChange={(e) => handleInputChange("regulatoryCompliance", e.target.checked)}
               className="mt-1"
             />
-            <span className="text-gray-700">I acknowledge and agree to comply with all jurisdictional requirements listed above.</span>
+            <span className="text-gray-700">I acknowledge and agree to comply with all risk and regulatory requirements listed above.</span>
           </label>
         </div>
+
 
         {/* Additional Policies (Optional) */}
         <div>
@@ -348,7 +311,7 @@ const ComplianceAttestation = () => {
           <p className="text-gray-600 mb-4">Upload any additional compliance policies, procedures, or documentation you'd like to include.</p>
           
           <label htmlFor="additionalPolicies" className="cursor-pointer">
-            <div className="border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg p-8 text-center hover:bg-[#F0F2F1] transition-colors">
+            <div className="border bordaper-[#0A2A2E] bg-[#F4F6F5] rounded-lg p-8 text-center hover:bg-[#F0F2F1] transition-colors">
               <input
                 type="file"
                 accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
@@ -401,6 +364,21 @@ const ComplianceAttestation = () => {
             <p className="text-xs text-gray-500 mt-2">Current file loaded from server</p>
           )}
         </div>
+        
+        <div className="p-4 bg-[#FDECEC] !border border-red-200 rounded-lg flex flex-row gap-5 items-center">
+        <div>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18.1083 14.9999L11.4417 3.3332C11.2963 3.0767 11.0855 2.86335 10.8308 2.71492C10.576 2.56649 10.2865 2.48828 9.99167 2.48828C9.69685 2.48828 9.4073 2.56649 9.15257 2.71492C8.89783 2.86335 8.68703 3.0767 8.54167 3.3332L1.875 14.9999C1.72807 15.2543 1.65103 15.5431 1.65168 15.837C1.65233 16.1308 1.73065 16.4192 1.87871 16.673C2.02676 16.9269 2.23929 17.137 2.49475 17.2822C2.7502 17.4274 3.03951 17.5025 3.33334 17.4999H16.6667C16.9591 17.4996 17.2463 17.4223 17.4994 17.2759C17.7525 17.1295 17.9627 16.9191 18.1088 16.6658C18.2548 16.4125 18.3317 16.1252 18.3316 15.8328C18.3316 15.5404 18.2545 15.2531 18.1083 14.9999Z" stroke="#ED1C24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 7.5V10.8333" stroke="#ED1C24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 14.167H10.01" stroke="#ED1C24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+        <h3 className="font-medium text-gray-800 ">Compliance</h3>
+           <p className="text-[#748A91] mb-3 text-sm font-thin">KYB verification is still pending. You can continue, but KYB must be approved before publishing SPVs or accepting LP capital.</p>
+          </div>
+        </div>
+           
       </div>
 
       {/* Navigation Buttons */}
@@ -416,7 +394,7 @@ const ComplianceAttestation = () => {
         </button>
         <button
           onClick={handleNext}
-          disabled={loading || !formData.regulatoryCompliance || !formData.antiMoneyLaundering}
+          disabled={loading || !formData.regulatoryCompliance}
           className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? "Submitting..." : "Next"}
