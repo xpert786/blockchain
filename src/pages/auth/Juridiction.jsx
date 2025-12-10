@@ -152,7 +152,7 @@ const Juridiction = () => {
         }
       }
 
-      const url = `${API_URL.replace(/\/$/, "")}/investors/profiles/${currentProfileId}/accreditation_check/`;
+      const url = `${API_URL.replace(/\/$/, "")}/profiles/${currentProfileId}/accreditation_check/`;
       console.log("📋 Submitting accreditation check to:", url);
       console.log("📋 Profile ID:", currentProfileId);
 
