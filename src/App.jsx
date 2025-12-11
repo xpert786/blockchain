@@ -73,6 +73,7 @@ import Wishlist from "./pages/investerPanel/dashbaord/wishlist";
 import Portfolio from "./pages/investerPanel/dashbaord/Portfolio";
 import TaxDocuments from "./pages/investerPanel/dashbaord/TaxDocuments";
 import TaxDocumentDetail from "./pages/investerPanel/dashbaord/TaxDocumentDetail";
+import InvestmentDetail from "./pages/investerPanel/dashbaord/InvestmentDetail";
 import Messages from "./pages/investerPanel/dashbaord/messages";
 import InvestorSettings from "./pages/investerPanel/dashbaord/InvestorSettings";
 import BasicInfo from "./pages/investerPanel/investerOnboarding/BasicInfo";
@@ -202,6 +203,7 @@ const App = () => {
         <Route path="invites" element={<Invites />} />
         <Route path="top-syndicates" element={<TopSyndicates />} />
         <Route path="wishlist" element={<Wishlist />} />
+        <Route path="portfolio/investment/:investmentId" element={<InvestmentDetail />} />
         <Route path="portfolio" element={<Portfolio />} />
         <Route path="tax-documents/:documentId" element={<TaxDocumentDetail />} />
         <Route path="tax-documents" element={<TaxDocuments />} />

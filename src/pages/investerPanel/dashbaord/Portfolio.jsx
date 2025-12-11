@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 import logoImage from "../../../assets/img/logo.png";
 import profileImage from "../../../assets/img/profile.png";
 import {HomeIcon,InvitesIcon,PortfolioIcon,TaxesIcon,MessagesIcon,SettingsIcon, GrowthIcon, AlertsIcon } from "./icon.jsx";
@@ -32,6 +33,22 @@ const Portfolio = () => {
   const [chartFilter, setChartFilter] = useState("round"); // "round" or "sector"
   const [showChartDropdown, setShowChartDropdown] = useState(false);
   const chartDropdownRef = useRef(null);
+  const [portfolioOverview, setPortfolioOverview] = useState({
+    total_portfolio_value_formatted: "$0",
+    growth_percentage: 0.0,
+    total_invested_formatted: "$0",
+    total_gains_formatted: "$0",
+    active_investments: 0,
+    pending_investments: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [performanceData, setPerformanceData] = useState([]);
+  const [performanceLoading, setPerformanceLoading] = useState(true);
+  const [roundData, setRoundData] = useState([]);
+  const [sectorData, setSectorData] = useState([]);
+  const [pieChartLoading, setPieChartLoading] = useState(true);
+  const [investments, setInvestments] = useState([]);
+  const [investmentsLoading, setInvestmentsLoading] = useState(true);
 
   useEffect(() => {
     const path = location.pathname;
@@ -57,6 +74,229 @@ const Portfolio = () => {
     }
   }, [location.pathname]);
 
+  // Fetch portfolio overview data
+  useEffect(() => {
+    const fetchPortfolioOverview = async () => {
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const accessToken = localStorage.getItem("accessToken");
+        
+        if (!accessToken) {
+          console.error("No access token found");
+          setLoading(false);
+          return;
+        }
+
+        const response = await axios.get(
+          `${API_URL.replace(/\/$/, "")}/portfolio/overview/`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data && response.data.success) {
+          setPortfolioOverview({
+            total_portfolio_value_formatted: response.data.total_portfolio_value_formatted || "$0",
+            growth_percentage: response.data.growth_percentage || 0.0,
+            total_invested_formatted: response.data.total_invested_formatted || "$0",
+            total_gains_formatted: response.data.total_gains_formatted || "$0",
+            active_investments: response.data.active_investments || 0,
+            pending_investments: response.data.pending_investments || 0,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching portfolio overview:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPortfolioOverview();
+  }, []);
+
+  // Fetch portfolio performance data
+  useEffect(() => {
+    const fetchPortfolioPerformance = async () => {
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const accessToken = localStorage.getItem("accessToken");
+        
+        if (!accessToken) {
+          console.error("No access token found");
+          setPerformanceLoading(false);
+          return;
+        }
+
+        const response = await axios.get(
+          `${API_URL.replace(/\/$/, "")}/portfolio/performance/`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data && response.data.success && response.data.data) {
+          // Transform API data to chart format
+          const transformedData = response.data.data.map((item) => {
+            const date = new Date(item.date);
+            const month = date.toLocaleDateString('en-US', { month: 'short' });
+            const year = date.getFullYear().toString().slice(-2);
+            const monthFormatted = `${month} '${year}`;
+            
+            return {
+              month: monthFormatted,
+              invested: item.total_invested / 1000, // Convert to thousands
+              invested90: item.current_value / 1000, // Convert to thousands
+            };
+          });
+          
+          setPerformanceData(transformedData);
+        }
+      } catch (error) {
+        console.error("Error fetching portfolio performance:", error);
+      } finally {
+        setPerformanceLoading(false);
+      }
+    };
+
+    fetchPortfolioPerformance();
+  }, []);
+
+  // Fetch portfolio by round and by sector data
+  useEffect(() => {
+    const fetchPieChartData = async () => {
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const accessToken = localStorage.getItem("accessToken");
+        
+        if (!accessToken) {
+          console.error("No access token found");
+          setPieChartLoading(false);
+          return;
+        }
+
+        // Color palette for pie chart segments
+        const colors = ["#00F0C3", "#9889FF", "#22C55E", "#FFD700", "#FF6B6B", "#4ECDC4", "#95E1D3", "#F38181"];
+
+        // Fetch by round data
+        const roundResponse = await axios.get(
+          `${API_URL.replace(/\/$/, "")}/portfolio/by-round/`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        // Fetch by sector data
+        const sectorResponse = await axios.get(
+          `${API_URL.replace(/\/$/, "")}/portfolio/by-sector/`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        // Transform round data
+        if (roundResponse.data && roundResponse.data.success && roundResponse.data.data) {
+          const transformedRoundData = roundResponse.data.data
+            .filter(item => (item.amount || item.value || item.total_invested || 0) > 0) // Filter out zero values
+            .map((item, index) => ({
+              name: item.round || item.round_name || item.name || `Round ${index + 1}`,
+              value: item.amount || item.value || item.total_invested || 0,
+              color: colors[index % colors.length],
+            }));
+          setRoundData(transformedRoundData);
+        }
+
+        // Transform sector data
+        if (sectorResponse.data && sectorResponse.data.success && sectorResponse.data.data) {
+          const transformedSectorData = sectorResponse.data.data
+            .filter(item => (item.amount || item.value || item.total_invested || 0) > 0) // Filter out zero values
+            .map((item, index) => ({
+              name: item.sector || item.sector_name || item.name || `Sector ${index + 1}`,
+              value: item.amount || item.value || item.total_invested || 0,
+              color: colors[index % colors.length],
+            }));
+          setSectorData(transformedSectorData);
+        }
+      } catch (error) {
+        console.error("Error fetching pie chart data:", error);
+      } finally {
+        setPieChartLoading(false);
+      }
+    };
+
+    fetchPieChartData();
+  }, []);
+
+  // Fetch portfolio investments
+  useEffect(() => {
+    const fetchInvestments = async () => {
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const accessToken = localStorage.getItem("accessToken");
+        
+        if (!accessToken) {
+          console.error("No access token found");
+          setInvestmentsLoading(false);
+          return;
+        }
+
+        const response = await axios.get(
+          `${API_URL.replace(/\/$/, "")}/portfolio/investments/`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data && response.data.results) {
+          const transformedInvestments = response.data.results.map((item) => {
+            // Build tags array
+            const tags = [];
+            if (item.sector) {
+              tags.push(item.sector.charAt(0).toUpperCase() + item.sector.slice(1));
+            }
+            if (item.status) {
+              const statusLabel = item.status === "active" ? "Active" : item.status.charAt(0).toUpperCase() + item.status.slice(1);
+              tags.push(statusLabel);
+            }
+
+            return {
+              id: item.id,
+              name: item.spv_display_name || item.spv_company_name || item.syndicate_name || "Investment",
+              updated: item.updated_ago || "Recently",
+              tags: tags.length > 0 ? tags : ["Active"],
+              invested: item.invested_amount_formatted || "$0",
+              currentValue: item.current_value_formatted || "$0",
+              gainLoss: item.gain_loss_formatted || "$0 (0%)",
+              gainLossPositive: (item.gain_loss_percentage || 0) >= 0,
+            };
+          });
+          
+          setInvestments(transformedInvestments);
+        }
+      } catch (error) {
+        console.error("Error fetching investments:", error);
+      } finally {
+        setInvestmentsLoading(false);
+      }
+    };
+
+    fetchInvestments();
+  }, []);
+
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -74,64 +314,12 @@ const Portfolio = () => {
     };
   }, []);
 
-  // Portfolio Performance Data
-  const portfolioData = [
-    { month: "Oct '24", invested: 10, invested90: 0 },
-    { month: "Dec '24", invested: 25, invested90: 2 },
-    { month: "Feb '25", invested: 70, invested90: 15 },
-    { month: "Apr '25", invested: 75, invested90: 18 },
-    { month: "Jun '25", invested: 80, invested90: 20 },
-    { month: "Aug '25", invested: 110, invested90: 35 }
-  ];
+  // Portfolio Performance Data - use API data if available, otherwise use empty array
+  const portfolioData = performanceData.length > 0 ? performanceData : [];
 
-  // Invested by Round Data
-  const roundData = [
-    { name: "Seed", value: 5000, color: "#00F0C3" },
-    { name: "Series B", value: 50000, color: "#9889FF" },
-    { name: "Seed", value: 20000, color: "#FFD700" }
-  ];
-
-  // Invested by Sector Data
-  const sectorData = [
-    { name: "Tech", value: 50000, color: "#00F0C3" },
-    { name: "Fintech", value: 35000, color: "#9889FF" },
-    { name: "Health", value: 15000, color: "#22C55E" },
-    { name: "Consumer", value: 20000, color: "#FFD700" }
-  ];
-
-  // Get current chart data based on filter
+  // Get current chart data based on filter - use API data if available
   const chartData = chartFilter === "round" ? roundData : sectorData;
   const chartTitle = chartFilter === "round" ? "$ Invested by Round" : "$ Invested by Sector";
-
-  const investments = [
-    {
-      name: "TechCorp Series C",
-      updated: "2 days ago",
-      tags: ["Technology", "Active"],
-      invested: "$75,000",
-      currentValue: "$95,000",
-      gainLoss: "$20,000 (+26.7%)",
-      gainLossPositive: true
-    },
-    {
-      name: "GreenEnergy Fund III",
-      updated: "1 week ago",
-      tags: ["Energy", "Active"],
-      invested: "$100,000",
-      currentValue: "$118,000",
-      gainLoss: "$18,000 (+18%)",
-      gainLossPositive: true
-    },
-    {
-      name: "HealthTech Syndicate",
-      updated: "3 days ago",
-      tags: ["Healthcare", "Active"],
-      invested: "$50,000",
-      currentValue: "$47,500",
-      gainLoss: "-$2,500 (-5%)",
-      gainLossPositive: false
-    }
-  ];
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
@@ -183,8 +371,14 @@ const Portfolio = () => {
                 </svg>
             </div>
             <div className="flex flex-row justify-between items-center">
-                <p className="text-xl sm:text-2xl text-[#0A2A2E] font-poppins-custom">$2,847,500</p>
-                <p className="text-xs sm:text-sm text-green-600 font-poppins-custom">+26.6% overall</p>
+                <p className="text-xl sm:text-2xl text-[#0A2A2E] font-poppins-custom">
+                  {loading ? "Loading..." : portfolioOverview.total_portfolio_value_formatted}
+                </p>
+                <p className={`text-xs sm:text-sm font-poppins-custom ${
+                  portfolioOverview.growth_percentage >= 0 ? "text-green-600" : "text-red-600"
+                }`}>
+                  {portfolioOverview.growth_percentage >= 0 ? "+" : ""}{portfolioOverview.growth_percentage.toFixed(1)}% overall
+                </p>
             </div>
           </div>
 
@@ -199,8 +393,14 @@ const Portfolio = () => {
                 </div>
             </div>
             <div className="flex flex-row justify-between items-center">
-                <p className="text-xl sm:text-2xl text-[#0A2A2E] font-poppins-custom">$2,250,000</p>
-                <p className="text-xs sm:text-sm text-green-600 font-poppins-custom">+26.6% overall</p>
+                <p className="text-xl sm:text-2xl text-[#0A2A2E] font-poppins-custom">
+                  {loading ? "Loading..." : portfolioOverview.total_invested_formatted}
+                </p>
+                <p className={`text-xs sm:text-sm font-poppins-custom ${
+                  portfolioOverview.growth_percentage >= 0 ? "text-green-600" : "text-red-600"
+                }`}>
+                  {portfolioOverview.growth_percentage >= 0 ? "+" : ""}{portfolioOverview.growth_percentage.toFixed(1)}% overall
+                </p>
             </div>
           </div>
 
@@ -213,7 +413,9 @@ const Portfolio = () => {
                 </div>
             </div>
             <div className="flex flex-row justify-between items-center">
-                <p className="text-xl sm:text-2xl font-bold text-[#0A2A2E] font-poppins-custom">$597,500</p>
+                <p className="text-xl sm:text-2xl  text-[#0A2A2E] font-poppins-custom">
+                  {loading ? "Loading..." : portfolioOverview.total_gains_formatted}
+                </p>
                 <p className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">Unrealized gains</p>
             </div>
           </div>
@@ -227,8 +429,12 @@ const Portfolio = () => {
             </svg>
             </div>
             <div className="flex flex-row justify-between items-center">
-                <p className="text-xl sm:text-2xl font-bold text-[#0A2A2E] font-poppins-custom">14</p>
-                <p className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">3 pending</p>
+                <p className="text-xl sm:text-2xl text-[#0A2A2E] font-poppins-custom">
+                  {loading ? "Loading..." : portfolioOverview.active_investments}
+                </p>
+                <p className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">
+                  {portfolioOverview.pending_investments} pending
+                </p>
             </div>
           </div>
         </div>
@@ -251,54 +457,63 @@ const Portfolio = () => {
               </div>
             </div>
             <div className="h-64 sm:h-80 mb-6">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={portfolioData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorInvested" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#00F0C3" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#00F0C3" stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="colorInvested90" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#9889FF" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#9889FF" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis 
-                    dataKey="month" 
-                    stroke="#748A91"
-                    style={{ fontSize: '10px', fontFamily: 'Poppins' }}
-                    tick={{ fontSize: 10 }}
-                  />
-                  <YAxis 
-                    stroke="#748A91"
-                    style={{ fontSize: '10px', fontFamily: 'Poppins' }}
-                    tick={{ fontSize: 10 }}
-                    tickFormatter={(value) => `$${value}K`}
-                    domain={[0, 120]}
-                    ticks={[0, 30, 60, 90, 120]}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Area 
-                    type="monotone" 
-                    dataKey="invested" 
-                    stroke="#00F0C3" 
-                    strokeWidth={2}
-                    fill="url(#colorInvested)" 
-                    dot={{ fill: "#00F0C3", r: 3 }}
-                    activeDot={{ r: 5 }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="invested90" 
-                    stroke="#9889FF" 
-                    strokeWidth={2}
-                    fill="url(#colorInvested90)" 
-                    dot={{ fill: "#9889FF", r: 3 }}
-                    activeDot={{ r: 5 }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              {performanceLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-[#748A91] font-poppins-custom">Loading chart data...</p>
+                </div>
+              ) : portfolioData.length === 0 ? (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-[#748A91] font-poppins-custom">No performance data available</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={portfolioData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorInvested" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#00F0C3" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#00F0C3" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorInvested90" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#9889FF" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#9889FF" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis 
+                      dataKey="month" 
+                      stroke="#748A91"
+                      style={{ fontSize: '10px', fontFamily: 'Poppins' }}
+                      tick={{ fontSize: 10 }}
+                    />
+                    <YAxis 
+                      stroke="#748A91"
+                      style={{ fontSize: '10px', fontFamily: 'Poppins' }}
+                      tick={{ fontSize: 10 }}
+                      tickFormatter={(value) => `$${value}K`}
+                      domain={['auto', 'auto']}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area 
+                      type="monotone" 
+                      dataKey="invested" 
+                      stroke="#00F0C3" 
+                      strokeWidth={2}
+                      fill="url(#colorInvested)" 
+                      dot={{ fill: "#00F0C3", r: 3 }}
+                      activeDot={{ r: 5 }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="invested90" 
+                      stroke="#9889FF" 
+                      strokeWidth={2}
+                      fill="url(#colorInvested90)" 
+                      dot={{ fill: "#9889FF", r: 3 }}
+                      activeDot={{ r: 5 }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
 
@@ -347,53 +562,65 @@ const Portfolio = () => {
             </div>
             <div className="flex flex-col items-center justify-center">
               <div className="h-56 sm:h-64 w-full flex items-center justify-center px-2">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={45}
-                      outerRadius={85}
-                      paddingAngle={2}
-                      dataKey="value"
-                      startAngle={90}
-                      endAngle={450}
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value) => `$${value.toLocaleString()}`}
-                      contentStyle={{
-                        backgroundColor: 'white',
-                        border: '1px solid #E5E7EB',
-                        borderRadius: '8px',
-                        fontFamily: 'Poppins',
-                        fontSize: '12px'
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                {pieChartLoading ? (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-[#748A91] font-poppins-custom">Loading chart data...</p>
+                  </div>
+                ) : chartData.length === 0 ? (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-[#748A91] font-poppins-custom">No {chartFilter === "round" ? "round" : "sector"} data available</p>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={chartData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={45}
+                        outerRadius={85}
+                        paddingAngle={2}
+                        dataKey="value"
+                        startAngle={90}
+                        endAngle={450}
+                      >
+                        {chartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value) => `$${value.toLocaleString()}`}
+                        contentStyle={{
+                          backgroundColor: 'white',
+                          border: '1px solid #E5E7EB',
+                          borderRadius: '8px',
+                          fontFamily: 'Poppins',
+                          fontSize: '12px'
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
               </div>
               {/* Legend */}
-              <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-4">
-                {chartData.map((entry, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: entry.color }}
-                      ></div>
-                      <span className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">{entry.name}</span>
+              {!pieChartLoading && chartData.length > 0 && (
+                <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-4">
+                  {chartData.map((entry, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: entry.color }}
+                        ></div>
+                        <span className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">{entry.name}</span>
+                      </div>
+                      <span className="text-xs sm:text-sm font-semibold text-[#0A2A2E] font-poppins-custom">
+                        ${entry.value.toLocaleString()}
+                      </span>
                     </div>
-                    <span className="text-xs sm:text-sm font-semibold text-[#0A2A2E] font-poppins-custom">
-                      ${entry.value.toLocaleString()}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -410,8 +637,17 @@ const Portfolio = () => {
           </div>
 
           {/* Investment Cards */}
-          <div className="space-y-4">
-            {investments.map((investment, index) => (
+          {investmentsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="text-[#748A91] font-poppins-custom">Loading investments...</p>
+            </div>
+          ) : investments.length === 0 ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="text-[#748A91] font-poppins-custom">No investments found</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {investments.map((investment, index) => (
               <div key={index} className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
                   <div className="flex-1">
@@ -466,14 +702,17 @@ const Portfolio = () => {
                   </div>
                 </div>
 
-                <button className="w-full sm:w-auto px-4 py-2 bg-[#F4F6F5] text-[#0A2A2E] rounded-lg hover:bg-gray-50 transition-colors font-medium font-poppins-custom text-sm"
-                style={{border: "0.5px solid #01373D"}}
+                <button 
+                  onClick={() => navigate(`/investor-panel/portfolio/investment/${investment.id}`)}
+                  className="w-full sm:w-auto px-4 py-2 bg-[#F4F6F5] text-[#0A2A2E] rounded-lg hover:bg-gray-50 transition-colors font-medium font-poppins-custom text-sm"
+                  style={{border: "0.5px solid #01373D"}}
                 >
                   View Details
                 </button>
               </div>
             ))}
-          </div>
+            </div>
+          )}
         </div>
       </main>
     </div>
@@ -481,4 +720,3 @@ const Portfolio = () => {
 };
 
 export default Portfolio;
-

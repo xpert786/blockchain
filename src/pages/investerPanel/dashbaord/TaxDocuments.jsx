@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 import logoImage from "../../../assets/img/logo.png";
 import profileImage from "../../../assets/img/profile.png";
 import {
@@ -74,6 +75,19 @@ const TaxDocuments = () => {
   const [activeDocumentCategory, setActiveDocumentCategory] = useState("all");
   const [documentStatusFilter, setDocumentStatusFilter] = useState("all");
   const [documentSearchTerm, setDocumentSearchTerm] = useState("");
+  const [taxOverview, setTaxOverview] = useState({
+    total_income_formatted: "$0",
+    total_income_label: "From Investments",
+    total_deductions_formatted: "$0",
+    total_deductions_label: "Investment Expenses",
+    net_taxable_income_formatted: "$0",
+    net_taxable_income_label: "After Deductions",
+    estimated_tax_formatted: "$0",
+    estimated_tax_label: "Approximate Liability"
+  });
+  const [taxOverviewLoading, setTaxOverviewLoading] = useState(true);
+  const [taxDocuments, setTaxDocuments] = useState([]);
+  const [taxDocumentsLoading, setTaxDocumentsLoading] = useState(true);
 
   const filteredDocuments = useMemo(() => {
     const searchTerm = documentSearchTerm.trim().toLowerCase();
@@ -106,6 +120,88 @@ const TaxDocuments = () => {
     }
   }, [location.pathname]);
 
+  // Fetch tax overview data
+  useEffect(() => {
+    const fetchTaxOverview = async () => {
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const accessToken = localStorage.getItem("accessToken");
+        
+        if (!accessToken) {
+          console.error("No access token found");
+          setTaxOverviewLoading(false);
+          return;
+        }
+
+        const currentYear = new Date().getFullYear();
+        const response = await axios.get(
+          `${API_URL.replace(/\/$/, "")}/tax/overview/?year=${currentYear}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data && response.data.success) {
+          setTaxOverview({
+            total_income_formatted: response.data.total_income_formatted || "$0",
+            total_income_label: response.data.total_income_label || "From Investments",
+            total_deductions_formatted: response.data.total_deductions_formatted || "$0",
+            total_deductions_label: response.data.total_deductions_label || "Investment Expenses",
+            net_taxable_income_formatted: response.data.net_taxable_income_formatted || "$0",
+            net_taxable_income_label: response.data.net_taxable_income_label || "After Deductions",
+            estimated_tax_formatted: response.data.estimated_tax_formatted || "$0",
+            estimated_tax_label: response.data.estimated_tax_label || "Approximate Liability"
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching tax overview:", error);
+      } finally {
+        setTaxOverviewLoading(false);
+      }
+    };
+
+    fetchTaxOverview();
+  }, []);
+
+  // Fetch tax documents
+  useEffect(() => {
+    const fetchTaxDocuments = async () => {
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const accessToken = localStorage.getItem("accessToken");
+        
+        if (!accessToken) {
+          console.error("No access token found");
+          setTaxDocumentsLoading(false);
+          return;
+        }
+
+        const response = await axios.get(
+          `${API_URL.replace(/\/$/, "")}/tax/documents/`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data && response.data.results) {
+          setTaxDocuments(response.data.results);
+        }
+      } catch (error) {
+        console.error("Error fetching tax documents:", error);
+      } finally {
+        setTaxDocumentsLoading(false);
+      }
+    };
+
+    fetchTaxDocuments();
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (investDropdownRef.current && !investDropdownRef.current.contains(event.target)) {
@@ -121,6 +217,20 @@ const TaxDocuments = () => {
 
   const handleDocumentClick = (document) => {
     navigate(`/investor-panel/tax-documents/${document.id}`, { state: { document } });
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    } catch (e) {
+      return dateString;
+    }
   };
 
   const renderBreakdownCard = (data) => (
@@ -174,25 +284,81 @@ const TaxDocuments = () => {
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                {taxSummaryCards.map((card) => (
-                  <div
-                    key={card.id}
-                    className="rounded-2xl p-5"
-                    style={{ backgroundColor: card.background, border: card.border }}
-                  >
-                    <div className="flex flex-row items-center justify-between gap-2">
-                      <p className="text-sm text-[#374151] font-poppins-custom mb-2">{card.title}</p>
-                      <DocumentCardIcon />
-                    </div>
-
-                    <div className="flex flex-row items-center justify-between gap-2">
-                      <p className="text-2xl font-medium font-poppins-custom text-[#0A2A2E]">{card.value}</p>
-                      <p className="text-xs text-[#748A91] font-poppins-custom mt-1" style={{ color: card.captionColor }}>
-                        {card.caption}
-                      </p>
-                    </div>
+                {/* Total Income Card */}
+                <div
+                  className="rounded-2xl p-5"
+                  style={{ backgroundColor: "#CAE6FF", border: "0.5px solid #AED9FF" }}
+                >
+                  <div className="flex flex-row items-center justify-between gap-2">
+                    <p className="text-sm text-[#374151] font-poppins-custom mb-2">Total Income</p>
+                    <DocumentCardIcon />
                   </div>
-                ))}
+                  <div className="flex flex-row items-center justify-between gap-2">
+                    <p className="text-2xl font-medium font-poppins-custom text-[#0A2A2E]">
+                      {taxOverviewLoading ? "Loading..." : taxOverview.total_income_formatted}
+                    </p>
+                    <p className="text-xs text-[#748A91] font-poppins-custom mt-1" style={{ color: "#22C55E" }}>
+                      {taxOverview.total_income_label}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Total Deductions Card */}
+                <div
+                  className="rounded-2xl p-5"
+                  style={{ backgroundColor: "#D7F8F0", border: "0.5px solid #AEFFEB" }}
+                >
+                  <div className="flex flex-row items-center justify-between gap-2">
+                    <p className="text-sm text-[#374151] font-poppins-custom mb-2">Total Deductions</p>
+                    <DocumentCardIcon />
+                  </div>
+                  <div className="flex flex-row items-center justify-between gap-2">
+                    <p className="text-2xl font-medium font-poppins-custom text-[#0A2A2E]">
+                      {taxOverviewLoading ? "Loading..." : taxOverview.total_deductions_formatted}
+                    </p>
+                    <p className="text-xs text-[#748A91] font-poppins-custom mt-1" style={{ color: "#001D21" }}>
+                      {taxOverview.total_deductions_label}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Net Taxable Income Card */}
+                <div
+                  className="rounded-2xl p-5"
+                  style={{ backgroundColor: "#E2E2FB", border: "0.5px solid #CFCFFF" }}
+                >
+                  <div className="flex flex-row items-center justify-between gap-2">
+                    <p className="text-sm text-[#374151] font-poppins-custom mb-2">Net Taxable Income</p>
+                    <DocumentCardIcon />
+                  </div>
+                  <div className="flex flex-row items-center justify-between gap-2">
+                    <p className="text-2xl font-medium font-poppins-custom text-[#0A2A2E]">
+                      {taxOverviewLoading ? "Loading..." : taxOverview.net_taxable_income_formatted}
+                    </p>
+                    <p className="text-xs text-[#748A91] font-poppins-custom mt-1" style={{ color: "#001D21" }}>
+                      {taxOverview.net_taxable_income_label}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Estimated Tax Card */}
+                <div
+                  className="rounded-2xl p-5"
+                  style={{ backgroundColor: "#FFEFE8", border: "0.5px solid #FFDFD0" }}
+                >
+                  <div className="flex flex-row items-center justify-between gap-2">
+                    <p className="text-sm text-[#374151] font-poppins-custom mb-2">Estimated Tax</p>
+                    <DocumentCardIcon />
+                  </div>
+                  <div className="flex flex-row items-center justify-between gap-2">
+                    <p className="text-2xl font-medium font-poppins-custom text-[#0A2A2E]">
+                      {taxOverviewLoading ? "Loading..." : taxOverview.estimated_tax_formatted}
+                    </p>
+                    <p className="text-xs text-[#748A91] font-poppins-custom mt-1" style={{ color: "#001D21" }}>
+                      {taxOverview.estimated_tax_label}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -217,65 +383,87 @@ const TaxDocuments = () => {
               ) : activeCenterTab === "Tax Document" ? (
                 <>
                   <div>
-                    <h2 className="text-xl font-medium text-[#0A2A2E] font-poppins-custom">Your Investments</h2>
-                    <p className="text-sm text-[#748A91] font-poppins-custom">Detailed view of your portfolio holdings</p>
+                    <h2 className="text-xl font-medium text-[#0A2A2E] font-poppins-custom">Tax Documents</h2>
+                    <p className="text-sm text-[#748A91] font-poppins-custom">Your tax documents and reports</p>
                   </div>
 
-                  <div className="space-y-4">
-                    {taxDocumentsList.map((document) => (
-                      <div
-                        key={document.id}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => handleDocumentClick(document)}
-                        onKeyPress={(event) => {
-                          if (event.key === "Enter" || event.key === " ") {
-                            handleDocumentClick(document);
-                          }
-                        }}
-                        className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-[#E5E7EB] rounded-2xl px-6 py-5 hover:border-[#00F0C3] hover:shadow-sm transition-all cursor-pointer"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="mt-1">
-                            {document.status === "Pending" ? <TaxDocumentsPendingIcon /> : <TaxDocumentsTickIcon />}
+                  {taxDocumentsLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <p className="text-[#748A91] font-poppins-custom">Loading tax documents...</p>
+                    </div>
+                  ) : taxDocuments.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-[#E5E7EB] bg-[#F9FAFB] px-6 py-10 text-center">
+                      <p className="text-sm font-poppins-custom text-[#748A91]">No tax documents available.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {taxDocuments.map((document) => (
+                        <div
+                          key={document.id}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => handleDocumentClick(document)}
+                          onKeyPress={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              handleDocumentClick(document);
+                            }
+                          }}
+                          className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-[#E5E7EB] rounded-2xl px-6 py-5 hover:border-[#00F0C3] hover:shadow-sm transition-all cursor-pointer"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="mt-1">
+                              {document.status === "pending" || document.status_display === "Pending" ? (
+                                <TaxDocumentsPendingIcon />
+                              ) : (
+                                <TaxDocumentsTickIcon />
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-base font-medium text-[#0A2A2E] font-poppins-custom">
+                                {document.document_name || document.document_type_display || "Tax Document"}
+                              </p>
+                              <p className="text-xs text-[#10B981] font-medium font-poppins-custom mt-1">
+                                Tax Year {document.tax_year}
+                              </p>
+                              {document.investment_name && (
+                                <p className="text-xs text-[#748A91] font-poppins-custom mt-1">
+                                  {document.investment_name}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-base font-medium text-[#0A2A2E] font-poppins-custom">
-                              {document.documentTitle}
-                            </p>
-                            <p className="text-xs text-[#10B981] font-medium font-poppins-custom mt-1">{document.taxYear}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4 text-sm font-poppins-custom">
-                          <div className="text-right text-[#4B5563]">
-                            <p>{document.issueDate}</p>
-                            <p className="text-xs text-[#9CA3AF]">{document.size}</p>
-                          </div>
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              document.status === "Available"
-                                ? "bg-[#22C55E] text-white"
-                                : "bg-[#F9F8FF] text-black border border-[#748A91]"
-                            }`}
-                          >
-                            {document.status}
-                          </span>
-                          {document.status !== "Pending" && (
-                            <button
-                              className="flex items-center gap-2 px-4 py-2 bg-[#F9F8FF] text-[#001D21] rounded-xl text-sm font-medium font-poppins-custom hover:bg-[#00D9B0] transition-colors border border-[#748A91]"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                handleDocumentClick(document);
-                              }}
+                          <div className="flex items-center gap-4 text-sm font-poppins-custom">
+                            <div className="text-right text-[#4B5563]">
+                              <p>{formatDate(document.issue_date)}</p>
+                              <p className="text-xs text-[#9CA3AF]">{document.file_size_display || "N/A"}</p>
+                            </div>
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                document.status === "available" || document.status_display === "Available"
+                                  ? "bg-[#22C55E] text-white"
+                                  : "bg-[#F9F8FF] text-black border border-[#748A91]"
+                              }`}
                             >
-                              <TaxDocumentsDownloadIcon />
-                              Download
-                            </button>
-                          )}
+                              {document.status_display || document.status}
+                            </span>
+                            {(document.status !== "pending" && document.status_display !== "Pending" && document.download_url) && (
+                              <a
+                                href={document.download_url}
+                                download
+                                className="flex items-center gap-2 px-4 py-2 bg-[#F9F8FF] text-[#001D21] rounded-xl text-sm font-medium font-poppins-custom hover:bg-[#00D9B0] transition-colors border border-[#748A91]"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                }}
+                              >
+                                <TaxDocumentsDownloadIcon />
+                                Download
+                              </a>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="grid gap-4 md:grid-cols-2">
