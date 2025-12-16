@@ -1,202 +1,435 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { FilesaddIcon, BlackfileIcon } from "../../components/Icons";
 
 const GenerateDocument = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const template = location.state?.template;
-
+  
+  // State for templates fetched from API
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [formData, setFormData] = useState({
-    investorName: "",
-    spvName: "",
-    investmentAmount: "",
-    shares: "",
-    percentage: "",
-    digitalSignature: false
+    defaultFeeRate: "",
+    defaultClosePeriodDays: "",
+    legalEntityName: ""
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [templatesLoading, setTemplatesLoading] = useState(true);
+  const [templatesError, setTemplatesError] = useState("");
+
+  // Fetch templates from API
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      setTemplatesLoading(true);
+      setTemplatesError("");
+
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          setTemplatesError("Authentication required. Please log in again.");
+          setTemplatesLoading(false);
+          return;
+        }
+
+        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const apiEndpoint = `${API_URL.replace(/\/$/, "")}/document-templates/`;
+
+        const response = await axios.get(apiEndpoint, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json'
+          },
+          withCredentials: true
+        });
+
+        console.log("Templates API response:", response.data);
+
+        // Map API response to component format
+        const mappedTemplates = (response.data?.results || []).map(template => ({
+          id: template.id,
+          name: template.name,
+          description: template.description,
+          version: template.version ? `v${template.version}` : "v1.0",
+          type: template.category ? template.category.charAt(0).toUpperCase() + template.category.slice(1) : "Legal",
+          category: template.category,
+          configurableFields: template.configurable_fields || [],
+          enableDigitalSignature: template.enable_digital_signature || false,
+          isActive: template.is_active !== false,
+          apiData: template // Store full API data for reference
+        }));
+
+        // Filter only active templates
+        const activeTemplates = mappedTemplates.filter(t => t.isActive);
+        setTemplates(activeTemplates);
+
+        // Set first template as default if available
+        if (activeTemplates.length > 0 && !selectedTemplate) {
+          setSelectedTemplate(activeTemplates[0]);
+          // Set default values from template configurable fields
+          const defaultValues = {};
+          activeTemplates[0].configurableFields.forEach(field => {
+            if (field.default_value !== undefined && field.default_value !== "") {
+              if (field.name === "default_fee_rate") {
+                defaultValues.defaultFeeRate = field.default_value;
+              } else if (field.name === "default_close_period_days") {
+                defaultValues.defaultClosePeriodDays = field.default_value.toString();
+              } else if (field.name === "legal_entity_name") {
+                defaultValues.legalEntityName = field.default_value;
+              }
+            }
+          });
+          if (Object.keys(defaultValues).length > 0) {
+            setFormData(prev => ({ ...prev, ...defaultValues }));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching templates:', error);
+        
+        if (error.response) {
+          const errorData = error.response.data;
+          const errorMessage = errorData?.detail || errorData?.error || errorData?.message || 
+                             (typeof errorData === 'string' ? errorData : 'Failed to load templates');
+          setTemplatesError(errorMessage);
+        } else if (error.request) {
+          setTemplatesError("Network error. Please check your connection and try again.");
+        } else {
+          setTemplatesError(error.message || "An unexpected error occurred. Please try again.");
+        }
+      } finally {
+        setTemplatesLoading(false);
+      }
+    };
+
+    fetchTemplates();
+  }, []); // Empty dependency array - only run on mount
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: value
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Document generated with data:', formData);
-    // Handle document generation here
-    navigate('/manager-panel/generated-documents');
+  const handleTemplateSelect = (template) => {
+    setSelectedTemplate(template);
+    // Reset form data when template changes
+    setFormData({
+      defaultFeeRate: "",
+      defaultClosePeriodDays: "",
+      legalEntityName: ""
+    });
+    
+    // Set default values from template configurable fields
+    const defaultValues = {};
+    template.configurableFields?.forEach(field => {
+      if (field.default_value !== undefined && field.default_value !== "") {
+        if (field.name === "default_fee_rate") {
+          defaultValues.defaultFeeRate = field.default_value;
+        } else if (field.name === "default_close_period_days") {
+          defaultValues.defaultClosePeriodDays = field.default_value.toString();
+        } else if (field.name === "legal_entity_name") {
+          defaultValues.legalEntityName = field.default_value;
+        }
+      }
+    });
+    if (Object.keys(defaultValues).length > 0) {
+      setFormData(prev => ({ ...prev, ...defaultValues }));
+    }
   };
 
-  if (!template) {
-    return (
-      <div className="min-h-screen bg-[#F4F6F5] flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">No Template Selected</h2>
-          <p className="text-gray-600 mb-6">Please select a template to generate a document.</p>
-          <button
-            onClick={() => navigate('/manager-panel/documents')}
-            className="bg-[#00F0C3] hover:bg-[#00D4A3] text-black px-6 py-3 rounded-lg font-medium transition-colors"
-          >
-            Go Back to Templates
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const handleGenerateDocument = async () => {
+    if (!selectedTemplate) {
+      setError("Please select a template");
+      return;
+    }
+
+    // Validate required field
+    if (!formData.defaultClosePeriodDays) {
+      setError("Please enter Default Close Period Days");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      // Get access token from localStorage
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        setError("Authentication required. Please log in again.");
+        setLoading(false);
+        return;
+      }
+
+      // Get API URL from environment or use default
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const apiEndpoint = `${API_URL.replace(/\/$/, "")}/documents/generate-from-template/`;
+
+      // Prepare field_data object
+      const fieldData = {
+        default_close_period_days: formData.defaultClosePeriodDays,
+        legal_entity_name: formData.legalEntityName || "",
+      };
+
+      // Add default_fee_rate if provided
+      if (formData.defaultFeeRate) {
+        fieldData.default_fee_rate = formData.defaultFeeRate;
+      }
+
+      // Prepare request payload
+      const payload = {
+        template_id: selectedTemplate.id,
+        field_data: fieldData
+      };
+
+      console.log("Sending API request:", payload);
+
+      // Make API call
+      const response = await axios.post(apiEndpoint, payload, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json'
+        },
+        withCredentials: true // Include cookies (csrftoken, sessionid)
+      });
+
+      console.log("API response:", response.data);
+
+      // Create document object from API response or use form data
+      const newDocument = {
+        id: response.data?.id || response.data?.document_id || Date.now(),
+        templateName: selectedTemplate.name,
+        templateId: selectedTemplate.id,
+        templateVersion: selectedTemplate.version,
+        templateType: selectedTemplate.type,
+        documentId: response.data?.document_id || response.data?.id || `DOC-${Date.now()}`,
+        defaultFeeRate: formData.defaultFeeRate || "",
+        defaultClosePeriodDays: formData.defaultClosePeriodDays,
+        legalEntityName: formData.legalEntityName || "",
+        status: response.data?.status || "Draft",
+        createdAt: response.data?.created_at || new Date().toISOString(),
+        apiResponse: response.data // Store full API response for reference
+      };
+
+      // Save to localStorage as backup
+      try {
+        const existing = localStorage.getItem('generatedDocuments');
+        const documents = existing ? JSON.parse(existing) : [];
+        documents.unshift(newDocument);
+        localStorage.setItem('generatedDocuments', JSON.stringify(documents));
+        
+        // Dispatch event to notify other components
+        window.dispatchEvent(new Event('generatedDocumentsUpdated'));
+      } catch (storageError) {
+        console.warn('Error saving to localStorage:', storageError);
+        // Continue even if localStorage fails
+      }
+
+      // Navigate back to document template engine with generated tab active
+      navigate('/manager-panel/document-template-engine?tab=generated');
+    } catch (error) {
+      console.error('Error generating document:', error);
+      
+      // Handle error response
+      if (error.response) {
+        const errorData = error.response.data;
+        const errorMessage = errorData?.detail || errorData?.error || errorData?.message || 
+                           (typeof errorData === 'string' ? errorData : 'Failed to generate document');
+        setError(errorMessage);
+      } else if (error.request) {
+        setError("Network error. Please check your connection and try again.");
+      } else {
+        setError(error.message || "An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
-    <div className="min-h-screen bg-[#F4F6F5] p-6">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center space-x-4 mb-4">
-          <button
-            onClick={() => navigate('/manager-panel/documents')}
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <h1 className="text-3xl font-bold text-gray-900">Generate Document</h1>
-        </div>
-        <p className="text-lg text-gray-600">Fill in the required information to generate your document</p>
-      </div>
-
-      {/* Template Info */}
-      <div className="bg-white rounded-lg p-6 mb-6">
-        <div className="flex items-start space-x-4">
-          <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </div>
+    <div className="min-h-screen bg-[#F4F6F5] px-4 py-6 sm:px-6 lg:px-0 lg:mt-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        {/* Left Panel - Select Template */}
+        <div className="bg-white rounded-lg p-4 sm:p-6 space-y-4">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">{template.name}</h2>
-            <p className="text-gray-600 mb-3">{template.description}</p>
-            <div className="flex items-center space-x-2">
-              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                {template.version}
-              </span>
-              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                {template.type}
-              </span>
-            </div>
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Select Template</h2>
+            <p className="text-sm sm:text-base text-gray-600">Choose a document template to generate</p>
           </div>
+          
+          {/* Templates Loading State */}
+          {templatesLoading && (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#00F0C3] mb-4"></div>
+                <p className="text-sm text-gray-600">Loading templates...</p>
+              </div>
+            </div>
+          )}
+
+          {/* Templates Error State */}
+          {!templatesLoading && templatesError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {templatesError}
+            </div>
+          )}
+
+          {/* Templates List */}
+          {!templatesLoading && !templatesError && (
+            <div className="space-y-3 sm:space-y-4">
+              {templates.length === 0 ? (
+                <div className="bg-[#F9F8FF] rounded-lg p-6 flex flex-col items-center justify-center">
+                  <div className="w-12 h-12 text-[#00F0C3] flex items-center justify-center">
+                    <FilesaddIcon />
+                  </div>
+                  <p className="text-sm font-medium text-gray-600 mt-4 text-center">No templates available</p>
+                </div>
+              ) : (
+                templates.map((template) => (
+                  <div
+                    key={template.id}
+                    onClick={() => handleTemplateSelect(template)}
+                    className={`p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                      selectedTemplate?.id === template.id
+                        ? "!border border-[#01373D] bg-[#E2E2FB]"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <div className="w-10 h-10 bg-green-100 rounded flex items-center justify-center flex-shrink-0">
+                        <FilesaddIcon />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-base sm:text-lg font-medium text-gray-900">{template.name}</h3>
+                        <p className="text-xs sm:text-sm text-gray-600 mb-3">{template.description}</p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {template.version && (
+                            <span className={`px-3 py-1 rounded-full !border border-[#01373D] text-xs font-medium ${
+                              selectedTemplate?.id === template.id
+                                ? "bg-[#FFFFFF] text-[#01373D]"
+                                : "bg-[#FFFFFF] text-gray-700"
+                            }`}>
+                              {template.version}
+                            </span>
+                          )}
+                          {template.type && (
+                            <span className={`px-3 py-1 rounded-full !border border-[#01373D] text-xs font-medium ${
+                              template.type === "Legal" 
+                                ? "bg-white text-[#01373D] !border border-[#01373D]" 
+                                : template.type === "Compliance"
+                                ? "bg-white text-[#01373D] border !border border-[#01373D]"
+                                : "bg-white text-[#01373D] border !border border-[#01373D]"
+                            }`}>
+                              {template.type}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* Form */}
-      <div className="bg-white rounded-lg p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Right Panel - Syndicate Document Defaults */}
+        <div className="bg-white rounded-lg p-4 sm:p-6 space-y-4">
+          <div className="flex items-start justify-between">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Investor Name *
-              </label>
-              <input
-                type="text"
-                name="investorName"
-                value={formData.investorName}
-                onChange={handleInputChange}
-                placeholder="Enter Investor name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
-                required
-              />
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Syndicate Document Defaults</h2>
+              <p className="text-sm sm:text-base text-gray-600">Select a template to see required fields</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                SPV Name *
-              </label>
-              <input
-                type="text"
-                name="spvName"
-                value={formData.spvName}
-                onChange={handleInputChange}
-                placeholder="Enter SPV name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Investment Amount *
-              </label>
-              <input
-                type="text"
-                name="investmentAmount"
-                value={formData.investmentAmount}
-                onChange={handleInputChange}
-                placeholder="Enter Investment amount"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Shares *
-              </label>
-              <input
-                type="text"
-                name="shares"
-                value={formData.shares}
-                onChange={handleInputChange}
-                placeholder="Enter shares"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Percentage *
-              </label>
-              <input
-                type="text"
-                name="percentage"
-                value={formData.percentage}
-                onChange={handleInputChange}
-                placeholder="Enter percentage"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
-                required
-              />
-            </div>
+          
           </div>
+          
+          {selectedTemplate ? (
+            <div className="space-y-6">
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="digitalSignature"
-              name="digitalSignature"
-              checked={formData.digitalSignature}
-              onChange={handleInputChange}
-              className="h-4 w-4 text-[#00F0C3] focus:ring-[#00F0C3] border-gray-300 rounded"
-            />
-            <label htmlFor="digitalSignature" className="ml-2 text-sm text-gray-700">
-              Enable digital signature workflow
-            </label>
-          </div>
-
-          <div className="flex items-center space-x-4 pt-6">
-            <button
-              type="submit"
-              className="bg-[#00F0C3] hover:bg-[#00D4A3] text-black px-8 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <span>Generate Document</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/manager-panel/documents')}
-              className="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Default Fee Rate
+                  </label>
+                  <input
+                    type="text"
+                    name="defaultFeeRate"
+                    value={formData.defaultFeeRate}
+                    onChange={handleInputChange}
+                    placeholder="Enter value, e.g. 2.00%"
+                    className="w-full px-3 py-2 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
+                    disabled={loading}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Default Close Period Days *
+                  </label>
+                  <input
+                    type="text"
+                    name="defaultClosePeriodDays"
+                    value={formData.defaultClosePeriodDays}
+                    onChange={handleInputChange}
+                    placeholder="Enter value, e.g. 30"
+                    className="w-full px-3 py-2 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Legal Entity Name
+                  </label>
+                  <input
+                    type="text"
+                    name="legalEntityName"
+                    value={formData.legalEntityName}
+                    onChange={handleInputChange}
+                    placeholder="Enter Entity Name...."
+                    className="w-full px-3 py-2 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+              
+              <button
+                onClick={handleGenerateDocument}
+                disabled={loading}
+                className="w-full bg-[#00F0C3] hover:bg-[#00D4A3] disabled:bg-gray-400 disabled:cursor-not-allowed text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
+                    <span>Generating...</span>
+                  </>
+                ) : (
+                  <>
+                    <BlackfileIcon />
+                    <span>Generate Document</span>
+                  </>
+                )}
+              </button>
+            </div>
+          ) : (
+            <div className="bg-[#F9F8FF] rounded-lg p-6 flex flex-col items-center justify-center h-64 sm:h-[500px]">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 text-[#00F0C3] flex items-center justify-center">
+                <FilesaddIcon />
+              </div>
+              <p className="text-sm sm:text-lg font-medium text-gray-600 mt-4 text-center">Select A Template To Begin</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
