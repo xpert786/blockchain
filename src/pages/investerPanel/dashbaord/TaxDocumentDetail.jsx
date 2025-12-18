@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { loadStripe } from "@stripe/stripe-js";
 import logoImage from "../../../assets/img/logo.png";
 import profileImage from "../../../assets/img/profile.png";
 import {
@@ -51,6 +52,20 @@ const TaxDocumentDetail = () => {
   const [teamData, setTeamData] = useState(null);
   const [isLoadingTeam, setIsLoadingTeam] = useState(false);
   const [teamError, setTeamError] = useState(null);
+  const [isInvesting, setIsInvesting] = useState(false);
+  const [investmentError, setInvestmentError] = useState(null);
+  const [investmentSuccess, setInvestmentSuccess] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [clientSecret, setClientSecret] = useState(null);
+  const [stripeInstance, setStripeInstance] = useState(null);
+  const [elementsInstance, setElementsInstance] = useState(null);
+  const [paymentElement, setPaymentElement] = useState(null);
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+  const [investmentStatus, setInvestmentStatus] = useState(null);
+  const [isLoadingStatus, setIsLoadingStatus] = useState(false);
 
   const documentFromState = location.state?.document;
   
@@ -106,12 +121,57 @@ const TaxDocumentDetail = () => {
     window.scrollTo(0, 0);
   }, [documentId]);
 
+  // Fetch investment status
+  const fetchInvestmentStatus = async () => {
+    if (!documentId) return;
+    
+    setIsLoadingStatus(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        setIsLoadingStatus(false);
+        return;
+      }
+
+      const spvId = parseInt(documentId);
+      if (isNaN(spvId)) {
+        setIsLoadingStatus(false);
+        return;
+      }
+
+      const response = await fetch(`${API_URL.replace(/\/$/, "")}/invest/check-status/${spvId}/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Investment status response:", data);
+        setInvestmentStatus(data);
+      } else {
+        console.warn("Failed to fetch investment status:", response.status);
+        setInvestmentStatus(null);
+      }
+    } catch (err) {
+      console.error("Error fetching investment status:", err);
+      setInvestmentStatus(null);
+    } finally {
+      setIsLoadingStatus(false);
+    }
+  };
+
   // Fetch investment opportunity data from API
   useEffect(() => {
     if (documentId) {
       fetchInvestmentOpportunity();
       fetchFinancials();
       fetchTeam();
+      fetchInvestmentStatus();
     }
   }, [documentId]);
 
@@ -232,6 +292,296 @@ const TaxDocumentDetail = () => {
     }
   };
 
+  const handleInvestNow = async () => {
+    setIsInvesting(true);
+    setInvestmentError(null);
+    setInvestmentSuccess(false);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      // Parse investment amount - remove commas and convert to number
+      const amountString = investmentAmount.replace(/,/g, '');
+      const amount = parseFloat(amountString);
+
+      if (isNaN(amount) || amount <= 0) {
+        throw new Error("Please enter a valid investment amount.");
+      }
+
+      // Validate min/max investment if available
+      if (opportunityData?.details?.min_investment && amount < opportunityData.details.min_investment) {
+        throw new Error(`Minimum investment amount is $${opportunityData.details.min_investment.toLocaleString()}`);
+      }
+
+      if (opportunityData?.details?.max_investment && amount > opportunityData.details.max_investment) {
+        throw new Error(`Maximum investment amount is $${opportunityData.details.max_investment.toLocaleString()}`);
+      }
+
+      // Use documentId as spv_id
+      const spvId = parseInt(documentId);
+      if (isNaN(spvId)) {
+        throw new Error("Invalid investment opportunity ID.");
+      }
+
+      const response = await fetch(`${API_URL.replace(/\/$/, "")}/invest/initiate/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          spv_id: spvId,
+          amount: amount
+        }),
+      });
+
+      // Parse response regardless of status
+      let responseData;
+      try {
+        responseData = await response.json();
+      } catch {
+        try {
+          const errorText = await response.text();
+          responseData = { message: errorText };
+        } catch {
+          responseData = { message: `Failed to initiate investment. Status: ${response.status}` };
+        }
+      }
+
+      // Check for "Investment request already send." message in response
+      const responseMessage = responseData.message || responseData.error || responseData.msg || responseData.detail || "";
+      const messageLower = responseMessage.toLowerCase();
+      
+      // Check if message contains "investment request already send" or similar
+      if (messageLower.includes("investment request already send") || 
+          messageLower.includes("investment request already sent") ||
+          messageLower.includes("already send") ||
+          messageLower.includes("already sent")) {
+        setInvestmentError("Investment request already send.");
+        return;
+      }
+
+      if (response.ok) {
+        console.log("Investment initiated successfully:", responseData);
+        setInvestmentSuccess(true);
+        // Refresh investment status after creating investment
+        await fetchInvestmentStatus();
+        // Optionally navigate or show success message
+        alert("Request sent successfully!");
+      } else {
+        const errorMessage = responseMessage || `Failed to initiate investment. Status: ${response.status}`;
+        throw new Error(errorMessage);
+      }
+    } catch (err) {
+      console.error("Error initiating investment:", err);
+      setInvestmentError(err.message || "Failed to initiate investment. Please try again.");
+    } finally {
+      setIsInvesting(false);
+    }
+  };
+
+  const handleCommitPayment = async () => {
+    setIsProcessingPayment(true);
+    setPaymentError(null);
+    setPaymentSuccess(false);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error("No access token found. Please login again.");
+      }
+
+      // Step 1: Fetch my investments to get the investment ID
+      const spvId = parseInt(documentId);
+      if (isNaN(spvId)) {
+        throw new Error("Invalid investment opportunity ID.");
+      }
+
+      console.log("Fetching my investments for SPV:", spvId);
+      const investmentsResponse = await fetch(`${API_URL.replace(/\/$/, "")}/invest/my-investments/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!investmentsResponse.ok) {
+        throw new Error("Failed to fetch your investments. Please try again.");
+      }
+
+      const investmentsData = await investmentsResponse.json();
+      console.log("My investments response:", investmentsData);
+
+      // Extract investments array
+      const investments = investmentsData.investments || investmentsData.results || investmentsData.data || [];
+      
+      // Find investment matching current SPV
+      const matchingInvestment = investments.find(inv => 
+        inv.spv_id === spvId || 
+        inv.spv?.id === spvId || 
+        inv.spv === spvId
+      );
+
+      if (!matchingInvestment) {
+        throw new Error("No approved investment found for this SPV. Please ensure your investment request has been approved.");
+      }
+
+      const investmentId = matchingInvestment.id;
+      console.log("Found investment ID:", investmentId);
+
+      // Step 2: Create payment intent with the investment ID
+      console.log("Creating payment intent for investment:", investmentId);
+      const paymentResponse = await fetch(`${API_URL.replace(/\/$/, "")}/payments/create_payment_for_investment/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          investment_id: investmentId
+        }),
+      });
+
+      // Parse response
+      let paymentData;
+      try {
+        paymentData = await paymentResponse.json();
+      } catch {
+        try {
+          const errorText = await paymentResponse.text();
+          paymentData = { message: errorText };
+        } catch {
+          paymentData = { message: `Failed to create payment. Status: ${paymentResponse.status}` };
+        }
+      }
+
+      if (paymentResponse.ok) {
+        console.log("Payment intent created successfully:", paymentData);
+        
+        // If client_secret is returned, initialize Stripe Elements
+        if (paymentData.client_secret) {
+          console.log("Client secret received:", paymentData.client_secret);
+          
+          // Get Stripe publishable key from env or use default
+          const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "pk_test_51SeVq7FyAsgGnfxjkQ4iOx4wjenlMJaT1jHyBC2NxJIcoEJayvJiDugzLKEWJiYEUAVYY5ymAr3shqxRlwvKxqEU00uYsWVart";
+          
+          try {
+            // Load Stripe
+            const stripe = await loadStripe(stripePublishableKey);
+            
+            if (!stripe) {
+              throw new Error("Failed to load Stripe. Please refresh the page and try again.");
+            }
+
+            // Initialize Stripe Elements with client_secret
+            const elements = stripe.elements({ 
+              clientSecret: paymentData.client_secret 
+            });
+
+            // Create Payment Element
+            const paymentElement = elements.create('payment');
+            
+            // Store instances
+            setStripeInstance(stripe);
+            setElementsInstance(elements);
+            setPaymentElement(paymentElement);
+            setClientSecret(paymentData.client_secret);
+            
+            // Show payment modal (useEffect will handle mounting)
+            setShowPaymentModal(true);
+            setIsProcessingPayment(false);
+            
+          } catch (stripeError) {
+            console.error("Error initializing Stripe:", stripeError);
+            throw new Error(stripeError.message || "Failed to initialize payment. Please try again.");
+          }
+        } else {
+          setPaymentSuccess(true);
+          alert("Payment intent created successfully!");
+        }
+      } else {
+        const errorMessage = paymentData.message || paymentData.error || paymentData.detail || `Failed to create payment. Status: ${paymentResponse.status}`;
+        throw new Error(errorMessage);
+      }
+    } catch (err) {
+      console.error("Error committing payment:", err);
+      setPaymentError(err.message || "Failed to commit payment. Please try again.");
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
+  const handleSubmitPayment = async (e) => {
+    e.preventDefault();
+    
+    if (!stripeInstance || !elementsInstance) {
+      setPaymentError("Payment system not initialized. Please try again.");
+      return;
+    }
+
+    setIsSubmittingPayment(true);
+    setPaymentError(null);
+
+    try {
+      // Confirm payment with elements (this includes the payment method)
+      const { error, paymentIntent } = await stripeInstance.confirmPayment({
+        elements: elementsInstance,
+        confirmParams: {
+          return_url: `${window.location.origin}/payment/success`,
+        },
+        redirect: 'if_required', // Only redirect if required by payment method
+      });
+
+      if (error) {
+        console.error("Stripe payment error:", error);
+        setPaymentError(error.message || "Payment failed. Please try again.");
+        setIsSubmittingPayment(false);
+      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+        setPaymentSuccess(true);
+        setShowPaymentModal(false);
+        // Refresh investment status after successful payment
+        await fetchInvestmentStatus();
+        alert("Payment completed successfully!");
+        // Cleanup
+        if (paymentElement) {
+          paymentElement.unmount();
+        }
+        setPaymentElement(null);
+        setElementsInstance(null);
+        setStripeInstance(null);
+        setClientSecret(null);
+      } else {
+        // Payment requires additional action or is processing
+        console.log("Payment status:", paymentIntent?.status);
+      }
+    } catch (err) {
+      console.error("Error submitting payment:", err);
+      setPaymentError(err.message || "Failed to process payment. Please try again.");
+      setIsSubmittingPayment(false);
+    }
+  };
+
+  const handleClosePaymentModal = () => {
+    // Cleanup Stripe Elements
+    if (paymentElement) {
+      paymentElement.unmount();
+    }
+    setPaymentElement(null);
+    setElementsInstance(null);
+    setStripeInstance(null);
+    setClientSecret(null);
+    setShowPaymentModal(false);
+    setPaymentError(null);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (investDropdownRef.current && !investDropdownRef.current.contains(event.target)) {
@@ -244,6 +594,30 @@ const TaxDocumentDetail = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Mount payment element when modal opens and element is ready
+  useEffect(() => {
+    if (showPaymentModal && paymentElement) {
+      const paymentElementContainer = document.getElementById('payment-element');
+      if (paymentElementContainer) {
+        // Clear any existing content
+        paymentElementContainer.innerHTML = '';
+        // Mount the payment element
+        paymentElement.mount('#payment-element');
+      }
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (paymentElement) {
+        try {
+          paymentElement.unmount();
+        } catch (e) {
+          // Element might already be unmounted
+        }
+      }
+    };
+  }, [showPaymentModal, paymentElement]);
 
   return (
     <div className="min-h-screen bg-[#F4F6F5] overflow-x-hidden">
@@ -662,8 +1036,80 @@ const TaxDocumentDetail = () => {
                 <p className="mt-2 text-xs text-[#748A91] font-poppins-custom">
                   Min: ${opportunityData?.details?.min_investment ? opportunityData.details.min_investment.toLocaleString() : '25,000'} · Max: ${opportunityData?.details?.max_investment ? opportunityData.details.max_investment.toLocaleString() : '500,000'}
                 </p>
-                <button className="mt-5 w-full bg-[#00F0C3] text-[#001D21] rounded-lg py-3 font-medium text-sm font-poppins-custom hover:bg-[#00C4B3] transition-colors">
-                  Invest Now
+                {investmentError && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-600 font-poppins-custom">{investmentError}</p>
+                  </div>
+                )}
+                {investmentSuccess && (
+                  <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-600 font-poppins-custom">Investment initiated successfully!</p>
+                  </div>
+                )}
+                {paymentError && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-600 font-poppins-custom">{paymentError}</p>
+                  </div>
+                )}
+                {paymentSuccess && (
+                  <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-600 font-poppins-custom">Payment intent created successfully!</p>
+                  </div>
+                )}
+                {/* Show investment status if available */}
+                {investmentStatus && investmentStatus.has_request && (
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-600 font-poppins-custom">
+                      Status: <span className="font-semibold">{investmentStatus.status_display || investmentStatus.status}</span>
+                      {investmentStatus.approval_status?.is_approved && (
+                        <span className="ml-2 text-green-600">✓ Approved</span>
+                      )}
+                    </p>
+                  </div>
+                )}
+                {/* Invest Now Button - Only enabled if NOT approved */}
+                <button 
+                  onClick={handleInvestNow}
+                  disabled={
+                    isInvesting || 
+                    (investmentStatus?.approval_status?.is_approved === true) ||
+                    (investmentStatus?.has_request && investmentStatus?.approval_status?.is_approved === true)
+                  }
+                  className="mt-5 w-full bg-[#00F0C3] text-[#001D21] rounded-lg py-3 font-medium text-sm font-poppins-custom hover:bg-[#00C4B3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isInvesting ? "Processing..." : "Invest Now"}
+                </button>
+                {/* Commit Payment Button - Only enabled if approved */}
+                <button 
+                  onClick={handleCommitPayment}
+                  disabled={
+                    isProcessingPayment || 
+                    paymentSuccess ||
+                    !investmentStatus?.approval_status?.is_approved ||
+                    !investmentStatus?.approval_status?.can_proceed_to_payment
+                  }
+                  className="mt-3 w-full bg-[#9889FF] text-white rounded-lg py-3 font-medium text-sm font-poppins-custom hover:bg-[#7B6FE8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isProcessingPayment ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Processing Payment...</span>
+                    </>
+                  ) : paymentSuccess ? (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Payment Committed</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                      </svg>
+                      <span>Commit Payment</span>
+                    </>
+                  )}
                 </button>
               </section>
 
@@ -710,6 +1156,67 @@ const TaxDocumentDetail = () => {
           </div>
         </div>
       </main>
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-900">Complete Payment</h2>
+                <button
+                  onClick={handleClosePaymentModal}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <form onSubmit={handleSubmitPayment} className="p-6">
+              {/* Payment Element Container */}
+              <div id="payment-element" className="mb-6">
+                {/* Stripe Elements will mount here */}
+              </div>
+
+              {/* Error Message */}
+              {paymentError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{paymentError}</p>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleClosePaymentModal}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingPayment}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-[#9889FF] rounded-lg hover:bg-[#7B6FE8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isSubmittingPayment ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <span>Pay Now</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

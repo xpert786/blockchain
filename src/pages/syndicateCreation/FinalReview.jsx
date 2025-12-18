@@ -46,6 +46,7 @@ const FinalReview = () => {
     }
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [stepsCompleted, setStepsCompleted] = useState({
     step1: false,
     step2: false,
@@ -54,11 +55,15 @@ const FinalReview = () => {
   });
 
   const handleSubmit = async () => {
-    // Check if step1 and step2 are both true
+    setError("");
+    
+    // Check if step1 and step2 are completed (Step 3 check removed - allowing to proceed)
     if (!stepsCompleted.step1 || !stepsCompleted.step2) {
-      alert("Please complete Step 1 and Step 2 before submitting the application.");
+      setError("Please complete Step 1 and Step 2 before submitting the application.");
       return;
     }
+    
+    // Step 3 validation removed - allowing submission even if Step 3 is not completed
 
     setIsSubmitting(true);
     
@@ -94,12 +99,19 @@ const FinalReview = () => {
       if (backendData) {
         if (typeof backendData === "object") {
           const errorMessages = Object.values(backendData).flat();
-          alert(errorMessages.join(", ") || "Failed to submit application.");
+          const errorMessage = errorMessages.join(", ") || "Failed to submit application.";
+          setError(errorMessage);
+          
+          // If error mentions Step 3, provide helpful navigation
+          if (errorMessage.includes("Step 3") || errorMessage.includes("step 3")) {
+            // Error will be displayed with navigation link in the error display component
+          }
         } else {
-          alert(String(backendData));
+          setError(String(backendData));
         }
       } else {
-        alert(err.message || "Failed to submit application. Please try again.");
+        const errorMessage = err.message || "Failed to submit application. Please try again.";
+        setError(errorMessage);
       }
       setIsSubmitting(false);
     }
@@ -240,10 +252,50 @@ const FinalReview = () => {
           });
         }
       } catch (err) {
+        console.error("Error fetching review data:", err);
+        const backendData = err.response?.data;
+        
         if (err.response?.status === 404) {
           console.log("No step4 data found");
+          // Allow proceeding even if step4 data not found
+        } else if (backendData) {
+          // Handle backend validation errors, but allow proceeding
+          let errorMessage = "";
+          
+          if (typeof backendData === "object") {
+            // Check for 'error' key first (common backend error format)
+            if (backendData.error) {
+              // If error mentions Step 3, log it but don't block access
+              const errorText = String(backendData.error);
+              if (errorText.includes("Step 3") || errorText.includes("step 3")) {
+                console.warn("Step 3 not completed, but allowing access:", errorText);
+                // Don't set error - allow user to proceed
+              } else {
+                errorMessage = errorText;
+                setError(errorMessage);
+              }
+            } else {
+              // Try to extract error messages from object
+              const errorMessages = Object.values(backendData).flat();
+              errorMessage = errorMessages.join(", ") || "";
+              // Only set error if it's not about Step 3
+              if (errorMessage && !errorMessage.includes("Step 3") && !errorMessage.includes("step 3")) {
+                setError(errorMessage);
+              }
+            }
+          } else if (typeof backendData === "string") {
+            // Only set error if it's not about Step 3
+            if (!backendData.includes("Step 3") && !backendData.includes("step 3")) {
+              setError(backendData);
+            }
+          }
         } else {
-          console.error("Error fetching review data:", err);
+          // Check if error message contains step validation
+          const errorMessage = err.message || "";
+          // Only set error if it's not about Step 3
+          if (errorMessage && !errorMessage.includes("Step 3") && !errorMessage.includes("step 3")) {
+            setError(errorMessage);
+          }
         }
       } finally {
         setLoading(false);
@@ -275,6 +327,29 @@ const FinalReview = () => {
           Please review all information before submitting your syndicate application for platform compliance review.
         </p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <div className="flex-1">
+              <p className="text-red-600 text-sm font-medium mb-1">Error</p>
+              <p className="text-red-600 text-sm">{error}</p>
+              {error.includes("Step 3") && (
+                <button
+                  onClick={() => navigate("/syndicate-creation/compliance-attestation")}
+                  className="mt-3 text-sm text-red-600 hover:text-red-800 underline font-medium"
+                >
+                  Go to Step 3: Compliance & Attestation
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Review Sections */}
       <div className="space-y-6">

@@ -16,7 +16,8 @@ const RequestDetails = () => {
   });
 
   const handleInputChange = (e) => {
-    const { name, value } = setFormData({
+    const { name, value } = e.target;
+    setFormData({
       ...formData,
       [name]: value
     });
