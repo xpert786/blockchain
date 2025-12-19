@@ -9,6 +9,21 @@ import loginimg from "/src/assets/img/loginimg1.svg"; // Corrected typo: lgoinim
 import loginimg2 from "/src/assets/img/loginimg2.svg";
 import loginimg3 from "/src/assets/img/loginimg3.svg";
 
+// Helper function to decode JWT token and extract user_id
+const decodeJWT = (token) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error("Error decoding JWT:", error);
+    return null;
+  }
+};
+
 const Login = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -57,11 +72,36 @@ const Login = () => {
       console.log("Login successful:", response.data);
       console.log("Full response data:", JSON.stringify(response.data, null, 2));
 
+      // Save tokens if returned first
+      let savedAccessToken = null;
+      if (response.data?.tokens || response.data?.access) {
+        savedAccessToken = response.data?.tokens?.access || response.data?.access;
+        const refreshToken = response.data?.tokens?.refresh || response.data?.refresh;
+        
+        if (savedAccessToken) {
+          localStorage.setItem("accessToken", savedAccessToken);
+        }
+        if (refreshToken) {
+          localStorage.setItem("refreshToken", refreshToken);
+        }
+      }
+
       // Extract user data - check multiple possible locations for role
       const userInfo = response.data?.user || response.data;
       // Check for role in tokens object first, then root level, then user object
       const userRole = response.data?.tokens?.role || response.data?.role || userInfo?.role;
-      const userId = userInfo?.id || userInfo?.user_id || response.data?.user_id;
+      
+      // Extract user_id - try from response first, then from JWT token
+      let userId = userInfo?.id || userInfo?.user_id || response.data?.user_id;
+      if (!userId && savedAccessToken) {
+        // Try to extract from JWT token
+        const decodedToken = decodeJWT(savedAccessToken);
+        if (decodedToken && decodedToken.user_id) {
+          userId = decodedToken.user_id;
+          console.log("✅ Extracted user_id from JWT token:", userId);
+        }
+      }
+      
       const username = userInfo?.username || response.data?.username;
       const email = userInfo?.email || response.data?.email;
       const isActive = userInfo?.is_active || response.data?.is_active;
@@ -75,19 +115,7 @@ const Login = () => {
       console.log("userInfo.role:", userInfo?.role);
       console.log("Raw role from response:", userRole);
       console.log("User info:", userInfo);
-
-      // Save tokens if returned
-      if (response.data?.tokens || response.data?.access) {
-        const accessToken = response.data?.tokens?.access || response.data?.access;
-        const refreshToken = response.data?.tokens?.refresh || response.data?.refresh;
-        
-        if (accessToken) {
-          localStorage.setItem("accessToken", accessToken);
-        }
-        if (refreshToken) {
-          localStorage.setItem("refreshToken", refreshToken);
-        }
-      }
+      console.log("Extracted user_id:", userId);
       
       // Save user data
       const userData = {
@@ -100,7 +128,28 @@ const Login = () => {
       };
       localStorage.setItem("userData", JSON.stringify(userData));
       console.log("User data saved to localStorage:", userData);
+      
+      // Verify user_id is present
+      if (!userId) {
+        console.error("❌ user_id is missing! Cannot proceed without user_id.");
+        setError("Login successful but user ID is missing. Please contact support.");
+        setLoading(false);
+        return;
+      }
 
+      // Verify tokens and userData are saved before navigation
+      const savedToken = localStorage.getItem("accessToken");
+      const savedUserData = localStorage.getItem("userData");
+      console.log("Verification - Token saved:", !!savedToken);
+      console.log("Verification - UserData saved:", !!savedUserData);
+      
+      if (!savedToken || !savedUserData) {
+        console.error("❌ Tokens or userData not saved properly!");
+        setError("Failed to save login information. Please try again.");
+        setLoading(false);
+        return;
+      }
+      
       // Navigate to dashboard based on user role - simple redirect
       const normalizedRole = (userRole || "").toLowerCase().trim();
       console.log("=== Navigation Decision ===");
@@ -109,24 +158,29 @@ const Login = () => {
       console.log("Is empty?", !normalizedRole || normalizedRole === "");
       
       // Determine target path based on role
-      let targetPath = "/";
       if (normalizedRole && (normalizedRole === "syndicate" || normalizedRole === "syndicate_manager" || normalizedRole.includes("syndicate"))) {
-        targetPath = "/manager-panel/dashboard";
         console.log("✅ Redirecting syndicate user to manager panel dashboard");
+        setLoading(false);
+        // Use setTimeout to ensure state updates are processed
+        setTimeout(() => {
+          navigate("/manager-panel/dashboard", { replace: true });
+        }, 100);
       } else if (normalizedRole === "investor") {
-        targetPath = "/investor-panel/dashboard";
         console.log("✅ Redirecting investor user to dashboard");
+        setLoading(false);
+        // Use setTimeout to ensure state updates are processed
+        setTimeout(() => {
+          navigate("/investor-panel/dashboard", { replace: true });
+        }, 100);
       } else {
-        console.warn("⚠️ Unknown or missing role, defaulting to home page.");
+        // No role or unknown role - show role selection modal
+        console.warn("⚠️ Unknown or missing role, showing role selection modal.");
         console.warn("Role value:", normalizedRole);
         console.warn("Full userData:", userData);
-        targetPath = "/";
+        setLoading(false);
+        setShowRoleSelectModal(true);
+        setError(""); // Clear any errors
       }
-      
-      console.log("Target path:", targetPath);
-      
-      // Navigate immediately - same as email/password login
-      navigate(targetPath, { replace: true });
       
     } catch (err) {
       console.error("Login error:", err);
@@ -134,10 +188,13 @@ const Login = () => {
       const backendData = err.response?.data;
       if (backendData) {
         if (typeof backendData === "object") {
-          // Handle specific field errors
-          const errorMsg = backendData.non_field_errors?.[0] || 
+          // Handle specific field errors - check for error field first
+          const errorMsg = backendData.error || 
+                           backendData.non_field_errors?.[0] || 
                            backendData.email?.[0] || 
                            backendData.password?.[0] || 
+                           backendData.detail ||
+                           (backendData.message ? (typeof backendData.message === "string" ? backendData.message : JSON.stringify(backendData.message)) : null) ||
                            JSON.stringify(backendData);
           setError(errorMsg);
         } else {
@@ -255,12 +312,13 @@ const Login = () => {
           console.log("📋 Full response:", JSON.stringify(response.data, null, 2));
 
           // Save tokens if returned - EXACT SAME AS EMAIL/PASSWORD LOGIN
+          let savedAccessToken = null;
           if (response.data?.tokens || response.data?.access) {
-            const accessToken = response.data?.tokens?.access || response.data?.access;
+            savedAccessToken = response.data?.tokens?.access || response.data?.access;
             const refreshToken = response.data?.tokens?.refresh || response.data?.refresh;
             
-            if (accessToken) {
-              localStorage.setItem("accessToken", accessToken);
+            if (savedAccessToken) {
+              localStorage.setItem("accessToken", savedAccessToken);
             }
             if (refreshToken) {
               localStorage.setItem("refreshToken", refreshToken);
@@ -271,7 +329,18 @@ const Login = () => {
           const userInfo = response.data?.user || response.data;
           // Check for role in tokens object first, then root level, then user object
           const userRole = response.data?.tokens?.role || response.data?.role || userInfo?.role;
-          const userId = userInfo?.id || userInfo?.user_id || response.data?.user_id;
+          
+          // Extract user_id - try from response first, then from JWT token
+          let userId = userInfo?.id || userInfo?.user_id || response.data?.user_id;
+          if (!userId && savedAccessToken) {
+            // Try to extract from JWT token
+            const decodedToken = decodeJWT(savedAccessToken);
+            if (decodedToken && decodedToken.user_id) {
+              userId = decodedToken.user_id;
+              console.log("✅ Extracted user_id from JWT token:", userId);
+            }
+          }
+          
           const username = userInfo?.username || response.data?.username;
           const email = userInfo?.email || response.data?.email;
           const isActive = userInfo?.is_active || response.data?.is_active;
@@ -285,6 +354,7 @@ const Login = () => {
           console.log("userInfo.role:", userInfo?.role);
           console.log("Raw role from response:", userRole);
           console.log("User info:", userInfo);
+          console.log("Extracted user_id:", userId);
           
           // Save user data - EXACT SAME AS EMAIL/PASSWORD LOGIN
           const userData = {
@@ -297,6 +367,14 @@ const Login = () => {
           };
           localStorage.setItem("userData", JSON.stringify(userData));
           console.log("User data saved to localStorage:", userData);
+          
+          // Verify user_id is present
+          if (!userId) {
+            console.error("❌ user_id is missing! Cannot proceed without user_id.");
+            setError("Login successful but user ID is missing. Please contact support.");
+            setLoading(false);
+            return;
+          }
 
           // Navigate to dashboard - EXACT SAME LOGIC AS EMAIL/PASSWORD LOGIN
           const normalizedRole = (userRole || "").toLowerCase().trim();
@@ -305,21 +383,42 @@ const Login = () => {
           console.log("Normalized role (lowercase, trimmed):", normalizedRole);
           console.log("Is empty?", !normalizedRole || normalizedRole === "");
           
+          // Verify tokens and userData are saved before navigation
+          const savedToken = localStorage.getItem("accessToken");
+          const savedUserData = localStorage.getItem("userData");
+          console.log("Verification - Token saved:", !!savedToken);
+          console.log("Verification - UserData saved:", !!savedUserData);
+          
+          if (!savedToken || !savedUserData) {
+            console.error("❌ Tokens or userData not saved properly!");
+            setError("Failed to save login information. Please try again.");
+            setLoading(false);
+            return;
+          }
+          
           // Simple dashboard redirect based on role
           if (normalizedRole && (normalizedRole === "syndicate" || normalizedRole === "syndicate_manager" || normalizedRole.includes("syndicate"))) {
             console.log("✅ Redirecting syndicate user to manager panel dashboard");
             setLoading(false); // Stop loading before navigation
-            navigate("/manager-panel/dashboard", { replace: true });
+            // Use setTimeout to ensure state updates are processed
+            setTimeout(() => {
+              navigate("/manager-panel/dashboard", { replace: true });
+            }, 100);
           } else if (normalizedRole === "investor") {
             console.log("✅ Redirecting investor user to dashboard");
             setLoading(false); // Stop loading before navigation
-            navigate("/investor-panel/dashboard", { replace: true });
+            // Use setTimeout to ensure state updates are processed
+            setTimeout(() => {
+              navigate("/investor-panel/dashboard", { replace: true });
+            }, 100);
           } else {
-            console.warn("⚠️ Unknown or missing role, defaulting to home page.");
+            // No role or unknown role - show role selection modal
+            console.warn("⚠️ Unknown or missing role, showing role selection modal.");
             console.warn("Role value:", normalizedRole);
             console.warn("Full userData:", userData);
-            setLoading(false); // Stop loading before navigation
-            navigate("/", { replace: true });
+            setLoading(false);
+            setShowRoleSelectModal(true);
+            setError(""); // Clear any errors
           }
 
         } catch (err) {
@@ -352,7 +451,20 @@ const Login = () => {
             setShowRoleSelectModal(true);
             setError(""); // Clear inline error for this case
           } else {
-            setError(backend ? (typeof backend === "object" ? JSON.stringify(backend) : String(backend)) : err.message || "Google login failed");
+            // Extract error message properly
+            let errorMsg = err.message || "Google login failed";
+            if (backend) {
+              if (typeof backend === "object") {
+                errorMsg = backend.error || 
+                          backend.detail || 
+                          backend.non_field_errors?.[0] ||
+                          (backend.message ? (typeof backend.message === "string" ? backend.message : JSON.stringify(backend.message)) : null) ||
+                          JSON.stringify(backend);
+              } else {
+                errorMsg = String(backend);
+              }
+            }
+            setError(errorMsg);
             setShowRoleSelectModal(false);
             setLoading(false);
           }
@@ -597,7 +709,7 @@ const Login = () => {
                 Role Selection Required
               </h3>
               <p className="text-sm text-[#0A2A2E] mb-6 font-poppins-custom">
-                You didn't sign in. Please select a role first before signing in with Google.
+                Your account needs a role to continue. Please select whether you're an Investor or Syndicate Manager.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <button

@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 import bgImage from "../../assets/img/bg-images.png";
 import loginLogo from "../../assets/img/loginlogo.png";
 import logo from "/src/assets/img/logo.png";
@@ -9,12 +10,40 @@ import loginimg2 from "/src/assets/img/loginimg2.svg";
 import loginimg3 from "/src/assets/img/loginimg3.svg";
 
 const SetNewPassword = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     password: "",
     confirmPassword: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+
+  // Get email and OTP from location state or localStorage
+  useEffect(() => {
+    const emailFromState = location.state?.email;
+    const otpFromState = location.state?.otp;
+    const emailFromStorage = localStorage.getItem("resetPasswordEmail");
+    const otpFromStorage = localStorage.getItem("resetPasswordOtp");
+    
+    const userEmail = emailFromState || emailFromStorage || "";
+    const userOtp = otpFromState || otpFromStorage || "";
+    
+    setEmail(userEmail);
+    setOtp(userOtp);
+    
+    if (!userEmail || !userOtp) {
+      // If email or OTP not found, redirect back to forgot password
+      setError("Session expired. Please start over.");
+      setTimeout(() => {
+        navigate("/forgot-password");
+      }, 2000);
+    }
+  }, [location.state, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -22,15 +51,82 @@ const SetNewPassword = () => {
       ...formData,
       [name]: value,
     });
+    // Clear error when user types
+    if (error) setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      setError("Passwords do not match!");
       return;
     }
-    console.log("Set new password form submitted:", formData);
+
+    if (!email || !otp) {
+      setError("Session expired. Please start over.");
+      setTimeout(() => {
+        navigate("/forgot-password");
+      }, 2000);
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const resetPasswordUrl = `${API_URL.replace(/\/$/, "")}/auth/reset_password/`;
+
+      console.log("Resetting password:", resetPasswordUrl);
+      console.log("Email:", email);
+      console.log("OTP:", otp);
+
+      const response = await axios.post(resetPasswordUrl, {
+        email: email,
+        otp: otp,
+        new_password: formData.password,
+        confirm_password: formData.confirmPassword
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+
+      console.log("Reset password response:", response.data);
+
+      if (response.data) {
+        // Clear stored reset data
+        localStorage.removeItem("resetPasswordEmail");
+        localStorage.removeItem("resetPasswordOtp");
+        
+        // Show success and redirect to login
+        alert("Password reset successfully! Please login with your new password.");
+        navigate("/login");
+      }
+    } catch (err) {
+      console.error("Reset password error:", err);
+      const backendData = err.response?.data;
+      
+      if (backendData) {
+        if (typeof backendData === "object") {
+          const errorMsg = backendData.error || 
+                          backendData.detail || 
+                          backendData.message ||
+                          backendData.new_password?.[0] ||
+                          backendData.confirm_password?.[0] ||
+                          JSON.stringify(backendData);
+          setError(errorMsg);
+        } else {
+          setError(String(backendData));
+        }
+      } else {
+        setError(err.message || "Failed to reset password. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getPasswordStrength = (password) => {
@@ -85,6 +181,18 @@ const SetNewPassword = () => {
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <svg className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    <p className="text-red-800 text-sm">{error}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Password */}
               <div>
                 <label htmlFor="password" className="block text-sm text-[#0A2A2E] font-poppins-custom mb-2">
@@ -98,8 +206,9 @@ const SetNewPassword = () => {
                     value={formData.password}
                     onChange={handleInputChange}
                     placeholder="Enter your Password"
-                    className="w-full px-4 py-3 pr-12 !border border-0.5px border-[#0A2A2E] bg-[#F4F6F5] rounded-lg outline-none"
+                    className="w-full px-4 py-3 pr-12 !border border-0.5px border-[#0A2A2E] bg-[#F4F6F5] rounded-lg outline-none disabled:opacity-50"
                     required
+                    disabled={loading}
                   />
                   <button
                     type="button"
@@ -151,8 +260,9 @@ const SetNewPassword = () => {
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     placeholder="Confirm Password"
-                    className="w-full px-4 py-3 pr-12 !border border-0.5px border-[#0A2A2E] bg-[#F4F6F5] rounded-lg outline-none"
+                    className="w-full px-4 py-3 pr-12 !border border-0.5px border-[#0A2A2E] bg-[#F4F6F5] rounded-lg outline-none disabled:opacity-50"
                     required
+                    disabled={loading}
                   />
                   <button
                     type="button"
@@ -175,9 +285,20 @@ const SetNewPassword = () => {
 
               <button
                 type="submit"
-                className="w-full md:w-40 bg-[#00F0C3] text-[#0A2A2E] font-semibold py-3 px-4 rounded-lg hover:bg-[#00E6B0] transition-colors duration-200 cursor-pointer"
+                disabled={loading}
+                className="w-full md:w-40 bg-[#00F0C3] text-[#0A2A2E] font-semibold py-3 px-4 rounded-lg hover:bg-[#00E6B0] transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Reset Password
+                {loading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 inline-block mr-2" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Resetting...
+                  </>
+                ) : (
+                  "Reset Password"
+                )}
               </button>
             </form>
           </div>

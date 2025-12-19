@@ -17,11 +17,13 @@ const ManagerLayout = () => {
       const rawUser = localStorage.getItem("userData");
 
       if (!token) {
+        console.warn("ManagerLayout: No access token found");
         navigate("/login", { replace: true });
         return;
       }
 
       if (!rawUser) {
+        console.warn("ManagerLayout: No user data found");
         navigate("/login", { replace: true });
         return;
       }
@@ -35,8 +37,18 @@ const ManagerLayout = () => {
         return;
       }
 
+      // Check if user data is valid
+      if (!parsedUser || !parsedUser.user_id) {
+        console.warn("ManagerLayout: Invalid user data structure");
+        navigate("/login", { replace: true });
+        return;
+      }
+
       const role = parsedUser?.role?.toLowerCase() || "";
-      if (!role.includes("syndicate")) {
+      console.log("ManagerLayout: User role:", role);
+      
+      if (!role || !role.includes("syndicate")) {
+        console.warn("ManagerLayout: User role does not include 'syndicate', redirecting to lead-info");
         navigate("/syndicate-creation/lead-info", { replace: true });
         return;
       }
@@ -59,6 +71,15 @@ const ManagerLayout = () => {
               Accept: "application/json"
             }
           });
+
+          // Handle 401 Unauthorized - token expired or invalid
+          if (response.status === 401) {
+            console.warn("ManagerLayout: Token expired or invalid (401), redirecting to login");
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            navigate("/login", { replace: true });
+            return;
+          }
 
           if (response.ok) {
             const data = await response.json();
@@ -83,6 +104,7 @@ const ManagerLayout = () => {
           }
         } catch (error) {
           console.error("ManagerLayout: failed to fetch syndicate status:", error);
+          // Don't redirect on network errors, just log
         }
       }
 
@@ -304,7 +326,25 @@ const ManagerLayout = () => {
               onClick={async () => {
                 try {
                   const accessToken = localStorage.getItem("accessToken");
-                  if (!accessToken) {
+                  const userData = localStorage.getItem("userData");
+                  
+                  // Check if user is authenticated
+                  if (!accessToken || !userData) {
+                    console.warn("No access token or user data found, redirecting to login");
+                    navigate("/login", { replace: true });
+                    return;
+                  }
+
+                  // Verify token is still valid by checking userData
+                  try {
+                    const parsedUser = JSON.parse(userData);
+                    if (!parsedUser || !parsedUser.user_id) {
+                      console.warn("Invalid user data, redirecting to login");
+                      navigate("/login", { replace: true });
+                      return;
+                    }
+                  } catch (parseError) {
+                    console.error("Error parsing user data:", parseError);
                     navigate("/login", { replace: true });
                     return;
                   }
@@ -320,7 +360,22 @@ const ManagerLayout = () => {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                       }
+                    }).catch((error) => {
+                      // Handle 401 Unauthorized - token expired or invalid
+                      if (error.response?.status === 401) {
+                        console.warn("Token expired or invalid, redirecting to login");
+                        localStorage.removeItem("accessToken");
+                        localStorage.removeItem("refreshToken");
+                        navigate("/login", { replace: true });
+                        return null;
+                      }
+                      throw error;
                     });
+
+                    // If response is null (401 handled), stop execution
+                    if (!spvListResponse) {
+                      return;
+                    }
 
                     const spvData = spvListResponse.data?.results || spvListResponse.data;
                     let mostRecentSpv = null;
@@ -349,7 +404,22 @@ const ManagerLayout = () => {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json'
                           }
+                        }).catch((error) => {
+                          // Handle 401 Unauthorized
+                          if (error.response?.status === 401) {
+                            console.warn("Token expired during final review check, redirecting to login");
+                            localStorage.removeItem("accessToken");
+                            localStorage.removeItem("refreshToken");
+                            navigate("/login", { replace: true });
+                            return null;
+                          }
+                          throw error;
                         });
+
+                        // If response is null (401 handled), stop execution
+                        if (!finalReviewResponse) {
+                          return;
+                        }
 
                         const reviewData = finalReviewResponse.data;
                         const spvStatus = reviewData?.spv_status || reviewData?.status || mostRecentSpv.status;
@@ -386,17 +456,33 @@ const ManagerLayout = () => {
                         return;
                       }
                     } else {
-                      // No SPV found - create newapi/spv
+                      // No SPV found - create new SPV
                       console.log("ℹ️ No existing SPV found - creating new SPV");
                       navigate("/syndicate-creation/spv-creation/step1");
                     }
                   } catch (error) {
+                    // Handle 401 errors
+                    if (error.response?.status === 401) {
+                      console.warn("Token expired or invalid, redirecting to login");
+                      localStorage.removeItem("accessToken");
+                      localStorage.removeItem("refreshToken");
+                      navigate("/login", { replace: true });
+                      return;
+                    }
                     console.error("Error checking SPV status:", error);
-                    // On error, just navigate to create new SPV
+                    // On other errors, just navigate to create new SPV
                     navigate("/syndicate-creation/spv-creation/step1");
                   }
                 } catch (error) {
                   console.error("Error in Create New SPV handler:", error);
+                  // Only redirect to login if it's an auth error
+                  if (error.response?.status === 401) {
+                    localStorage.removeItem("accessToken");
+                    localStorage.removeItem("refreshToken");
+                    navigate("/login", { replace: true });
+                    return;
+                  }
+                  // Otherwise, try to create new SPV
                   navigate("/syndicate-creation/spv-creation/step1");
                 }
               }}

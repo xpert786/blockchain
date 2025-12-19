@@ -217,14 +217,9 @@ const SPVLayout = () => {
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
                 <p className="text-red-600 mb-4">{accessError}</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                
                   <button
-                    onClick={() => navigate("/syndicate-creation/success")}
-                    className="bg-[#00F0C3] hover:bg-[#00C4B3] text-black px-6 py-2 rounded-lg font-medium transition-colors"
-                  >
-                    Go Back
-                  </button>
-                  <button
-                    onClick={() => navigate("/")}
+                    onClick={() => navigate("/manager-panel/dashboard")}
                     className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors border border-gray-300"
                   >
                     Go To Dashboard

@@ -53,142 +53,28 @@ const getBreakdownColor = (index) => {
   return palette[index % palette.length];
 };
 
-const fallbackMetrics = [
-    {
-      title: "My SPVs",
-      value: "8",
-      change: "+2 this month",
-      icon: () => {
-          return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M6 22V4C6 3.46957 6.21071 2.96086 6.58579 2.58579C6.96086 2.21071 7.46957 2 8 2H16C16.5304 2 17.0391 2.21071 17.4142 2.58579C17.7893 2.96086 18 3.46957 18 4V22M6 22H18M6 22H4C3.46957 22 2.96086 21.7893 2.58579 21.4142C2.21071 21.0391 2 20.5304 2 20V14C2 13.4696 2.21071 12.9609 2.58579 12.5858C2.96086 12.2107 3.46957 12 4 12H6M18 22H20C20.5304 22 21.0391 21.7893 21.4142 21.4142C21.7893 21.0391 22 20.5304 22 20V11C22 10.4696 21.7893 9.96086 21.4142 9.58579C21.0391 9.21071 20.5304 9 20 9H18M10 6H14M10 10H14M10 14H14M10 18H14" stroke="#01373D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          
-      },
-      bgColor: "bg-[#D6EEF9]",
-      iconColor: "text-[#01373D]"
-    },
-    {
-      title: "Total AUM",
-      value: "$12.4M",
-      change: "+15.2%",
-      icon: () => {
-          return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="#01373D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          
-      },
-      bgColor: "bg-[#D7F8F0]",
-      iconColor: "text-[#01373D]"
-    },
-    {
-      title: "Active Investors",
-      value: "156",
-      change: "+23 new",
-      icon: () => {
-        return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H6C4.93913 15 3.92172 15.4214 3.17157 16.1716C2.42143 16.9217 2 17.9391 2 19V21M22 21V19C21.9993 18.1137 21.7044 17.2528 21.1614 16.5523C20.6184 15.8519 19.8581 15.3516 19 15.13M16 3.13C16.8604 3.3503 17.623 3.8507 18.1676 4.55231C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88M13 7C13 9.20914 11.2091 11 9 11C6.79086 11 5 9.20914 5 7C5 4.79086 6.79086 3 9 3C11.2091 3 13 4.79086 13 7Z" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-  },
-      bgColor: "bg-[#E2E2FB]",
-      iconColor: "text-[#01373D]"
-    },
-    {
-      title: "Avg. Investment",
-      value: "$79.5K",
-      change: "+8.1%",
-      icon: () => {
-        return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M22 7L13.5 15.5L8.5 10.5L2 17M22 7H16M22 7V13" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        
-  },
-      bgColor: "bg-[#FFEFE8]",
-      iconColor: "text-[#01373D]"
-    }
-  ];
-
-const fallbackSpvs = [
-    {
-      id: "SPV-001",
-      name: "Tech Startup Fund Q4",
-      created: "1/15/2024",
-      current: "$2.4M",
-      target: "$5.0M",
-      investors: "24",
-      progress: 50,
-      status: "Raising",
-      statusColor: "bg-[#22C55E] text-white"
-    },
-    {
-      id: "SPV-002",
-      name: "Real Estate Opportunity",
-      created: "2/1/2024",
-      current: "$1.8M",
-      target: "$3.0M",
-      investors: "18",
-      progress: 60,
-      status: "Ready to Launch",
-      statusColor: "bg-[#FFD97A] text-white",
-      bgColor: "bg-[#FFD97A]"
-    },
-    {
-      id: "SPV-003",
-      name: "Healthcare Innovation",
-      created: "11/20/2023",
-      current: "$4.5M",
-      target: "$4.5M",
-      investors: "32",
-      progress: 100,
-      status: "Closing",
-      statusColor: "bg-[#ED1C24] text-white"
-    }
-  ];
-
-const fallbackPendingActions = [
-    {
-      id: "PA-001",
-      type: "Transfer Request",
-      user: "John Doe",
-      project: "Tech Startup Fund Q4",
-      amount: "$50,000",
-      timeAgo: "2 hours ago",
-      statusColor: "bg-blue-500",
-      statusDot: "bg-[#9FD2FF]"
-    },
-    {
-      id: "PA-002",
-      type: "Document Review",
-      user: "Jane Smith",
-      project: "Real Estate Opportunity",
-      amount: "$75,000",
-      timeAgo: "4 hours ago",
-      statusColor: "bg-yellow-500",
-      statusDot: "bg-[#FFD97A]"
-    },
-    {
-      id: "PA-003",
-      type: "KYB Verification",
-      user: "Bob Johnson",
-      project: "Healthcare Innovation",
-      amount: "$100,000",
-      timeAgo: "1 day ago",
-      statusColor: "bg-green-500",
-      statusDot: "bg-[#82EEAA]"
-    }
-  ];
-
-const fallbackAnalytics = {
-  performance_overview: {
-    total_funds_raised: 8700000,
-    total_target: 12000000,
-    average_progress_percent: 75,
-    success_rate_percent: 85
-  },
-  status_breakdown: [
-    { status: "raising", label: "Raising", count: 3, total_allocation: 6500000 },
-    { status: "closing", label: "Closing", count: 1, total_allocation: 1200000 }
-  ],
-  active_investors: 156
+// Icon components for metrics
+const MetricIcons = {
+  spvs: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 22V4C6 3.46957 6.21071 2.96086 6.58579 2.58579C6.96086 2.21071 7.46957 2 8 2H16C16.5304 2 17.0391 2.21071 17.4142 2.58579C17.7893 2.96086 18 3.46957 18 4V22M6 22H18M6 22H4C3.46957 22 2.96086 21.7893 2.58579 21.4142C2.21071 21.0391 2 20.5304 2 20V14C2 13.4696 2.21071 12.9609 2.58579 12.5858C2.96086 12.2107 3.46957 12 4 12H6M18 22H20C20.5304 22 21.0391 21.7893 21.4142 21.4142C21.7893 21.0391 22 20.5304 22 20V11C22 10.4696 21.7893 9.96086 21.4142 9.58579C21.0391 9.21071 20.5304 9 20 9H18M10 6H14M10 10H14M10 14H14M10 18H14" stroke="#01373D" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  aum: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="#01373D" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  investors: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H6C4.93913 15 3.92172 15.4214 3.17157 16.1716C2.42143 16.9217 2 17.9391 2 19V21M22 21V19C21.9993 18.1137 21.7044 17.2528 21.1614 16.5523C20.6184 15.8519 19.8581 15.3516 19 15.13M16 3.13C16.8604 3.3503 17.623 3.8507 18.1676 4.55231C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88M13 7C13 9.20914 11.2091 11 9 11C6.79086 11 5 9.20914 5 7C5 4.79086 6.79086 3 9 3C11.2091 3 13 4.79086 13 7Z" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  investment: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22 7L13.5 15.5L8.5 10.5L2 17M22 7H16M22 7V13" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
 };
 
 const Dashboard = () => {
@@ -237,35 +123,47 @@ const Dashboard = () => {
   const summary = dashboardData?.summary;
 
   const metrics = useMemo(() => {
-    if (!summary) return fallbackMetrics;
+    if (!summary) return [];
 
     return [
       {
-        ...fallbackMetrics[0],
+        title: "My SPVs",
         value: formatNumber(summary.my_spvs_count || 0),
-        change: `Target ${formatCurrency(summary.total_target || 0)}`
+        change: `Target ${formatCurrency(summary.total_target || 0)}`,
+        icon: MetricIcons.spvs,
+        bgColor: "bg-[#D6EEF9]",
+        iconColor: "text-[#01373D]"
       },
       {
-        ...fallbackMetrics[1],
+        title: "Total AUM",
         value: formatCurrency(summary.total_aum || 0),
-        change: `Goal ${formatCurrency(summary.total_target || 0)}`
+        change: `Goal ${formatCurrency(summary.total_target || 0)}`,
+        icon: MetricIcons.aum,
+        bgColor: "bg-[#D7F8F0]",
+        iconColor: "text-[#01373D]"
       },
       {
-        ...fallbackMetrics[2],
+        title: "Active Investors",
         value: formatNumber(summary.active_investors || 0),
-        change: "Active investors"
+        change: "Active investors",
+        icon: MetricIcons.investors,
+        bgColor: "bg-[#E2E2FB]",
+        iconColor: "text-[#01373D]"
       },
       {
-        ...fallbackMetrics[3],
+        title: "Avg. Investment",
         value: formatCurrency(summary.average_investment || 0),
         change: summary.last_updated
           ? `Updated ${new Date(summary.last_updated).toLocaleDateString()}`
-          : fallbackMetrics[3].change
+          : "No data",
+        icon: MetricIcons.investment,
+        bgColor: "bg-[#FFEFE8]",
+        iconColor: "text-[#01373D]"
       }
     ];
   }, [summary]);
 
-  const mappedSpvs =
+  const allSpvs =
     dashboardData?.sections?.my_spvs?.map((spv) => ({
       id: spv.code || spv.id || "SPV",
       name: spv.name,
@@ -276,9 +174,7 @@ const Dashboard = () => {
       progress: Math.round(spv.progress_percent ?? spv.progress ?? 0),
       status: spv.status_label || spv.status,
       statusColor: getStatusBadgeColor(spv.status_label || spv.status)
-    })) ?? null;
-
-  const allSpvs = mappedSpvs && mappedSpvs.length > 0 ? mappedSpvs : fallbackSpvs;
+    })) ?? [];
 
   // Filter SPVs based on search query and status filter
   const spvs = useMemo(() => {
@@ -313,7 +209,7 @@ const Dashboard = () => {
     return filtered;
   }, [allSpvs, searchQuery, filterStatus]);
 
-  const mappedPendingActions =
+  const pendingActions =
     dashboardData?.sections?.pending_actions?.map((action) => ({
       id: action.id,
       type: action.title,
@@ -323,18 +219,15 @@ const Dashboard = () => {
       description: action.description,
       timeAgo: formatRelativeTime(action.updated_at),
       statusDot: getPendingStatusDot(action.status)
-    })) ?? null;
+    })) ?? [];
 
-  const pendingActions =
-    mappedPendingActions && mappedPendingActions.length > 0 ? mappedPendingActions : fallbackPendingActions;
-
-  const analyticsData = dashboardData?.sections?.analytics ?? fallbackAnalytics;
+  const analyticsData = dashboardData?.sections?.analytics ?? null;
   const totalFundsRaised = analyticsData?.performance_overview?.total_funds_raised ?? 0;
   const totalTargetAmount = analyticsData?.performance_overview?.total_target ?? 0;
   const averageProgressPercent = analyticsData?.performance_overview?.average_progress_percent ?? 0;
   const successRatePercent = analyticsData?.performance_overview?.success_rate_percent ?? 0;
-  const statusBreakdown = analyticsData?.status_breakdown ?? fallbackAnalytics.status_breakdown;
-  const analyticsActiveInvestors = analyticsData?.active_investors ?? fallbackAnalytics.active_investors;
+  const statusBreakdown = analyticsData?.status_breakdown ?? [];
+  const analyticsActiveInvestors = analyticsData?.active_investors ?? 0;
   const progressCircumference = 2 * Math.PI * 40;
   // Calculate progress percentage: funds raised vs target
   const fundsRaisedPercent = totalTargetAmount > 0 
@@ -404,25 +297,31 @@ const Dashboard = () => {
         <p className="text-gray-600 mb-6">Manage your SPVs and investor relationships</p>
       </div>
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
-        {metrics.map((metric, index) => (
-          <div key={index} className={`${metric.bgColor} rounded-lg p-4 sm:p-6 min-h-[140px] flex flex-col justify-between`}>
-            {/* Top Row - Title and Icon */}
-            <div className="flex justify-between items-start mb-3">
-              <p className="text-sm text-gray-600 font-medium">{metric.title}</p>
-              <div className={`${metric.iconColor} flex-shrink-0`}>
-                {typeof metric.icon === 'function' ? metric.icon() : getIcon(metric.icon)}
+      {metrics.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
+          {metrics.map((metric, index) => (
+            <div key={index} className={`${metric.bgColor} rounded-lg p-4 sm:p-6 min-h-[140px] flex flex-col justify-between`}>
+              {/* Top Row - Title and Icon */}
+              <div className="flex justify-between items-start mb-3">
+                <p className="text-sm text-gray-600 font-medium">{metric.title}</p>
+                <div className={`${metric.iconColor} flex-shrink-0`}>
+                  {typeof metric.icon === 'function' ? metric.icon() : null}
+                </div>
+              </div>
+              
+              {/* Bottom Row - Large Number and Change */}
+              <div className="flex flex-col gap-2">
+                <p className="text-2xl sm:text-3xl font-bold text-[#01373D] break-words">{metric.value}</p>
+                <p className="text-xs sm:text-sm text-[#34D399] font-medium break-words">{metric.change}</p>
               </div>
             </div>
-            
-            {/* Bottom Row - Large Number and Change */}
-            <div className="flex flex-col gap-2">
-              <p className="text-2xl sm:text-3xl font-bold text-[#01373D] break-words">{metric.value}</p>
-              <p className="text-xs sm:text-sm text-[#34D399] font-medium break-words">{metric.change}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : !loading && (
+        <div className="text-center py-8 text-gray-500">
+          No metrics data available
+        </div>
+      )}
       </div> 
 
       <div className="bg-white rounded-lg p-3 sm:p-4 w-fit">
@@ -786,117 +685,139 @@ const Dashboard = () => {
             </div>
 
             {/* Pending Actions List */}
-            <div className="space-y-3">
-              {pendingActions.map((action, index) => (
-                <div key={index} className="bg-[#F9F8FF] border border-gray-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  {/* Left Side - Status and Details */}
-                  <div className="flex items-center space-x-4">
-                    <div className={`w-3 h-3 rounded-full ${action.statusDot}`}></div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{action.type}</h3>
-                      <p className="text-sm text-gray-600">
-                        {[action.user, action.project, action.amount].filter(Boolean).join(" • ") ||
-                          action.description ||
-                          "Pending action"}
-                      </p>
-                      <div className="flex items-center space-x-1 mt-1">
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span className="text-xs text-gray-500">{action.timeAgo}</span>
+            {pendingActions.length > 0 ? (
+              <div className="space-y-3">
+                {pendingActions.map((action, index) => (
+                  <div key={index} className="bg-[#F9F8FF] border border-gray-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    {/* Left Side - Status and Details */}
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-3 h-3 rounded-full ${action.statusDot}`}></div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{action.type}</h3>
+                        <p className="text-sm text-gray-600">
+                          {[action.user, action.project, action.amount].filter(Boolean).join(" • ") ||
+                            action.description ||
+                            "Pending action"}
+                        </p>
+                        <div className="flex items-center space-x-1 mt-1">
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="text-xs text-gray-500">{action.timeAgo}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Right Side - Action Buttons */}
-                  <div className="flex items-center space-x-2 justify-end">
-                    <button className="px-4 py-2 border bg-[#F4F6F5] border-[#01373D] text-black rounded-lg transition-colors">
-                      View
-                    </button>
-                    <button className="px-4 py-2 bg-[#ED1C2429] text-[#ED1C24] border border-[#ED1C24] rounded-lg hover:bg-red-600 transition-colors">
-                      Reject
-                    </button>
+                    {/* Right Side - Action Buttons */}
+                    <div className="flex items-center space-x-2 justify-end">
+                      <button className="px-4 py-2 border bg-[#F4F6F5] border-[#01373D] text-black rounded-lg transition-colors">
+                        View
+                      </button>
+                      <button className="px-4 py-2 bg-[#ED1C2429] text-[#ED1C24] border border-[#ED1C24] rounded-lg hover:bg-red-600 transition-colors">
+                        Reject
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Pending Actions</h3>
+                <p className="text-gray-600">You're all caught up! There are no items requiring your review at this time.</p>
+              </div>
+            )}
           </div>
         ) : (
           /* Analytics Content */
           <div className="w-full">
-            {/* Performance Overview Card */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 w-full">
-              <h2 className="text-2xl font-medium text-gray-900 mb-6">Performance Overview</h2>
-              
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center sm:space-x-8 gap-6">
-                {/* Circular Progress Chart */}
-                <div className="relative flex-shrink-0 mx-auto sm:mx-0 w-48 h-48 sm:w-64 sm:h-64">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-                    {/* Background circle */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      stroke="#E5E7EB"
-                      strokeWidth="8"
-                      fill="none"
-                    />
-                    {/* Progress circle */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="40"
-                      stroke="#00F0C3"
-                      strokeWidth="8"
-                      fill="none"
-                      strokeDasharray={progressCircumference}
-                      strokeDashoffset={progressOffset}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  {/* Center text */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <p className="text-2xl sm:text-3xl font-bold text-gray-900">
-                        {formatCurrency(totalFundsRaised)}
-                      </p>
-                      <p className="text-xs text-gray-500 mb-1">
-                        of {formatCurrency(totalTargetAmount)} target
-                      </p>
-                      <p className="text-sm font-semibold text-[#00F0C3]">
-                        {fundsRaisedPercent.toFixed(1)}%
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Key Metrics List */}
-                <div className="flex-1 space-y-3 max-w-md">
-                  {statusBreakdown.map((item, index) => (
-                    <div
-                      key={`${item.status}-${index}`}
-                      className="flex items-center space-x-3 bg-[#F9F8FF] rounded-lg p-3 border border-[#E2E2FB]"
-                    >
-                      <div className={`w-3 h-3 rounded-full ${getBreakdownColor(index)}`}></div>
-                      <div className="flex-1">
-                        <span className="text-gray-900 font-medium capitalize">{item.label || item.status}</span>
-                        <p className="text-xs text-gray-500">
-                          {formatNumber(item.count || 0)} SPVs • {formatCurrency(item.total_allocation || 0)}
+            {analyticsData ? (
+              /* Performance Overview Card */
+              <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 w-full">
+                <h2 className="text-2xl font-medium text-gray-900 mb-6">Performance Overview</h2>
+                
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center sm:space-x-8 gap-6">
+                  {/* Circular Progress Chart */}
+                  <div className="relative flex-shrink-0 mx-auto sm:mx-0 w-48 h-48 sm:w-64 sm:h-64">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                      {/* Background circle */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="40"
+                        stroke="#E5E7EB"
+                        strokeWidth="8"
+                        fill="none"
+                      />
+                      {/* Progress circle */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="40"
+                        stroke="#00F0C3"
+                        strokeWidth="8"
+                        fill="none"
+                        strokeDasharray={progressCircumference}
+                        strokeDashoffset={progressOffset}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    {/* Center text */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                          {formatCurrency(totalFundsRaised)}
+                        </p>
+                        <p className="text-xs text-gray-500 mb-1">
+                          of {formatCurrency(totalTargetAmount)} target
+                        </p>
+                        <p className="text-sm font-semibold text-[#00F0C3]">
+                          {fundsRaisedPercent.toFixed(1)}%
                         </p>
                       </div>
                     </div>
-                  ))}
-                  <div className="rounded-lg border border-[#E2E2FB] p-3 text-sm text-gray-700 bg-[#F9F8FF]">
-                    Success Rate: <span className="font-semibold">{successRatePercent}%</span>
                   </div>
-                  <div className="rounded-lg border border-[#E2E2FB] p-3 text-sm text-gray-700 bg-[#F9F8FF]">
-                    Active Investors: <span className="font-semibold">{formatNumber(analyticsActiveInvestors)}</span>
+
+                  {/* Key Metrics List */}
+                  <div className="flex-1 space-y-3 max-w-md">
+                    {statusBreakdown.length > 0 ? (
+                      statusBreakdown.map((item, index) => (
+                        <div
+                          key={`${item.status}-${index}`}
+                          className="flex items-center space-x-3 bg-[#F9F8FF] rounded-lg p-3 border border-[#E2E2FB]"
+                        >
+                          <div className={`w-3 h-3 rounded-full ${getBreakdownColor(index)}`}></div>
+                          <div className="flex-1">
+                            <span className="text-gray-900 font-medium capitalize">{item.label || item.status}</span>
+                            <p className="text-xs text-gray-500">
+                              {formatNumber(item.count || 0)} SPVs • {formatCurrency(item.total_allocation || 0)}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    ) : null}
+                    <div className="rounded-lg border border-[#E2E2FB] p-3 text-sm text-gray-700 bg-[#F9F8FF]">
+                      Success Rate: <span className="font-semibold">{successRatePercent}%</span>
+                    </div>
+                    <div className="rounded-lg border border-[#E2E2FB] p-3 text-sm text-gray-700 bg-[#F9F8FF]">
+                      Active Investors: <span className="font-semibold">{formatNumber(analyticsActiveInvestors)}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-
-            
+            ) : (
+              <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 w-full">
+                <div className="text-center py-12">
+                  <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Analytics Data</h3>
+                  <p className="text-gray-600">Analytics data will appear here once you have SPVs and activity.</p>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

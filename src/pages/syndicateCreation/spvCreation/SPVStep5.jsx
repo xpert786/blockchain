@@ -340,12 +340,68 @@ const SPVStep5 = () => {
           .filter(tag => tag !== "");
       };
 
+      // Parse emails first (will be used for both invite and step5 update)
+      const emailsArray = parseEmailsToArray(modalFormData.emails);
+      
+      // First, send invite using the same endpoint as SPVDetails
+      if (emailsArray.length > 0) {
+        try {
+          const inviteLpsUrl = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/invite-lps/`;
+          console.log("📤 Sending invite to:", inviteLpsUrl);
+          
+          const invitePayload = {
+            emails: emailsArray,
+            message: modalFormData.message || "",
+            lead_carry_percentage: modalFormData.leadCarry ? parseFloat(modalFormData.leadCarry) : 0,
+            investment_visibility: investmentVisibilityMap[modalFormData.investmentVisibility] || "hidden",
+            auto_invite_active_spvs: modalFormData.anyRaisingSPV || false,
+            private_note: modalFormData.privateNote || "",
+            tags: parseTagsToArray(modalFormData.tags)
+          };
+
+          console.log("📤 Invite payload:", invitePayload);
+
+          const inviteResponse = await axios.post(inviteLpsUrl, invitePayload, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+
+          console.log("✅ Invite sent successfully:", inviteResponse.data);
+          
+          // Update invites list with the newly invited emails
+          const newInvites = emailsArray.map((email, index) => ({
+            id: Date.now() + index,
+            email: email,
+            name: email.split('@')[0] || "User",
+            status: "Active"
+          }));
+          setInvites(prev => {
+            const existingEmails = prev.map(inv => inv.email.toLowerCase());
+            const uniqueNewInvites = newInvites.filter(inv => !existingEmails.includes(inv.email.toLowerCase()));
+            return [...prev, ...uniqueNewInvites];
+          });
+        } catch (inviteError) {
+          console.error("⚠️ Error sending invite (continuing with step5 update):", inviteError);
+          // Don't fail the whole operation if invite fails, just log it
+          if (inviteError.response?.status === 401) {
+            setError("Unauthorized. Please login again.");
+            setLoading(false);
+            return;
+          }
+          // Show error but continue with step5 update
+          const errorMsg = inviteError.response?.data?.message || inviteError.response?.data?.error || inviteError.message || "Failed to send invite";
+          setError(`Invite failed: ${errorMsg}. Continuing with step5 update...`);
+        }
+      }
+
       // Prepare data for API
       const dataToSend = {};
 
-      // LP invite emails - convert string to array
+      // LP invite emails - convert string to array (reuse emailsArray from invite call above)
       // For PATCH, merge with existing emails; for POST, use new emails
-      const emailsArray = parseEmailsToArray(modalFormData.emails);
       if (emailsArray.length > 0) {
         if (hasExistingData && inviteData.lpInviteEmails && inviteData.lpInviteEmails.length > 0) {
           // Merge with existing emails, avoiding duplicates
