@@ -9,7 +9,7 @@ const BeneficialOwners = () => {
   const [beneficialOwners, setBeneficialOwners] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  
+
   const [formData, setFormData] = useState({
     fullName: "",
     dateOfBirth: "",
@@ -42,7 +42,7 @@ const BeneficialOwners = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const step3bUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step3b/`;
 
         console.log("=== Fetching Step3b List ===");
@@ -134,7 +134,7 @@ const BeneficialOwners = () => {
         throw new Error("No access token found. Please login again.");
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const deleteUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step3b/${id}/`;
 
       await axios.delete(deleteUrl, {
@@ -158,7 +158,7 @@ const BeneficialOwners = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    
+
     // Basic validation
     if (!formData.fullName.trim()) {
       setError("Full Name is required.");
@@ -172,8 +172,8 @@ const BeneficialOwners = () => {
         throw new Error("No access token found. Please login again.");
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-      
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
+
       // Prepare request data
       const requestData = {
         full_name: formData.fullName,

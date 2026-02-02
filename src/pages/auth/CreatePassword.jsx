@@ -48,7 +48,7 @@ const CreatePassword = () => {
 
   const resumePendingTwoFactor = async () => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const finalUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/choose_verification_method/`;
 
       const accessToken = localStorage.getItem("accessToken");
@@ -92,20 +92,20 @@ const CreatePassword = () => {
     try {
       // Get temp user data from localStorage (saved during SignUp)
       const tempUserData = JSON.parse(localStorage.getItem("tempUserData") || "{}");
-      
+
       // Verify role is present and valid
       if (!tempUserData.role) {
         setError("Role is missing. Please go back and select a role.");
         return;
       }
-      
+
       // Ensure role is in correct format (lowercase: "investor" or "syndicate")
       const role = tempUserData.role.toLowerCase();
       if (role !== "investor" && role !== "syndicate") {
         setError(`Invalid role: ${tempUserData.role}. Role must be "investor" or "syndicate".`);
         return;
       }
-      
+
       // Complete payload with SignUp data + Password - using correct endpoint format
       const payload = {
         email: tempUserData.email,
@@ -115,7 +115,7 @@ const CreatePassword = () => {
         phone_number: tempUserData.phoneNumber,
         role: role,
       };
-      
+
       console.log("=== Registration Debug ===");
       console.log("Raw tempUserData:", tempUserData);
       console.log("Role from localStorage:", tempUserData.role);
@@ -124,10 +124,10 @@ const CreatePassword = () => {
       console.log("Full payload:", payload);
       console.log("📤 PAYLOAD WITH ROLE:", JSON.stringify(payload, null, 2));
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       // Match the curl command endpoint: /api/registration-flow/register/
       const finalUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/register/`;
-      
+
       console.log("🔗 Calling registration API:", finalUrl);
       console.log("📦 Final payload being sent (includes role):", {
         email: payload.email,
@@ -137,7 +137,7 @@ const CreatePassword = () => {
         password: "***hidden***",
         confirm_password: "***hidden***"
       });
-      
+
       const response = await axios.post(finalUrl, payload, {
         headers: {
           'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ const CreatePassword = () => {
       if (response.data?.tokens) {
         localStorage.setItem("accessToken", response.data.tokens.access);
         localStorage.setItem("refreshToken", response.data.tokens.refresh);
-        
+
         // Save complete user data
         localStorage.setItem("userData", JSON.stringify({
           user_id: response.data.user_id,
@@ -285,7 +285,7 @@ const CreatePassword = () => {
                 <span className="text-3xl text-[#FF4D4D]">!</span>
               </div>
               <div>
-                  
+
                 <p className="text-[#0A2A2E]">{error}</p>
               </div>
               <button

@@ -22,13 +22,11 @@ const documentsMap = taxDocumentsList.reduce((acc, document) => {
 }, {});
 
 const navButtonClasses = (isActive) =>
-  `px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${
-    isActive ? "bg-[#FFFFFF1A] text-white" : "text-gray-300 hover:text-white"
+  `px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${isActive ? "bg-[#FFFFFF1A] text-white" : "text-gray-300 hover:text-white"
   }`;
 
 const tabButtonClasses = (isActive) =>
-  `px-4 py-2.5 rounded-lg text-sm font-medium font-poppins-custom transition-colors ${
-    isActive ? "bg-[#00F0C3] text-[#001D21]" : "bg-[#F9F8FF] text-black hover:bg-gray-50 border border-[#E5E7EB]"
+  `px-4 py-2.5 rounded-lg text-sm font-medium font-poppins-custom transition-colors ${isActive ? "bg-[#00F0C3] text-[#001D21]" : "bg-[#F9F8FF] text-black hover:bg-gray-50 border border-[#E5E7EB]"
   }`;
 
 
@@ -68,7 +66,7 @@ const TaxDocumentDetail = () => {
   const [isLoadingStatus, setIsLoadingStatus] = useState(false);
 
   const documentFromState = location.state?.document;
-  
+
   // Use API data if available, otherwise fall back to state or static data
   const documentInfo = opportunityData ? {
     id: opportunityData.spv_id,
@@ -92,7 +90,7 @@ const TaxDocumentDetail = () => {
     ] : [],
     rawData: opportunityData
   } : (documentFromState || documentsMap[documentId] || taxDocumentsList[0]);
-  
+
   const investmentDocuments = documentInfo.documents ?? [];
 
   // Use API financials data if available, otherwise use empty arrays
@@ -124,10 +122,10 @@ const TaxDocumentDetail = () => {
   // Fetch investment status
   const fetchInvestmentStatus = async () => {
     if (!documentId) return;
-    
+
     setIsLoadingStatus(true);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
 
       if (!token) {
@@ -180,7 +178,7 @@ const TaxDocumentDetail = () => {
     setOpportunityError(null);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
 
       if (!token) {
@@ -219,7 +217,7 @@ const TaxDocumentDetail = () => {
     setFinancialsError(null);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
 
       if (!token) {
@@ -258,7 +256,7 @@ const TaxDocumentDetail = () => {
     setTeamError(null);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
 
       if (!token) {
@@ -298,7 +296,7 @@ const TaxDocumentDetail = () => {
     setInvestmentSuccess(false);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
 
       if (!token) {
@@ -356,12 +354,12 @@ const TaxDocumentDetail = () => {
       // Check for "Investment request already send." message in response
       const responseMessage = responseData.message || responseData.error || responseData.msg || responseData.detail || "";
       const messageLower = responseMessage.toLowerCase();
-      
+
       // Check if message contains "investment request already send" or similar
-      if (messageLower.includes("investment request already send") || 
-          messageLower.includes("investment request already sent") ||
-          messageLower.includes("already send") ||
-          messageLower.includes("already sent")) {
+      if (messageLower.includes("investment request already send") ||
+        messageLower.includes("investment request already sent") ||
+        messageLower.includes("already send") ||
+        messageLower.includes("already sent")) {
         setInvestmentError("Investment request already send.");
         return;
       }
@@ -391,7 +389,7 @@ const TaxDocumentDetail = () => {
     setPaymentSuccess(false);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
 
       if (!token) {
@@ -422,11 +420,11 @@ const TaxDocumentDetail = () => {
 
       // Extract investments array
       const investments = investmentsData.investments || investmentsData.results || investmentsData.data || [];
-      
+
       // Find investment matching current SPV
-      const matchingInvestment = investments.find(inv => 
-        inv.spv_id === spvId || 
-        inv.spv?.id === spvId || 
+      const matchingInvestment = investments.find(inv =>
+        inv.spv_id === spvId ||
+        inv.spv?.id === spvId ||
         inv.spv === spvId
       );
 
@@ -465,40 +463,40 @@ const TaxDocumentDetail = () => {
 
       if (paymentResponse.ok) {
         console.log("Payment intent created successfully:", paymentData);
-        
+
         // If client_secret is returned, initialize Stripe Elements
         if (paymentData.client_secret) {
           console.log("Client secret received:", paymentData.client_secret);
-          
+
           // Get Stripe publishable key from env or use default
           const stripePublishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "pk_test_51SeVq7FyAsgGnfxjkQ4iOx4wjenlMJaT1jHyBC2NxJIcoEJayvJiDugzLKEWJiYEUAVYY5ymAr3shqxRlwvKxqEU00uYsWVart";
-          
+
           try {
             // Load Stripe
             const stripe = await loadStripe(stripePublishableKey);
-            
+
             if (!stripe) {
               throw new Error("Failed to load Stripe. Please refresh the page and try again.");
             }
 
             // Initialize Stripe Elements with client_secret
-            const elements = stripe.elements({ 
-              clientSecret: paymentData.client_secret 
+            const elements = stripe.elements({
+              clientSecret: paymentData.client_secret
             });
 
             // Create Payment Element
             const paymentElement = elements.create('payment');
-            
+
             // Store instances
             setStripeInstance(stripe);
             setElementsInstance(elements);
             setPaymentElement(paymentElement);
             setClientSecret(paymentData.client_secret);
-            
+
             // Show payment modal (useEffect will handle mounting)
             setShowPaymentModal(true);
             setIsProcessingPayment(false);
-            
+
           } catch (stripeError) {
             console.error("Error initializing Stripe:", stripeError);
             throw new Error(stripeError.message || "Failed to initialize payment. Please try again.");
@@ -521,7 +519,7 @@ const TaxDocumentDetail = () => {
 
   const handleSubmitPayment = async (e) => {
     e.preventDefault();
-    
+
     if (!stripeInstance || !elementsInstance) {
       setPaymentError("Payment system not initialized. Please try again.");
       return;
@@ -854,9 +852,8 @@ const TaxDocumentDetail = () => {
                                     <button
                                       key={page}
                                       onClick={() => setFinancialPage(page)}
-                                      className={`w-8 h-8 rounded-full text-xs font-poppins-custom transition-all ${
-                                        isActive ? "bg-[#00171C] text-white" : "text-[#6A7A80] hover:text-[#00171C]"
-                                      }`}
+                                      className={`w-8 h-8 rounded-full text-xs font-poppins-custom transition-all ${isActive ? "bg-[#00171C] text-white" : "text-[#6A7A80] hover:text-[#00171C]"
+                                        }`}
                                     >
                                       {page}
                                     </button>
@@ -1068,10 +1065,10 @@ const TaxDocumentDetail = () => {
                   </div>
                 )}
                 {/* Invest Now Button - Only enabled if NOT approved */}
-                <button 
+                <button
                   onClick={handleInvestNow}
                   disabled={
-                    isInvesting || 
+                    isInvesting ||
                     (investmentStatus?.approval_status?.is_approved === true) ||
                     (investmentStatus?.has_request && investmentStatus?.approval_status?.is_approved === true)
                   }
@@ -1080,10 +1077,10 @@ const TaxDocumentDetail = () => {
                   {isInvesting ? "Processing..." : "Invest Now"}
                 </button>
                 {/* Commit Payment Button - Only enabled if approved */}
-                <button 
+                <button
                   onClick={handleCommitPayment}
                   disabled={
-                    isProcessingPayment || 
+                    isProcessingPayment ||
                     paymentSuccess ||
                     !investmentStatus?.approval_status?.is_approved ||
                     !investmentStatus?.approval_status?.can_proceed_to_payment

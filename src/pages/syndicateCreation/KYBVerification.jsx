@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import {UpsyndicateIcon} from "../../components/Icons";
+import { UpsyndicateIcon } from "../../components/Icons";
 
 const KYBVerification = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   const [formData, setFormData] = useState({
     entityLegalName: "",
     entityType: "Individual",
@@ -69,19 +69,19 @@ const KYBVerification = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const step3aUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step3a/`;
 
         console.log("=== Fetching Step3a Data ===");
         console.log("API URL:", step3aUrl);
 
         const response = await axios.get(step3aUrl, {
-                headers: {
-                  'Authorization': `Bearer ${accessToken}`,
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json'
-                }
-              });
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
 
         console.log("Step3a response:", response.data);
         console.log("Step3a response structure:", JSON.stringify(response.data, null, 2));
@@ -92,18 +92,18 @@ const KYBVerification = () => {
           const nestedData = responseData.data || {};
           const profile = responseData.profile || {};
           const stepData = responseData.step_data || {};
-          
+
           // Check nested data first (most common structure), then root level, then step_data, then profile
-          const hasNestedData = nestedData.entity_legal_name !== undefined || 
-                                nestedData.registration_number !== undefined || 
-                                nestedData.registered_street_address !== undefined ||
-                                nestedData.operating_street_address !== undefined;
-          
-          const hasRootData = responseData.entity_legal_name !== undefined || 
-                             responseData.registration_number !== undefined || 
-                             responseData.registered_street_address !== undefined ||
-                             responseData.operating_street_address !== undefined;
-          
+          const hasNestedData = nestedData.entity_legal_name !== undefined ||
+            nestedData.registration_number !== undefined ||
+            nestedData.registered_street_address !== undefined ||
+            nestedData.operating_street_address !== undefined;
+
+          const hasRootData = responseData.entity_legal_name !== undefined ||
+            responseData.registration_number !== undefined ||
+            responseData.registered_street_address !== undefined ||
+            responseData.operating_street_address !== undefined;
+
           // Priority: nested data > root level > step_data > profile
           let sourceData = {};
           if (hasNestedData) {
@@ -114,10 +114,10 @@ const KYBVerification = () => {
             console.log("✅ Using root level data");
           } else if (Object.keys(stepData).length > 0) {
             sourceData = stepData;
-                console.log("✅ Using step_data");
+            console.log("✅ Using step_data");
           } else {
             sourceData = profile;
-                console.log("✅ Using profile");
+            console.log("✅ Using profile");
           }
 
           console.log("✅ Source data:", JSON.stringify(sourceData, null, 2));
@@ -198,20 +198,20 @@ const KYBVerification = () => {
         throw new Error("No access token found. Please login again.");
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const step3aUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step3a/`;
 
       // Check if any files are being uploaded
-      const hasFiles = formData.certOfIncorporation || 
-                       formData.registeredAddressDoc || 
-                       formData.directorsRegister || 
-                       formData.trustDeed || 
-                       formData.partnershipAgreement;
+      const hasFiles = formData.certOfIncorporation ||
+        formData.registeredAddressDoc ||
+        formData.directorsRegister ||
+        formData.trustDeed ||
+        formData.partnershipAgreement;
 
       if (hasFiles) {
         // Use FormData for file uploads
         const formDataToSend = new FormData();
-        
+
         // Add text fields
         formDataToSend.append("entity_legal_name", formData.entityLegalName);
         formDataToSend.append("entity_type", formData.entityType.toLowerCase());
@@ -251,12 +251,12 @@ const KYBVerification = () => {
         console.log("API URL:", step3aUrl);
 
         const response = await axios.patch(step3aUrl, formDataToSend, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Accept': 'application/json'
-              // Note: Don't set Content-Type header - axios will set it automatically with boundary for FormData
-            }
-          });
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json'
+            // Note: Don't set Content-Type header - axios will set it automatically with boundary for FormData
+          }
+        });
 
         console.log("✅ Step3a updated successfully:", response.data);
       } else {
@@ -285,12 +285,12 @@ const KYBVerification = () => {
         console.log("Request Data:", requestData);
 
         const response = await axios.patch(step3aUrl, requestData, {
-                headers: {
-                  'Authorization': `Bearer ${accessToken}`,
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
-                  'Accept': 'application/json'
-                }
-              });
+            'Accept': 'application/json'
+          }
+        });
 
         console.log("✅ Step3a updated successfully:", response.data);
       }
@@ -299,7 +299,7 @@ const KYBVerification = () => {
       // If Entity Type is "Individual", skip Beneficial Owners and go directly to Compliance Attestation
       // Otherwise, go to Beneficial Owners first
       if (formData.entityType.toLowerCase() === "individual") {
-      navigate("/syndicate-creation/compliance-attestation");
+        navigate("/syndicate-creation/compliance-attestation");
       } else {
         navigate("/syndicate-creation/beneficial-owners");
       }
@@ -328,7 +328,7 @@ const KYBVerification = () => {
   const FileUploadArea = ({ label, field, accept = ".pdf,.jpg,.jpeg,.png", optional = false }) => {
     const file = formData[field];
     const existingFileUrl = existingFiles[field];
-    
+
     // Extract filename from URL
     const getFileNameFromUrl = (url) => {
       if (!url) return null;
@@ -339,34 +339,34 @@ const KYBVerification = () => {
         return 'Uploaded file';
       }
     };
-    
+
     return (
-    <div>
-      <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
+      <div>
+        <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
           {label} {optional && <span className="text-gray-500">(optional)</span>}
-      </label>
-      <label htmlFor={field} className="cursor-pointer">
-        <div className="border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg p-8 text-center hover:bg-[#F0F2F1] transition-colors">
-          <input
-            type="file"
-            accept={accept}
-            onChange={(e) => handleFileUpload(field, e.target.files[0])}
-            className="hidden"
-            id={field}
-          />
-          <div className="mb-4 flex justify-center">
-            <UpsyndicateIcon />
-          </div>
-          <p className="text-gray-500">Click to upload Files</p>
+        </label>
+        <label htmlFor={field} className="cursor-pointer">
+          <div className="border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg p-8 text-center hover:bg-[#F0F2F1] transition-colors">
+            <input
+              type="file"
+              accept={accept}
+              onChange={(e) => handleFileUpload(field, e.target.files[0])}
+              className="hidden"
+              id={field}
+            />
+            <div className="mb-4 flex justify-center">
+              <UpsyndicateIcon />
+            </div>
+            <p className="text-gray-500">Click to upload Files</p>
             {file && (
               <p className="text-green-600 mt-2">✓ {file.name}</p>
             )}
             {!file && existingFileUrl && (
               <div className="mt-2">
                 <p className="text-green-600">✓ {getFileNameFromUrl(existingFileUrl)}</p>
-                <a 
-                  href={existingFileUrl} 
-                  target="_blank" 
+                <a
+                  href={existingFileUrl}
+                  target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
                   className="text-blue-600 hover:text-blue-800 text-sm underline"
@@ -374,9 +374,9 @@ const KYBVerification = () => {
                   View file
                 </a>
               </div>
-          )}
-        </div>
-      </label>
+            )}
+          </div>
+        </label>
         {(file || existingFileUrl) && (
           <button
             type="button"
@@ -392,8 +392,8 @@ const KYBVerification = () => {
             Remove
           </button>
         )}
-    </div>
-  );
+      </div>
+    );
   };
 
   return (
@@ -467,8 +467,8 @@ const KYBVerification = () => {
               Registration Number / Company Number
             </label>
             <div className="relative">
-            <input
-              type="text"
+              <input
+                type="text"
                 value={formData.registrationNumber}
                 onChange={(e) => handleInputChange("registrationNumber", e.target.value)}
                 className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent pr-10"
@@ -505,68 +505,68 @@ const KYBVerification = () => {
                   placeholder="Flat No"
                 />
               </div>
-          <div>
+              <div>
                 <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
                   Postal Code
-            </label>
-            <input
-              type="text"
+                </label>
+                <input
+                  type="text"
                   value={formData.registeredPostalCode}
                   onChange={(e) => handleInputChange("registeredPostalCode", e.target.value)}
-              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Code"
-            />
-          </div>
-          <div>
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
                   State
-            </label>
-            <input
-              type="text"
+                </label>
+                <input
+                  type="text"
                   value={formData.registeredState}
                   onChange={(e) => handleInputChange("registeredState", e.target.value)}
-              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Enter State name"
-            />
-          </div>
+                />
+              </div>
             </div>
             {/* Right Column */}
             <div className="space-y-4">
-          <div>
+              <div>
                 <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
                   Area/ landmark
-            </label>
-            <input
-              type="text"
+                </label>
+                <input
+                  type="text"
                   value={formData.registeredArea}
                   onChange={(e) => handleInputChange("registeredArea", e.target.value)}
-              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Enter Area"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
                   City
-            </label>
-            <input
-              type="text"
+                </label>
+                <input
+                  type="text"
                   value={formData.registeredCity}
                   onChange={(e) => handleInputChange("registeredCity", e.target.value)}
-              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Enter City Name"
-            />
-          </div>
-          <div>
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
-              Country
-            </label>
-            <input
-              type="text"
+                  Country
+                </label>
+                <input
+                  type="text"
                   value={formData.registeredCountry}
                   onChange={(e) => handleInputChange("registeredCountry", e.target.value)}
-              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Enter Country name"
-            />
+                />
               </div>
             </div>
           </div>
@@ -578,74 +578,74 @@ const KYBVerification = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Left Column */}
             <div className="space-y-4">
-          <div>
+              <div>
                 <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
                   Street Address
-            </label>
+                </label>
                 <input
                   type="text"
                   value={formData.operatingStreetAddress}
                   onChange={(e) => handleInputChange("operatingStreetAddress", e.target.value)}
-              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Flat No"
                 />
-          </div>
-          <div>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
                   Postal Code
-            </label>
+                </label>
                 <input
                   type="text"
                   value={formData.operatingPostalCode}
                   onChange={(e) => handleInputChange("operatingPostalCode", e.target.value)}
-              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Code"
                 />
-          </div>
-          <div>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
                   State
-            </label>
+                </label>
                 <input
                   type="text"
                   value={formData.operatingState}
                   onChange={(e) => handleInputChange("operatingState", e.target.value)}
-              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Enter State name"
                 />
               </div>
-          </div>
+            </div>
             {/* Right Column */}
             <div className="space-y-4">
-          <div>
+              <div>
                 <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
                   Area/ landmark
-            </label>
-            <input
+                </label>
+                <input
                   type="text"
                   value={formData.operatingArea}
                   onChange={(e) => handleInputChange("operatingArea", e.target.value)}
-              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Enter Area"
-            />
-          </div>
-          <div>
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
                   City
-            </label>
-            <input
+                </label>
+                <input
                   type="text"
                   value={formData.operatingCity}
                   onChange={(e) => handleInputChange("operatingCity", e.target.value)}
-              className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="Enter City Name"
-            />
-          </div>
-          <div>
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-[#0A2A2E] mb-2">
                   Country
                 </label>
-              <input
+                <input
                   type="text"
                   value={formData.operatingCountry}
                   onChange={(e) => handleInputChange("operatingCountry", e.target.value)}
@@ -662,17 +662,17 @@ const KYBVerification = () => {
           {/* Company Documents */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-[#0A2A2E]">Company</h2>
-            <FileUploadArea 
-              label="Cert of Incorporation" 
-              field="certOfIncorporation" 
+            <FileUploadArea
+              label="Cert of Incorporation"
+              field="certOfIncorporation"
             />
-            <FileUploadArea 
-              label="Registered address" 
-              field="registeredAddressDoc" 
+            <FileUploadArea
+              label="Registered address"
+              field="registeredAddressDoc"
             />
-            <FileUploadArea 
-              label="Directors register" 
-              field="directorsRegister" 
+            <FileUploadArea
+              label="Directors register"
+              field="directorsRegister"
               optional={true}
             />
           </div>
@@ -680,18 +680,18 @@ const KYBVerification = () => {
           {/* Trust / Foundation Documents */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-[#0A2A2E]">Trust / Foundation</h2>
-            <FileUploadArea 
-              label="Trust deed" 
-              field="trustDeed" 
+            <FileUploadArea
+              label="Trust deed"
+              field="trustDeed"
             />
           </div>
 
           {/* Partnership Documents */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-[#0A2A2E]">Partnership</h2>
-            <FileUploadArea 
-              label="Partnership agreement" 
-              field="partnershipAgreement" 
+            <FileUploadArea
+              label="Partnership agreement"
+              field="partnershipAgreement"
             />
           </div>
         </div>

@@ -23,7 +23,7 @@ const SyndicateSuccess = () => {
       // Get user ID from localStorage
       const accessToken = localStorage.getItem("accessToken");
       const userDataStr = localStorage.getItem("userData");
-      
+
       if (!accessToken) {
         setAccessError("No access token found. Please login again.");
         setIsCheckingAccess(false);
@@ -46,7 +46,7 @@ const SyndicateSuccess = () => {
       }
 
       // Check user status from API
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const userUrl = `${API_URL.replace(/\/$/, "")}/users/${userId}/`;
 
       console.log("=== Checking User Status for SPV Creation Access ===");
@@ -97,10 +97,10 @@ const SyndicateSuccess = () => {
       }
     } catch (error) {
       console.error("Error checking user status:", error);
-      const errorMsg = error.response?.data?.message || 
-                      error.response?.data?.error || 
-                      error.message || 
-                      "Failed to verify access. Please try again.";
+      const errorMsg = error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to verify access. Please try again.";
       setAccessError(errorMsg);
     } finally {
       setIsCheckingAccess(false);
@@ -119,13 +119,13 @@ const SyndicateSuccess = () => {
         setLoading(true);
         const accessToken = localStorage.getItem("accessToken");
         const userDataStr = localStorage.getItem("userData");
-        
+
         if (!accessToken) {
           setLoading(false);
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
 
         // Parse user data from localStorage
         let localUserData = {};
@@ -149,7 +149,7 @@ const SyndicateSuccess = () => {
                 'Accept': 'application/json'
               }
             });
-            
+
             if (userResponse.data) {
               setUserData(userResponse.data);
             }
@@ -176,7 +176,7 @@ const SyndicateSuccess = () => {
           if (syndicateResponse.data) {
             const reviewSummary = syndicateResponse.data.review_summary || {};
             const entityKyb = reviewSummary.entity_kyb || {};
-            
+
             setSyndicateData({
               entityLegalName: entityKyb.entity_legal_name || "",
               entityType: entityKyb.entity_type || "",
@@ -221,7 +221,7 @@ const SyndicateSuccess = () => {
   // Helper function to get user display name
   const getUserDisplayName = () => {
     if (!userData) return "User";
-    
+
     // Try different name fields in order of preference
     if (userData.full_name) return userData.full_name;
     if (userData.first_name && userData.last_name) {
@@ -298,7 +298,7 @@ const SyndicateSuccess = () => {
                   <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
                 </svg>
               </div>
-              
+
               {/* Syndicate Details */}
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 text-center sm:text-left">
@@ -306,9 +306,9 @@ const SyndicateSuccess = () => {
                 </h2>
                 <div className="flex flex-col sm:flex-row sm:items-center text-gray-600 text-center sm:text-left gap-1 sm:gap-2">
                   <span className="text-sm">{loading ? "Loading..." : getSyndicateUrl()}</span>
-                  <a 
-                    href={loading ? "#" : getSyndicateUrl()} 
-                    target="_blank" 
+                  <a
+                    href={loading ? "#" : getSyndicateUrl()}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center"
                   >
@@ -328,7 +328,7 @@ const SyndicateSuccess = () => {
                 )}
               </div>
             </div>
-            
+
             {/* Edit Profile Button */}
             <button
               onClick={handleEditProfile}

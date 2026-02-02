@@ -14,14 +14,14 @@ const mapLpBaseSizeToRange = (size) => {
 
 const mapRangeToLpBaseSize = (range) => {
   if (typeof range === "string") {
-  switch (range) {
-    case "1-10": return 10;
-    case "11-25": return 25;
-    case "26-50": return 50;
-    case "51-100": return 100;
-    case "100+": return 150;
-    default: return 50;
-  }
+    switch (range) {
+      case "1-10": return 10;
+      case "11-25": return 25;
+      case "26-50": return 50;
+      case "51-100": return 100;
+      case "100+": return 150;
+      default: return 50;
+    }
   }
   return 50;
 };
@@ -124,9 +124,9 @@ const LeadInfo = () => {
   // Map country name to accreditation rule code
   const mapCountryToCode = (countryName) => {
     if (!countryName) return "default";
-    
+
     const countryLower = countryName.toLowerCase();
-    
+
     // Map common country names to codes
     if (countryLower.includes("united states") || countryLower === "us" || countryLower === "usa") {
       return "us";
@@ -140,13 +140,13 @@ const LeadInfo = () => {
       return "hk";
     } else if (countryLower.includes("australia") || countryLower === "au") {
       return "au";
-    } else if (countryLower.includes("european union") || countryLower === "eu" || 
-               countryLower.includes("germany") || countryLower.includes("france") || 
-               countryLower.includes("spain") || countryLower.includes("italy") ||
-               countryLower.includes("netherlands") || countryLower.includes("belgium")) {
+    } else if (countryLower.includes("european union") || countryLower === "eu" ||
+      countryLower.includes("germany") || countryLower.includes("france") ||
+      countryLower.includes("spain") || countryLower.includes("italy") ||
+      countryLower.includes("netherlands") || countryLower.includes("belgium")) {
       return "eu";
     }
-    
+
     return "default";
   };
 
@@ -167,12 +167,12 @@ const LeadInfo = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const url = (path) => `${API_URL.replace(/\/$/, "")}${path}`;
 
         // Parallel fetch sectors/geographies and step1 data
         let sgRes, step1Res;
-        
+
         try {
           [sgRes, step1Res] = await Promise.all([
             axios.get(url("/syndicate/sectors-geographies/"), {
@@ -224,17 +224,17 @@ const LeadInfo = () => {
         try {
           const userData = JSON.parse(localStorage.getItem("userData") || "{}");
           userEmail = userData.email || "";
-          
+
           // If not in localStorage, try to fetch from profile
           if (!userEmail) {
             try {
               const profileRes = await axios.get(url("/profiles/"), {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        });
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`,
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                }
+              });
 
               if (profileRes.data?.results?.[0]?.email) {
                 userEmail = profileRes.data.results[0].email;
@@ -253,12 +253,12 @@ const LeadInfo = () => {
         if (step1Res && step1Res.status === 200 && step1Res.data) {
           const data = step1Res.data;
           console.log("Fetched step1 data:", data);
-          
+
           if (mounted) {
             // Handle nested data structure if present
             const stepData = data.step_data || data;
             const profileData = data.profile || {};
-            
+
             // Combine step_data and profile data, with step_data taking precedence
             const combinedData = {
               ...profileData,
@@ -279,18 +279,18 @@ const LeadInfo = () => {
               yearsOfExperience: combinedData.years_of_experience || prev.yearsOfExperience,
               linkedIn: combinedData.linkedin_profile || combinedData.linkedin || prev.linkedIn,
               typicalCheckSize: combinedData.typical_check_size || prev.typicalCheckSize,
-              accreditation: combinedData.is_accredited === "yes" || combinedData.is_accredited === true ? "accredited" : 
-                            combinedData.is_accredited === "no" || combinedData.is_accredited === false ? "not-accredited" : prev.accreditation,
+              accreditation: combinedData.is_accredited === "yes" || combinedData.is_accredited === true ? "accredited" :
+                combinedData.is_accredited === "no" || combinedData.is_accredited === false ? "not-accredited" : prev.accreditation,
               understandRequirements: combinedData.understands_regulatory_requirements !== undefined ? combinedData.understands_regulatory_requirements : prev.understandRequirements,
               understandResponsibilities: combinedData.understands_regulatory_requirements !== undefined ? combinedData.understands_regulatory_requirements : prev.understandResponsibilities,
               sectorFocus: combinedData.sector_ids || (combinedData.sectors ? combinedData.sectors.map(s => s.id || s) : []) || prev.sectorFocus,
               geographyFocus: combinedData.geography_ids || (combinedData.geographies ? combinedData.geographies.map(g => g.id || g) : []) || prev.geographyFocus,
               existingLpNetwork: combinedData.existing_lp_count && combinedData.existing_lp_count !== "0" && combinedData.existing_lp_count !== 0 ? "Yes" : "No",
-              lpBaseSize: combinedData.lp_base_size ? parseInt(combinedData.lp_base_size, 10) : 
-                         (combinedData.existing_lp_count && combinedData.existing_lp_count !== "0" ? mapRangeToLpBaseSize(combinedData.existing_lp_count) : prev.lpBaseSize),
+              lpBaseSize: combinedData.lp_base_size ? parseInt(combinedData.lp_base_size, 10) :
+                (combinedData.existing_lp_count && combinedData.existing_lp_count !== "0" ? mapRangeToLpBaseSize(combinedData.existing_lp_count) : prev.lpBaseSize),
               enablePlatformLpAccess: combinedData.enable_platform_lp_access !== undefined ? combinedData.enable_platform_lp_access : prev.enablePlatformLpAccess
             }));
-            
+
             console.log("Form data updated with email:", formData.email);
           }
         } else {
@@ -325,40 +325,40 @@ const LeadInfo = () => {
   // === FORM SUBMIT ===
   const handleNext = async () => {
     setError("");
-    
+
     if (currentStep === 1) {
       // Validate step 1
       if (!formData.fullName) return setError("Please enter your full name.");
       if (!formData.countryOfResidence) return setError("Please select your country of residence.");
       if (!formData.email) return setError("Please enter your email.");
       if (!formData.currentRole) return setError("Please enter your current role/title.");
-    if (!formData.accreditation) return setError("Please select your accreditation status.");
-    if (!formData.understandRequirements) return setError("You must acknowledge that you understand the regulatory requirements.");
+      if (!formData.accreditation) return setError("Please select your accreditation status.");
+      if (!formData.understandRequirements) return setError("You must acknowledge that you understand the regulatory requirements.");
       if (!formData.understandResponsibilities) return setError("You must acknowledge the syndicate lead responsibilities.");
       if (isDisabled) return setError("Only accredited investors can launch a syndicate.");
-      
+
       // Move to step 2
       setCurrentStep(2);
     } else {
       // Validate step 2
-    if (!formData.sectorFocus.length) return setError("Please select at least one sector focus.");
-    if (!formData.geographyFocus.length) return setError("Please select at least one geography focus.");
+      if (!formData.sectorFocus.length) return setError("Please select at least one sector focus.");
+      if (!formData.geographyFocus.length) return setError("Please select at least one geography focus.");
 
       // Submit data to API
-    setLoading(true);
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-      if (!accessToken) {
-        setError("You must be logged in to continue. Please log in again.");
-        navigate("/login");
-        return;
-      }
+      setLoading(true);
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          setError("You must be logged in to continue. Please log in again.");
+          navigate("/login");
+          return;
+        }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const url = `${API_URL.replace(/\/$/, "")}/syndicate/step1/`;
 
         // Map form data to API payload format
-      const payload = {
+        const payload = {
           full_name: formData.fullName,
           short_bio: formData.shortBio,
           country_of_residence: formData.countryOfResidence,
@@ -366,14 +366,14 @@ const LeadInfo = () => {
           years_of_experience: formData.yearsOfExperience,
           linkedin_profile: formData.linkedIn,
           typical_check_size: formData.typicalCheckSize,
-        is_accredited: formData.accreditation === "accredited" ? "yes" : "no",
-        understands_regulatory_requirements: formData.understandRequirements,
-        sector_ids: formData.sectorFocus,
-        geography_ids: formData.geographyFocus,
-        existing_lp_count: formData.existingLpNetwork === "Yes" ? mapLpBaseSizeToRange(formData.lpBaseSize) : "0",
+          is_accredited: formData.accreditation === "accredited" ? "yes" : "no",
+          understands_regulatory_requirements: formData.understandRequirements,
+          sector_ids: formData.sectorFocus,
+          geography_ids: formData.geographyFocus,
+          existing_lp_count: formData.existingLpNetwork === "Yes" ? mapLpBaseSizeToRange(formData.lpBaseSize) : "0",
           lp_base_size: formData.existingLpNetwork === "Yes" ? formData.lpBaseSize.toString() : undefined,
-        enable_platform_lp_access: formData.existingLpNetwork === "Yes" ? formData.enablePlatformLpAccess : false
-      };
+          enable_platform_lp_access: formData.existingLpNetwork === "Yes" ? formData.enablePlatformLpAccess : false
+        };
 
         await axios.patch(url, payload, {
           headers: {
@@ -384,21 +384,21 @@ const LeadInfo = () => {
         });
 
         // Navigate to next page after successful submission
-      navigate("/syndicate-creation/entity-profile");
-    } catch (err) {
+        navigate("/syndicate-creation/entity-profile");
+      } catch (err) {
         console.error("Error submitting step1 data:", err);
-      const backendData = err.response?.data;
-      if (backendData) {
-        setError(
-          typeof backendData === "object"
-            ? backendData.message || backendData.error || JSON.stringify(backendData)
-            : String(backendData)
-        );
-      } else {
-        setError(err.message || "Failed to submit lead information. Please try again.");
-      }
-    } finally {
-      setLoading(false);
+        const backendData = err.response?.data;
+        if (backendData) {
+          setError(
+            typeof backendData === "object"
+              ? backendData.message || backendData.error || JSON.stringify(backendData)
+              : String(backendData)
+          );
+        } else {
+          setError(err.message || "Failed to submit lead information. Please try again.");
+        }
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -417,8 +417,8 @@ const LeadInfo = () => {
       <div className="space-y-2 text-center sm:text-left">
         <h1 className="text-2xl text-[#001D21] mb-2">Step 1: Lead Info</h1>
         <p className="text-gray-600">
-          {currentStep === 1 
-            ? "Personal and jurisdiction details." 
+          {currentStep === 1
+            ? "Personal and jurisdiction details."
             : "Define your investment focus and LP network preferences."}
         </p>
       </div>
@@ -430,236 +430,236 @@ const LeadInfo = () => {
       {currentStep === 1 && (
         <>
 
-      {/* Personal and Jurisdiction Details - Two Column Layout */}
-      <div className="space-y-4">
-        <h2 className="text-xl text-[#0A2A2E]">Personal and Jurisdiction Details</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left Column */}
+          {/* Personal and Jurisdiction Details - Two Column Layout */}
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
-              <input
-                type="text"
-                value={formData.fullName}
-                onChange={e => handleInputChange("fullName", e.target.value)}
-                placeholder="Enter Name"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F4F6F5] outline-none focus:border-[#00F0C3] transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Country of Residence</label>
-              <div className="relative">
-                <select
-                  value={formData.countryOfResidence}
-                  onChange={e => handleInputChange("countryOfResidence", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F4F6F5] outline-none focus:border-[#00F0C3] transition-colors appearance-none pr-10"
-                >
-                  <option value="">Select</option>
-                  <option value="US">United States</option>
-                  <option value="UK">United Kingdom</option>
-                  <option value="SG">Singapore</option>
-                  <option value="UAE">United Arab Emirates</option>
-                  <option value="HK">Hong Kong</option>
-                  <option value="AU">Australia</option>
-                  <option value="CA">Canada</option>
-                  <option value="DE">Germany</option>
-                  <option value="FR">France</option>
-                  <option value="Other">Other</option>
-                </select>
-                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+            <h2 className="text-xl text-[#0A2A2E]">Personal and Jurisdiction Details</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left Column */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
+                  <input
+                    type="text"
+                    value={formData.fullName}
+                    onChange={e => handleInputChange("fullName", e.target.value)}
+                    placeholder="Enter Name"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F4F6F5] outline-none focus:border-[#00F0C3] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Country of Residence</label>
+                  <div className="relative">
+                    <select
+                      value={formData.countryOfResidence}
+                      onChange={e => handleInputChange("countryOfResidence", e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F4F6F5] outline-none focus:border-[#00F0C3] transition-colors appearance-none pr-10"
+                    >
+                      <option value="">Select</option>
+                      <option value="US">United States</option>
+                      <option value="UK">United Kingdom</option>
+                      <option value="SG">Singapore</option>
+                      <option value="UAE">United Arab Emirates</option>
+                      <option value="HK">Hong Kong</option>
+                      <option value="AU">Australia</option>
+                      <option value="CA">Canada</option>
+                      <option value="DE">Germany</option>
+                      <option value="FR">France</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Short Bio</label>
+                  <input
+                    type="text"
+                    value={formData.shortBio}
+                    onChange={e => handleInputChange("shortBio", e.target.value)}
+                    placeholder="Enter Bio"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F4F6F5] outline-none focus:border-[#00F0C3] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn (optional)</label>
+                  <input
+                    type="text"
+                    value={formData.linkedIn}
+                    onChange={e => handleInputChange("linkedIn", e.target.value)}
+                    placeholder="Enter LinkedIn URL"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F4F6F5] outline-none focus:border-[#00F0C3] transition-colors"
+                  />
+                </div>
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Short Bio</label>
-              <input
-                type="text"
-                value={formData.shortBio}
-                onChange={e => handleInputChange("shortBio", e.target.value)}
-                placeholder="Enter Bio"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F4F6F5] outline-none focus:border-[#00F0C3] transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn (optional)</label>
-              <input
-                type="text"
-                value={formData.linkedIn}
-                onChange={e => handleInputChange("linkedIn", e.target.value)}
-                placeholder="Enter LinkedIn URL"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F4F6F5] outline-none focus:border-[#00F0C3] transition-colors"
-              />
+
+              {/* Right Column */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={e => handleInputChange("email", e.target.value)}
+                    placeholder="Enter Email"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F4F6F5] outline-none focus:border-[#00F0C3] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Role / Title</label>
+                  <input
+                    type="text"
+                    value={formData.currentRole}
+                    onChange={e => handleInputChange("currentRole", e.target.value)}
+                    placeholder="Enter Role"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F4F6F5] outline-none focus:border-[#00F0C3] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Years of Investing Experience</label>
+                  <div className="relative">
+                    <select
+                      value={formData.yearsOfExperience}
+                      onChange={e => handleInputChange("yearsOfExperience", e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F4F6F5] outline-none focus:border-[#00F0C3] transition-colors appearance-none pr-10"
+                    >
+                      <option value="">Select</option>
+                      <option value="0-1">0-1 years</option>
+                      <option value="2-5">2-5 years</option>
+                      <option value="6-10">6-10 years</option>
+                      <option value="11-15">11-15 years</option>
+                      <option value="16-20">16-20 years</option>
+                      <option value="20+">20+ years</option>
+                    </select>
+                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Typical Check Size (optional)</label>
+                  <div className="relative">
+                    <select
+                      value={formData.typicalCheckSize}
+                      onChange={e => handleInputChange("typicalCheckSize", e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F4F6F5] outline-none focus:border-[#00F0C3] transition-colors appearance-none pr-10"
+                    >
+                      <option value="">Select</option>
+                      <option value="<10k">Less than $10k</option>
+                      <option value="10k-50k">$10k - $50k</option>
+                      <option value="50k-100k">$50k - $100k</option>
+                      <option value="100k-250k">$100k - $250k</option>
+                      <option value="250k-500k">$250k - $500k</option>
+                      <option value="500k-1m">$500k - $1M</option>
+                      <option value="1m+">$1M+</option>
+                    </select>
+                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Right Column */}
+          {/* Accreditation Section with KYC */}
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={e => handleInputChange("email", e.target.value)}
-                placeholder="Enter Email"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F4F6F5] outline-none focus:border-[#00F0C3] transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Current Role / Title</label>
-              <input
-                type="text"
-                value={formData.currentRole}
-                onChange={e => handleInputChange("currentRole", e.target.value)}
-                placeholder="Enter Role"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F4F6F5] outline-none focus:border-[#00F0C3] transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Years of Investing Experience</label>
-              <div className="relative">
-                <select
-                  value={formData.yearsOfExperience}
-                  onChange={e => handleInputChange("yearsOfExperience", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F4F6F5] outline-none focus:border-[#00F0C3] transition-colors appearance-none pr-10"
-                >
-                  <option value="">Select</option>
-                  <option value="0-1">0-1 years</option>
-                  <option value="2-5">2-5 years</option>
-                  <option value="6-10">6-10 years</option>
-                  <option value="11-15">11-15 years</option>
-                  <option value="16-20">16-20 years</option>
-                  <option value="20+">20+ years</option>
-                </select>
-                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <h2 className="text-xl text-[#0A2A2E]">Accreditation*</h2>
+            <div className="flex items-center gap-4">
+              <span className="text-gray-700">KYC Status:</span>
+              <button
+                type="button"
+                className="bg-[#00F0C3] hover:bg-teal-600 text-black px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+              >
+                Start Verification
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
+              </button>
+            </div>
+
+
+
+          </div>
+
+          {/* Syndicate Lead Responsibilities */}
+          <div className="space-y-4">
+            <h2 className="text-xl text-[#0A2A2E]">Syndicate Lead Responsibilities</h2>
+            <div className="bg-[#F9F8FF] border-1 border-[#E2E2FB] rounded-lg p-6 space-y-4">
+              <div>
+                <p className="font-semibold text-gray-800 mb-3">To maintain global compliance and protect investor eligibility:</p>
+                <ul className="space-y-2 text-gray-700 text-sm">
+                  <li>• Unlocksley SPVs are private offerings intended for accredited or otherwise qualified investors.</li>
+                  <li>• Syndicate Leads must not publicly advertise, mass solicit, or share confidential deal information outside the platform.</li>
+                  <li>• Investor access must be limited to LPs who have been approved on Unlocksley.</li>
+                </ul>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-800 mb-3">I confirm that as a Syndicate Lead, I will:</p>
+                <ul className="space-y-2 text-gray-700 text-sm">
+                  <li>• Invite only accredited or otherwise qualified investors into my syndicate;</li>
+                  <li>• Avoid public advertising, mass marketing, or general solicitation of deals;</li>
+                  <li>• Share deal materials only with approved LPs inside Unlocksley;</li>
+                  <li>• Ensure all LPs are eligible to invest based on their jurisdiction;</li>
+                  <li>• Provide accurate information during syndicate formation.</li>
+                </ul>
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Typical Check Size (optional)</label>
-              <div className="relative">
-                <select
-                  value={formData.typicalCheckSize}
-                  onChange={e => handleInputChange("typicalCheckSize", e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-[#F4F6F5] outline-none focus:border-[#00F0C3] transition-colors appearance-none pr-10"
-                >
-                  <option value="">Select</option>
-                  <option value="<10k">Less than $10k</option>
-                  <option value="10k-50k">$10k - $50k</option>
-                  <option value="50k-100k">$50k - $100k</option>
-                  <option value="100k-250k">$100k - $250k</option>
-                  <option value="250k-500k">$250k - $500k</option>
-                  <option value="500k-1m">$500k - $1M</option>
-                  <option value="1m+">$1M+</option>
-                </select>
-                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+            <div className="pt-2">
+              <label className="flex items-start sm:items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={formData.understandResponsibilities}
+                  onChange={e => handleInputChange("understandResponsibilities", e.target.checked)}
+                  className="mt-1 sm:mt-0"
+                />
+                <span className="text-gray-700">
+                  I acknowledge the syndicate lead responsibilities
+                </span>
+              </label>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Accreditation Section with KYC */}
-      <div className="space-y-4">
-        <h2 className="text-xl text-[#0A2A2E]">Accreditation*</h2>
-        <div className="flex items-center gap-4">
-          <span className="text-gray-700">KYC Status:</span>
-          <button
-            type="button"
-            className="bg-[#00F0C3] hover:bg-teal-600 text-black px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
-          >
-            Start Verification
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-       
-       
-      
-      </div>
+          <div className={`space-y-4 ${isDisabled ? 'bg-[#F4F6F5] border-1 border-[#000000] p-6 rounded-lg' : ''}`}>
+            <h2 className="text-xl text-[#0A2A2E]">Accreditation*</h2>
 
-      {/* Syndicate Lead Responsibilities */}
-      <div className="space-y-4">
-        <h2 className="text-xl text-[#0A2A2E]">Syndicate Lead Responsibilities</h2>
-        <div className="bg-[#F9F8FF] border-1 border-[#E2E2FB] rounded-lg p-6 space-y-4">
-          <div>
-            <p className="font-semibold text-gray-800 mb-3">To maintain global compliance and protect investor eligibility:</p>
-            <ul className="space-y-2 text-gray-700 text-sm">
-              <li>• Unlocksley SPVs are private offerings intended for accredited or otherwise qualified investors.</li>
-              <li>• Syndicate Leads must not publicly advertise, mass solicit, or share confidential deal information outside the platform.</li>
-              <li>• Investor access must be limited to LPs who have been approved on Unlocksley.</li>
-            </ul>
+            <div className="space-y-3">
+              {["accredited", "not-accredited"].map((val) => (
+                <label key={val} className="flex items-start sm:items-center gap-3">
+                  <input
+                    type="radio"
+                    name="accreditation"
+                    value={val}
+                    checked={formData.accreditation === val}
+                    onChange={e => handleInputChange("accreditation", e.target.value)}
+                    className="mt-1 sm:mt-0"
+                  />
+                  <span className="text-gray-700">
+                    I am{val === "not-accredited" ? " not" : ""} an accredited investor
+                  </span>
+                </label>
+              ))}
+            </div>
+            <div className="pt-2">
+              <label className={`flex items-start sm:items-center gap-3 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={formData.understandRequirements}
+                  onChange={e => handleInputChange("understandRequirements", e.target.checked)}
+                  disabled={isDisabled}
+                  className="mt-1 sm:mt-0"
+                />
+                <span className="text-gray-700">
+                  I understand I must meet regulatory requirements to lead syndicates
+                </span>
+              </label>
+            </div>
+            {isDisabled && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+                Only accredited investors can launch a syndicate on Unlocksley
+              </div>
+            )}
           </div>
-          <div>
-            <p className="font-semibold text-gray-800 mb-3">I confirm that as a Syndicate Lead, I will:</p>
-            <ul className="space-y-2 text-gray-700 text-sm">
-              <li>• Invite only accredited or otherwise qualified investors into my syndicate;</li>
-              <li>• Avoid public advertising, mass marketing, or general solicitation of deals;</li>
-              <li>• Share deal materials only with approved LPs inside Unlocksley;</li>
-              <li>• Ensure all LPs are eligible to invest based on their jurisdiction;</li>
-              <li>• Provide accurate information during syndicate formation.</li>
-            </ul>
-          </div>
-        </div>
-        <div className="pt-2">
-          <label className="flex items-start sm:items-center gap-3">
-            <input
-              type="checkbox"
-              checked={formData.understandResponsibilities}
-              onChange={e => handleInputChange("understandResponsibilities", e.target.checked)}
-              className="mt-1 sm:mt-0"
-            />
-            <span className="text-gray-700">
-              I acknowledge the syndicate lead responsibilities
-            </span>
-          </label>
-        </div>
-      </div>
-
-      <div className={`space-y-4 ${isDisabled ? 'bg-[#F4F6F5] border-1 border-[#000000] p-6 rounded-lg' : ''}`}>
-        <h2 className="text-xl text-[#0A2A2E]">Accreditation*</h2>
-      
-        <div className="space-y-3">
-          {["accredited", "not-accredited"].map((val) => (
-            <label key={val} className="flex items-start sm:items-center gap-3">
-              <input
-                type="radio"
-                name="accreditation"
-                value={val}
-                checked={formData.accreditation === val}
-                onChange={e => handleInputChange("accreditation", e.target.value)}
-                className="mt-1 sm:mt-0"
-              />
-              <span className="text-gray-700">
-                I am{val === "not-accredited" ? " not" : ""} an accredited investor
-              </span>
-            </label>
-          ))}
-        </div>
-        <div className="pt-2">
-          <label className={`flex items-start sm:items-center gap-3 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
-            <input
-              type="checkbox"
-              checked={formData.understandRequirements}
-              onChange={e => handleInputChange("understandRequirements", e.target.checked)}
-              disabled={isDisabled}
-              className="mt-1 sm:mt-0"
-            />
-            <span className="text-gray-700">
-              I understand I must meet regulatory requirements to lead syndicates
-            </span>
-          </label>
-        </div>
-        {isDisabled && (
-          <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-            Only accredited investors can launch a syndicate on Unlocksley
-          </div>
-        )}
-      </div>
 
           {/* Navigation Buttons */}
           <div className="flex flex-col sm:flex-row sm:justify-between gap-4 pt-6 border-t border-gray-200">
@@ -683,169 +683,169 @@ const LeadInfo = () => {
       {/* Step 2: Investment Focus and LP Network */}
       {currentStep === 2 && (
         <>
-      {/* Sector Focus */}
+          {/* Sector Focus */}
           <div className="space-y-4">
-        <h2 className="text-xl text-[#0A2A2E]">Sector Focus</h2>
-        <div className="relative" ref={sectorDropdownRef}>
-          <div
+            <h2 className="text-xl text-[#0A2A2E]">Sector Focus</h2>
+            <div className="relative" ref={sectorDropdownRef}>
+              <div
                 className="border border-[#0A2A2E] rounded-lg p-3 min-h-[50px] flex flex-wrap items-center gap-2 bg-[#F4F6F5] cursor-pointer"
                 onClick={() => setShowSectorDropdown(s => !s)}
-          >
-            {formData.sectorFocus.length > 0 ? formData.sectorFocus.map((sectorId) => (
-              <span
-                key={sectorId}
-                className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2"
-                onClick={e => e.stopPropagation()}
               >
-                {getSectorName(sectorId)}
-                <button
-                  onClick={e => { e.stopPropagation(); handleSectorRemove(sectorId); }}
-                  className="text-gray-500 hover:text-gray-700"
-                  aria-label="Remove sector"
-                  tabIndex={-1}
-                  type="button"
-                >×</button>
-              </span>
-            )) : (
-              <span className="text-gray-400 text-sm">Select sectors...</span>
-            )}
-            <svg
-              className={`w-5 h-5 text-gray-400 ml-auto transition-transform ${showSectorDropdown ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-          {showSectorDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
-                  {sectorOptions.length > 0 ? (
-                sectorOptions.map(sector => (
-                  <button
-                    type="button"
-                    key={sector.id}
-                    onClick={() => handleSectorAdd(sector.id)}
-                    className="w-full text-left px-4 py-2 text-sm text-[#0A2A2E] hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
+                {formData.sectorFocus.length > 0 ? formData.sectorFocus.map((sectorId) => (
+                  <span
+                    key={sectorId}
+                    className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                    onClick={e => e.stopPropagation()}
                   >
-                    <div className="font-medium">{sector.name}</div>
-                  </button>
-                ))
-              ) : (
-                <div className="p-4 text-center text-gray-500">All sectors selected</div>
+                    {getSectorName(sectorId)}
+                    <button
+                      onClick={e => { e.stopPropagation(); handleSectorRemove(sectorId); }}
+                      className="text-gray-500 hover:text-gray-700"
+                      aria-label="Remove sector"
+                      tabIndex={-1}
+                      type="button"
+                    >×</button>
+                  </span>
+                )) : (
+                  <span className="text-gray-400 text-sm">Select sectors...</span>
+                )}
+                <svg
+                  className={`w-5 h-5 text-gray-400 ml-auto transition-transform ${showSectorDropdown ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+              {showSectorDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                  {sectorOptions.length > 0 ? (
+                    sectorOptions.map(sector => (
+                      <button
+                        type="button"
+                        key={sector.id}
+                        onClick={() => handleSectorAdd(sector.id)}
+                        className="w-full text-left px-4 py-2 text-sm text-[#0A2A2E] hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="font-medium">{sector.name}</div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-gray-500">All sectors selected</div>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
-      </div>
+          </div>
 
-      {/* Geography Focus */}
+          {/* Geography Focus */}
           <div className="space-y-4">
-        <h2 className="text-xl text-[#0A2A2E]">Geography Focus</h2>
-        <div className="relative" ref={geographyDropdownRef}>
-          <div
+            <h2 className="text-xl text-[#0A2A2E]">Geography Focus</h2>
+            <div className="relative" ref={geographyDropdownRef}>
+              <div
                 className="border border-[#0A2A2E] rounded-lg p-3 min-h-[50px] flex flex-wrap items-center gap-2 bg-[#F4F6F5] cursor-pointer"
                 onClick={() => setShowGeographyDropdown(g => !g)}
-          >
-            {formData.geographyFocus.length > 0 ? formData.geographyFocus.map((geographyId) => (
-              <span
-                key={geographyId}
-                className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2"
-                onClick={e => e.stopPropagation()}
               >
-                {getGeographyName(geographyId)}
-                <button
-                  onClick={e => { e.stopPropagation(); handleGeographyRemove(geographyId); }}
-                  className="text-gray-500 hover:text-gray-700"
-                  aria-label="Remove geography"
-                  tabIndex={-1}
-                  type="button"
-                >×</button>
-              </span>
-            )) : (
-              <span className="text-gray-400 text-sm">Select geographies...</span>
-            )}
-            <svg
-              className={`w-5 h-5 text-gray-400 ml-auto transition-transform ${showGeographyDropdown ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-          {showGeographyDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
-                  {geographyOptions.length > 0 ? (
-                geographyOptions.map(geography => (
-                  <button
-                    type="button"
-                    key={geography.id}
-                    onClick={() => handleGeographyAdd(geography.id)}
-                    className="w-full text-left px-4 py-2 text-sm text-[#0A2A2E] hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
+                {formData.geographyFocus.length > 0 ? formData.geographyFocus.map((geographyId) => (
+                  <span
+                    key={geographyId}
+                    className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                    onClick={e => e.stopPropagation()}
                   >
-                    <div className="font-medium">{geography.name}</div>
-                    <div className="text-xs text-gray-500">{geography.region}</div>
-                  </button>
-                ))
-              ) : (
-                <div className="p-4 text-center text-gray-500">All geographies selected</div>
+                    {getGeographyName(geographyId)}
+                    <button
+                      onClick={e => { e.stopPropagation(); handleGeographyRemove(geographyId); }}
+                      className="text-gray-500 hover:text-gray-700"
+                      aria-label="Remove geography"
+                      tabIndex={-1}
+                      type="button"
+                    >×</button>
+                  </span>
+                )) : (
+                  <span className="text-gray-400 text-sm">Select geographies...</span>
+                )}
+                <svg
+                  className={`w-5 h-5 text-gray-400 ml-auto transition-transform ${showGeographyDropdown ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+              {showGeographyDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                  {geographyOptions.length > 0 ? (
+                    geographyOptions.map(geography => (
+                      <button
+                        type="button"
+                        key={geography.id}
+                        onClick={() => handleGeographyAdd(geography.id)}
+                        className="w-full text-left px-4 py-2 text-sm text-[#0A2A2E] hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="font-medium">{geography.name}</div>
+                        <div className="text-xs text-gray-500">{geography.region}</div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-gray-500">All geographies selected</div>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
-      </div>
+          </div>
 
-      {/* Existing LP Network Section */}
+          {/* Existing LP Network Section */}
           <div className="space-y-4">
-        <h2 className="text-xl text-[#0A2A2E]">Existing LP Network</h2>
+            <h2 className="text-xl text-[#0A2A2E]">Existing LP Network</h2>
             <p className="text-gray-600">How many LPs do you have to invest in your deals?</p>
-        <div className="border border-[#0A2A2E] rounded-lg p-3 w-full sm:max-w-xs bg-[#F4F6F5]">
-          <select
-            value={formData.existingLpNetwork}
-            onChange={e => handleInputChange("existingLpNetwork", e.target.value)}
-            className="w-full bg-transparent outline-none"
-          >
-            <option value="No">No</option>
-            <option value="Yes">Yes</option>
-          </select>
-        </div>
-        {formData.existingLpNetwork === "Yes" && (
-          <div className="mt-6 space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">LP Base Size</label>
-              <input
-                type="number"
-                value={formData.lpBaseSize}
-                onChange={e => handleInputChange("lpBaseSize", parseInt(e.target.value, 10) || 0)}
-                className="border border-[#0A2A2E] rounded-lg p-3 w-full sm:max-w-xs bg-[#F4F6F5]"
-                placeholder="Enter LP base size"
-                min={1}
-              />
+            <div className="border border-[#0A2A2E] rounded-lg p-3 w-full sm:max-w-xs bg-[#F4F6F5]">
+              <select
+                value={formData.existingLpNetwork}
+                onChange={e => handleInputChange("existingLpNetwork", e.target.value)}
+                className="w-full bg-transparent outline-none"
+              >
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+              </select>
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="enablePlatformLpAccess"
-                checked={formData.enablePlatformLpAccess}
-                onChange={e => handleInputChange("enablePlatformLpAccess", e.target.checked)}
-                className="form-checkbox h-5 w-5 text-purple-600 rounded"
-              />
-              <label
-                htmlFor="enablePlatformLpAccess"
+            {formData.existingLpNetwork === "Yes" && (
+              <div className="mt-6 space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">LP Base Size</label>
+                  <input
+                    type="number"
+                    value={formData.lpBaseSize}
+                    onChange={e => handleInputChange("lpBaseSize", parseInt(e.target.value, 10) || 0)}
+                    className="border border-[#0A2A2E] rounded-lg p-3 w-full sm:max-w-xs bg-[#F4F6F5]"
+                    placeholder="Enter LP base size"
+                    min={1}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="enablePlatformLpAccess"
+                    checked={formData.enablePlatformLpAccess}
+                    onChange={e => handleInputChange("enablePlatformLpAccess", e.target.checked)}
+                    className="form-checkbox h-5 w-5 text-purple-600 rounded"
+                  />
+                  <label
+                    htmlFor="enablePlatformLpAccess"
                     className="text-sm font-medium text-gray-700"
                   >
                     Enable Platform LP Access
-              </label>
-            </div>
-          </div>
-        )}
+                  </label>
+                </div>
+              </div>
+            )}
           </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex flex-col sm:flex-row sm:justify-between gap-4 pt-6 border-t border-gray-200">
+          {/* Navigation Buttons */}
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-4 pt-6 border-t border-gray-200">
             <button
               onClick={handlePrevious}
               className="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 hover:bg-gray-50 w-full sm:w-auto"
@@ -855,19 +855,19 @@ const LeadInfo = () => {
               </svg>
               Previous
             </button>
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-          <button
-            onClick={handleNext}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+              <button
+                onClick={handleNext}
                 disabled={loading}
-            className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-          >
-            {loading ? "Submitting..." : "Next"}
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-      </div>
+                className="bg-teal-500 hover:bg-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              >
+                {loading ? "Submitting..." : "Next"}
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </>
       )}
 

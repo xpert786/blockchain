@@ -19,9 +19,9 @@ const SPVStep7 = () => {
   // Helper function to construct file URL from API response
   const constructFileUrl = (filePath) => {
     if (!filePath) return null;
-    
+
     const baseDomain = "http://168.231.121.7";
-    
+
     if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
       return filePath;
     } else if (filePath.startsWith('/')) {
@@ -50,7 +50,7 @@ const SPVStep7 = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         let currentSpvId = null;
 
         // Try to get SPV ID from SPV list
@@ -127,7 +127,7 @@ const SPVStep7 = () => {
 
     fetchFinalReviewData();
   }, [location.pathname]);
-  
+
 
   const handleCheckboxChange = (field) => {
     setFormData(prev => ({
@@ -152,20 +152,20 @@ const SPVStep7 = () => {
 
       // SPV ID check is now done above
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-      
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
+
       // Get SPV ID from state or localStorage (critical to prevent creating new SPV)
       let currentSpvId = spvId || localStorage.getItem("currentSpvId");
-      
+
       // Parse if it's a string from localStorage
       if (currentSpvId && typeof currentSpvId === 'string' && !isNaN(currentSpvId)) {
         currentSpvId = parseInt(currentSpvId, 10);
       }
-      
+
       if (!currentSpvId) {
         throw new Error("SPV ID not found. Please start from step 1.");
       }
-      
+
       // API endpoint: /api/spv/{id}/final_submit/
       const finalSubmitUrl = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/final_submit/`;
 
@@ -264,10 +264,10 @@ const SPVStep7 = () => {
     if (!dateString) return "N/A";
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
       });
     } catch (e) {
       return dateString;
@@ -334,12 +334,12 @@ const SPVStep7 = () => {
 
       {/* Documents Generated Successfully Banner */}
       <div className="bg-green-50 rounded-lg p-4"
-      style={{ border: "0.5px solid #00CC9933" }}
+        style={{ border: "0.5px solid #00CC9933" }}
       >
         <div className="flex flex-col sm:flex-row sm:items-start sm:space-x-3 gap-3">
           <div className="flex-shrink-0">
-          <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21.0834 10.6193V11.5009C21.0822 13.5675 20.4131 15.5783 19.1757 17.2335C17.9383 18.8887 16.1991 20.0996 14.2173 20.6855C12.2355 21.2714 10.1175 21.2011 8.17895 20.4849C6.24044 19.7687 4.58538 18.4451 3.46059 16.7115C2.3358 14.9778 1.80155 12.927 1.93752 10.8649C2.0735 8.8028 2.8724 6.83991 4.2151 5.26896C5.55779 3.69801 7.37233 2.60317 9.3881 2.14773C11.4039 1.6923 13.5128 1.90067 15.4005 2.74176M8.62509 10.5426L11.5001 13.4176L21.0834 3.83426" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21.0834 10.6193V11.5009C21.0822 13.5675 20.4131 15.5783 19.1757 17.2335C17.9383 18.8887 16.1991 20.0996 14.2173 20.6855C12.2355 21.2714 10.1175 21.2011 8.17895 20.4849C6.24044 19.7687 4.58538 18.4451 3.46059 16.7115C2.3358 14.9778 1.80155 12.927 1.93752 10.8649C2.0735 8.8028 2.8724 6.83991 4.2151 5.26896C5.55779 3.69801 7.37233 2.60317 9.3881 2.14773C11.4039 1.6923 13.5128 1.90067 15.4005 2.74176M8.62509 10.5426L11.5001 13.4176L21.0834 3.83426" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
 
           </div>
@@ -352,21 +352,21 @@ const SPVStep7 = () => {
 
       {/* Lead Information Section */}
       <div className="mb-8">
-       
-        
-        <div className="bg-white rounded-lg p-4" 
-        style={{ border:  "0.5px solid #0A2A2E" }}
-        >
-        <div className="flex items-center space-x-2 mb-4">
 
-          <h3 className="text-xl font-medium text-gray-800">Lead Information</h3>
-        </div>
+
+        <div className="bg-white rounded-lg p-4"
+          style={{ border: "0.5px solid #0A2A2E" }}
+        >
+          <div className="flex items-center space-x-2 mb-4">
+
+            <h3 className="text-xl font-medium text-gray-800">Lead Information</h3>
+          </div>
           {/* Operating Agreement */}
           <div className="flex items-center justify-between py-3 border-b border-gray-100 bg-[#F9F8FF] rounded-lg p-3 ">
             <div className="flex items-center space-x-3 ">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12.8334 1.83301V5.49967C12.8334 5.9859 13.0266 6.45222 13.3704 6.79604C13.7142 7.13985 14.1805 7.33301 14.6667 7.33301H18.3334M9.16675 8.24967H7.33341M14.6667 11.9163H7.33341M14.6667 15.583H7.33341M13.7501 1.83301H5.50008C5.01385 1.83301 4.54754 2.02616 4.20372 2.36998C3.8599 2.7138 3.66675 3.18011 3.66675 3.66634V18.333C3.66675 18.8192 3.8599 19.2856 4.20372 19.6294C4.54754 19.9732 5.01385 20.1663 5.50008 20.1663H16.5001C16.9863 20.1663 17.4526 19.9732 17.7964 19.6294C18.1403 19.2856 18.3334 18.8192 18.3334 18.333V6.41634L13.7501 1.83301Z" stroke="#01373D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12.8334 1.83301V5.49967C12.8334 5.9859 13.0266 6.45222 13.3704 6.79604C13.7142 7.13985 14.1805 7.33301 14.6667 7.33301H18.3334M9.16675 8.24967H7.33341M14.6667 11.9163H7.33341M14.6667 15.583H7.33341M13.7501 1.83301H5.50008C5.01385 1.83301 4.54754 2.02616 4.20372 2.36998C3.8599 2.7138 3.66675 3.18011 3.66675 3.66634V18.333C3.66675 18.8192 3.8599 19.2856 4.20372 19.6294C4.54754 19.9732 5.01385 20.1663 5.50008 20.1663H16.5001C16.9863 20.1663 17.4526 19.9732 17.7964 19.6294C18.1403 19.2856 18.3334 18.8192 18.3334 18.333V6.41634L13.7501 1.83301Z" stroke="#01373D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
 
               <span className="text-gray-800 font-medium">Operating Agreement</span>
             </div>
@@ -374,8 +374,8 @@ const SPVStep7 = () => {
               <span className="text-[#22C55E] text-sm font-medium">Generated</span>
               <button
                 onClick={() => handlePreview("Operating Agreement")}
-                    className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm transition-colors"
-                style={{border: "0.5px solid #01373D" }}
+                className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm transition-colors"
+                style={{ border: "0.5px solid #01373D" }}
               >
                 Preview
               </button>
@@ -385,9 +385,9 @@ const SPVStep7 = () => {
           {/* Subscription Agreement */}
           <div className="flex items-center justify-between py-3 border-b border-gray-100 bg-[#F9F8FF] rounded-lg p-3 ">
             <div className="flex items-center space-x-3">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12.8334 1.83301V5.49967C12.8334 5.9859 13.0266 6.45222 13.3704 6.79604C13.7142 7.13985 14.1805 7.33301 14.6667 7.33301H18.3334M9.16675 8.24967H7.33341M14.6667 11.9163H7.33341M14.6667 15.583H7.33341M13.7501 1.83301H5.50008C5.01385 1.83301 4.54754 2.02616 4.20372 2.36998C3.8599 2.7138 3.66675 3.18011 3.66675 3.66634V18.333C3.66675 18.8192 3.8599 19.2856 4.20372 19.6294C4.54754 19.9732 5.01385 20.1663 5.50008 20.1663H16.5001C16.9863 20.1663 17.4526 19.9732 17.7964 19.6294C18.1403 19.2856 18.3334 18.8192 18.3334 18.333V6.41634L13.7501 1.83301Z" stroke="#01373D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12.8334 1.83301V5.49967C12.8334 5.9859 13.0266 6.45222 13.3704 6.79604C13.7142 7.13985 14.1805 7.33301 14.6667 7.33301H18.3334M9.16675 8.24967H7.33341M14.6667 11.9163H7.33341M14.6667 15.583H7.33341M13.7501 1.83301H5.50008C5.01385 1.83301 4.54754 2.02616 4.20372 2.36998C3.8599 2.7138 3.66675 3.18011 3.66675 3.66634V18.333C3.66675 18.8192 3.8599 19.2856 4.20372 19.6294C4.54754 19.9732 5.01385 20.1663 5.50008 20.1663H16.5001C16.9863 20.1663 17.4526 19.9732 17.7964 19.6294C18.1403 19.2856 18.3334 18.8192 18.3334 18.333V6.41634L13.7501 1.83301Z" stroke="#01373D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
 
               <span className="text-gray-800 font-medium">Subscription Agreement</span>
             </div>
@@ -396,7 +396,7 @@ const SPVStep7 = () => {
               <button
                 onClick={() => handlePreview("Subscription Agreement")}
                 className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm transition-colors"
-                style={{border: "0.5px solid #01373D" }}
+                style={{ border: "0.5px solid #01373D" }}
               >
                 Preview
               </button>
@@ -406,9 +406,9 @@ const SPVStep7 = () => {
           {/* Side Letter */}
           <div className="flex items-center justify-between py-3 bg-[#F9F8FF] rounded-lg p-3 ">
             <div className="flex items-center space-x-3">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M12.8334 1.83301V5.49967C12.8334 5.9859 13.0266 6.45222 13.3704 6.79604C13.7142 7.13985 14.1805 7.33301 14.6667 7.33301H18.3334M9.16675 8.24967H7.33341M14.6667 11.9163H7.33341M14.6667 15.583H7.33341M13.7501 1.83301H5.50008C5.01385 1.83301 4.54754 2.02616 4.20372 2.36998C3.8599 2.7138 3.66675 3.18011 3.66675 3.66634V18.333C3.66675 18.8192 3.8599 19.2856 4.20372 19.6294C4.54754 19.9732 5.01385 20.1663 5.50008 20.1663H16.5001C16.9863 20.1663 17.4526 19.9732 17.7964 19.6294C18.1403 19.2856 18.3334 18.8192 18.3334 18.333V6.41634L13.7501 1.83301Z" stroke="#01373D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12.8334 1.83301V5.49967C12.8334 5.9859 13.0266 6.45222 13.3704 6.79604C13.7142 7.13985 14.1805 7.33301 14.6667 7.33301H18.3334M9.16675 8.24967H7.33341M14.6667 11.9163H7.33341M14.6667 15.583H7.33341M13.7501 1.83301H5.50008C5.01385 1.83301 4.54754 2.02616 4.20372 2.36998C3.8599 2.7138 3.66675 3.18011 3.66675 3.66634V18.333C3.66675 18.8192 3.8599 19.2856 4.20372 19.6294C4.54754 19.9732 5.01385 20.1663 5.50008 20.1663H16.5001C16.9863 20.1663 17.4526 19.9732 17.7964 19.6294C18.1403 19.2856 18.3334 18.8192 18.3334 18.333V6.41634L13.7501 1.83301Z" stroke="#01373D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
 
               <span className="text-gray-800 font-medium">Side Letter</span>
             </div>
@@ -417,7 +417,7 @@ const SPVStep7 = () => {
               <button
                 onClick={() => handlePreview("Side Letter")}
                 className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm transition-colors"
-                style={{border: "0.5px solid #01373D" }}
+                style={{ border: "0.5px solid #01373D" }}
               >
                 Preview
               </button>
@@ -427,24 +427,24 @@ const SPVStep7 = () => {
       </div>
 
       {/* Legal Review Required Banner */}
-      <div className="bg-[#FDECEC] rounded-lg p-4" 
-      style={{ border: "1px solid #FACACA" }}
+      <div className="bg-[#FDECEC] rounded-lg p-4"
+        style={{ border: "1px solid #FACACA" }}
       >
         <div className="flex flex-col sm:flex-row sm:items-start sm:space-x-3 gap-3">
           <div className="flex-shrink-0">
-            <div  className="mt-2">
-            <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <g clip-path="url(#clip0_853_7107)">
-                <path d="M7.99992 5.33301V7.99967M7.99992 10.6663H8.00617M14.6666 7.99967C14.6666 11.6816 11.6818 14.6663 7.99992 14.6663C4.31802 14.6663 1.33325 11.6816 1.33325 7.99967C1.33325 4.31778 4.31802 1.33301 7.99992 1.33301C11.6818 1.33301 14.6666 4.31778 14.6666 7.99967Z" stroke="#ED1C24" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </g>
-            <defs>
-                <clipPath id="clip0_853_7107">
-                <rect width="16" height="16" fill="white"/>
-                </clipPath>
-            </defs>
-            </svg>
+            <div className="mt-2">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g clip-path="url(#clip0_853_7107)">
+                  <path d="M7.99992 5.33301V7.99967M7.99992 10.6663H8.00617M14.6666 7.99967C14.6666 11.6816 11.6818 14.6663 7.99992 14.6663C4.31802 14.6663 1.33325 11.6816 1.33325 7.99967C1.33325 4.31778 4.31802 1.33301 7.99992 1.33301C11.6818 1.33301 14.6666 4.31778 14.6666 7.99967Z" stroke="#ED1C24" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+                </g>
+                <defs>
+                  <clipPath id="clip0_853_7107">
+                    <rect width="16" height="16" fill="white" />
+                  </clipPath>
+                </defs>
+              </svg>
             </div>
-       
+
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-800 ">Legal Review Required</h3>
@@ -471,13 +471,13 @@ const SPVStep7 = () => {
       {/* Deal Summary Section */}
       <div className="mb-8">
         <div className="flex items-center space-x-2 mb-4">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
 
-            <h2 className="text-xl font-medium text-gray-800">Deal Summary</h2>
+          <h2 className="text-xl font-medium text-gray-800">Deal Summary</h2>
         </div>
-        
+
         <div className="bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-3">
@@ -523,22 +523,22 @@ const SPVStep7 = () => {
       {/* Legal Structure Section */}
       <div className="mb-8">
         <div className="flex items-center space-x-2 mb-4">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
 
           <h2 className="text-xl font-medium text-gray-800">Legal Structure</h2>
         </div>
-        
+
         <div className="bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Adviser Entity:</span>
                 <span className="text-gray-800 font-medium">
-                  {data?.adviser_entity === "platform_advisers" ? "Platform Advisers LLC" : 
-                   data?.adviser_entity === "self_advised" ? "Self-Advised Entity" : 
-                   data?.adviser_entity || "N/A"}
+                  {data?.adviser_entity === "platform_advisers" ? "Platform Advisers LLC" :
+                    data?.adviser_entity === "self_advised" ? "Self-Advised Entity" :
+                      data?.adviser_entity || "N/A"}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -550,8 +550,8 @@ const SPVStep7 = () => {
               <div className="flex justify-between">
                 <span className="text-gray-600">Master Partnership:</span>
                 <span className="text-gray-800 font-medium">
-                  {data?.master_partnership_entity_detail?.name || 
-                   data?.master_partnership_entity || "N/A"}
+                  {data?.master_partnership_entity_detail?.name ||
+                    data?.master_partnership_entity || "N/A"}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -566,29 +566,29 @@ const SPVStep7 = () => {
       {/* Deal Metadata Section */}
       <div className="mb-8">
         <div className="flex items-center space-x-2 mb-4">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
 
           <h2 className="text-xl font-medium text-gray-800">Deal Metadata</h2>
         </div>
-        
+
         <div className="bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Access Mode:</span>
                 <span className="text-gray-800 font-medium capitalize">
-                  {data?.access_mode === "private" ? "Private" : 
-                   data?.access_mode === "public" ? "Public" : 
-                   data?.access_mode || "N/A"}
+                  {data?.access_mode === "private" ? "Private" :
+                    data?.access_mode === "public" ? "Public" :
+                      data?.access_mode || "N/A"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Tags:</span>
                 <span className="text-gray-800 font-medium">
-                  {data?.deal_tags && Array.isArray(data.deal_tags) 
-                    ? data.deal_tags.join(", ") 
+                  {data?.deal_tags && Array.isArray(data.deal_tags)
+                    ? data.deal_tags.join(", ")
                     : data?.deal_tags || "N/A"}
                 </span>
               </div>
@@ -597,9 +597,9 @@ const SPVStep7 = () => {
               <div className="flex justify-between">
                 <span className="text-gray-600">Deal Stage:</span>
                 <span className="text-gray-800 font-medium">
-                  {data?.company_stage_detail?.name || 
-                   data?.round_detail?.name || 
-                   "N/A"}
+                  {data?.company_stage_detail?.name ||
+                    data?.round_detail?.name ||
+                    "N/A"}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -614,14 +614,14 @@ const SPVStep7 = () => {
       {/* Electronic Signature & Confirmation Section */}
       <div className="mb-8">
         <div className="flex items-center space-x-2 mb-4">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M13.5 3.75L11.25 1.5H4.5C4.10218 1.5 3.72064 1.65804 3.43934 1.93934C3.15804 2.22064 3 2.60218 3 3V15C3 15.3978 3.15804 15.7794 3.43934 16.0607C3.72064 16.342 4.10218 16.5 4.5 16.5H13.5C13.8978 16.5 14.2794 16.342 14.5607 16.0607C14.842 15.7794 15 15.3978 15 15M6 13.5H6.75M13.8 7.2C14.0984 6.90163 14.503 6.73401 14.925 6.73401C15.347 6.73401 15.7516 6.90163 16.05 7.2C16.3484 7.49837 16.516 7.90304 16.516 8.325C16.516 8.74696 16.3484 9.15163 16.05 9.45L12.75 12.75L9.75 13.5L10.5 10.5L13.8 7.2Z" stroke="#22C55E" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13.5 3.75L11.25 1.5H4.5C4.10218 1.5 3.72064 1.65804 3.43934 1.93934C3.15804 2.22064 3 2.60218 3 3V15C3 15.3978 3.15804 15.7794 3.43934 16.0607C3.72064 16.342 4.10218 16.5 4.5 16.5H13.5C13.8978 16.5 14.2794 16.342 14.5607 16.0607C14.842 15.7794 15 15.3978 15 15M6 13.5H6.75M13.8 7.2C14.0984 6.90163 14.503 6.73401 14.925 6.73401C15.347 6.73401 15.7516 6.90163 16.05 7.2C16.3484 7.49837 16.516 7.90304 16.516 8.325C16.516 8.74696 16.3484 9.15163 16.05 9.45L12.75 12.75L9.75 13.5L10.5 10.5L13.8 7.2Z" stroke="#22C55E" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
 
 
           <h2 className="text-xl font-medium text-gray-800">Electronic Signature & Confirmation</h2>
         </div>
-        
+
         <div className="bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
           <label className="flex items-start space-x-3 cursor-pointer">
             <input
@@ -634,7 +634,7 @@ const SPVStep7 = () => {
               I agree to the terms and conditions, privacy policy, and understand that this SPV will be subject to compliance review before activation. I acknowledge that all information provided is accurate and complete.
             </span>
           </label>
-          
+
           <label className="flex items-start space-x-3 cursor-pointer">
             <input
               type="checkbox"
@@ -652,34 +652,34 @@ const SPVStep7 = () => {
       {/* What happens next? Section */}
       <div className="mb-8">
         <div className="bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
-        <div className="flex items-center space-x-2 mb-4">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+          <div className="flex items-center space-x-2 mb-4">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
 
-          <h2 className="text-xl font-medium text-gray-800">What happens next?</h2>
-        </div>
-        
-        <div className="  rounded-lg p-4">
-          <ul className="space-y-2 text-gray-700">
-            <li className="flex items-start space-x-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span className="text-gray-400 font-medium">Your SPV will be submitted to our compliance team for review</span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span className="text-gray-400 font-medium">You'll receive an email confirmation within 24 hours</span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span className="text-gray-400 font-medium">Legal documents will be finalized and made available for download</span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <span className="text-gray-400 mt-1">•</span>
-              <span className="text-gray-400 font-medium">Once approved, you can begin inviting investors to your deal</span>
-            </li>
-          </ul>
-        </div>
+            <h2 className="text-xl font-medium text-gray-800">What happens next?</h2>
+          </div>
+
+          <div className="  rounded-lg p-4">
+            <ul className="space-y-2 text-gray-700">
+              <li className="flex items-start space-x-2">
+                <span className="text-gray-400 mt-1">•</span>
+                <span className="text-gray-400 font-medium">Your SPV will be submitted to our compliance team for review</span>
+              </li>
+              <li className="flex items-start space-x-2">
+                <span className="text-gray-400 mt-1">•</span>
+                <span className="text-gray-400 font-medium">You'll receive an email confirmation within 24 hours</span>
+              </li>
+              <li className="flex items-start space-x-2">
+                <span className="text-gray-400 mt-1">•</span>
+                <span className="text-gray-400 font-medium">Legal documents will be finalized and made available for download</span>
+              </li>
+              <li className="flex items-start space-x-2">
+                <span className="text-gray-400 mt-1">•</span>
+                <span className="text-gray-400 font-medium">Once approved, you can begin inviting investors to your deal</span>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 

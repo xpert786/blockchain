@@ -43,7 +43,7 @@ const SuccessToast = ({ message, isVisible }) => {
 
 const NotificationsCommunication = () => {
   // --- Configuration ---
-  const API_URL = "http://168.231.121.7/blockchain-backend/api/syndicate/settings/notifications/";
+  const API_URL = "http://72.61.251.114/blockchain-backend/api/syndicate/settings/notifications/";
   const TEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY0MzIyMjg0LCJpYXQiOjE3NjQzMDQyODQsImp0aSI6IjkyMDRhMGY3ODhjNDRlMDQ5MWE4NjkzZWY3NzlmYTljIiwidXNlcl9pZCI6IjIifQ.6h81mnprtOjPpn2-_mkasbrXSwKwbr7wHkhEC-j6_ag";
 
   // --- State ---
@@ -52,7 +52,7 @@ const NotificationsCommunication = () => {
     notifyLpAlerts: false,
     notifyDealUpdates: true
   });
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -78,7 +78,7 @@ const NotificationsCommunication = () => {
       if (response.ok) {
         const result = await response.json();
         const data = result.data || result;
-        
+
         setFormData({
           notifyEmail: data.notify_email_preference ?? true,
           notifyLpAlerts: data.notify_new_lp_alerts ?? false,

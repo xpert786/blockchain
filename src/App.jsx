@@ -120,7 +120,7 @@ const App = () => {
       <Route path="/jurisdiction" element={<Navigate to="/juridiction" replace />} />
       <Route path="/oauth2callback" element={<GoogleOAuthCallback />} />
       <Route path="/quick-profile-set" element={<QuickProfileSet />} />
-    
+
       {/* Syndicate Creation Routes (with Layout) - Protected */}
       <Route
         path="/syndicate-creation"
@@ -174,18 +174,18 @@ const App = () => {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="spv-management" element={<SPVManagement />} />
-                <Route path="spv-details" element={<SPVDetails />} />
-                <Route path="investor-details" element={<InvestorDetails />} />
-                <Route path="documents" element={<ManageDocuments />} />
-                <Route path="document-template-engine" element={<DocumentTemplateEngine />} />
-                <Route path="manage-templates" element={<ManageTemplates />} />
-                <Route path="generated-documents" element={<GeneratedDocuments />} />
-                <Route path="generate-document" element={<GenerateDocument />} />
-                <Route path="transfers" element={<TransferTemp />} />
-                <Route path="requests-system" element={<RequestSystem />} />
-                <Route path="request-details" element={<RequestDetails />} />
-                <Route path="messages" element={<ManagerMessages />} />
-                <Route path="settings/*" element={<SettingsLayout />} />
+        <Route path="spv-details" element={<SPVDetails />} />
+        <Route path="investor-details" element={<InvestorDetails />} />
+        <Route path="documents" element={<ManageDocuments />} />
+        <Route path="document-template-engine" element={<DocumentTemplateEngine />} />
+        <Route path="manage-templates" element={<ManageTemplates />} />
+        <Route path="generated-documents" element={<GeneratedDocuments />} />
+        <Route path="generate-document" element={<GenerateDocument />} />
+        <Route path="transfers" element={<TransferTemp />} />
+        <Route path="requests-system" element={<RequestSystem />} />
+        <Route path="request-details" element={<RequestDetails />} />
+        <Route path="messages" element={<ManagerMessages />} />
+        <Route path="settings/*" element={<SettingsLayout />} />
       </Route>
 
       {/* Investor Dashboard Routes (with InvestorDashboardLayout) - Protected */}

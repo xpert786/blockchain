@@ -29,13 +29,13 @@ const SetNewPassword = () => {
     const otpFromState = location.state?.otp;
     const emailFromStorage = localStorage.getItem("resetPasswordEmail");
     const otpFromStorage = localStorage.getItem("resetPasswordOtp");
-    
+
     const userEmail = emailFromState || emailFromStorage || "";
     const userOtp = otpFromState || otpFromStorage || "";
-    
+
     setEmail(userEmail);
     setOtp(userOtp);
-    
+
     if (!userEmail || !userOtp) {
       // If email or OTP not found, redirect back to forgot password
       setError("Session expired. Please start over.");
@@ -57,7 +57,7 @@ const SetNewPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match!");
       return;
@@ -75,7 +75,7 @@ const SetNewPassword = () => {
     setError("");
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const resetPasswordUrl = `${API_URL.replace(/\/$/, "")}/auth/reset_password/`;
 
       console.log("Resetting password:", resetPasswordUrl);
@@ -100,7 +100,7 @@ const SetNewPassword = () => {
         // Clear stored reset data
         localStorage.removeItem("resetPasswordEmail");
         localStorage.removeItem("resetPasswordOtp");
-        
+
         // Show success and redirect to login
         alert("Password reset successfully! Please login with your new password.");
         navigate("/login");
@@ -108,15 +108,15 @@ const SetNewPassword = () => {
     } catch (err) {
       console.error("Reset password error:", err);
       const backendData = err.response?.data;
-      
+
       if (backendData) {
         if (typeof backendData === "object") {
-          const errorMsg = backendData.error || 
-                          backendData.detail || 
-                          backendData.message ||
-                          backendData.new_password?.[0] ||
-                          backendData.confirm_password?.[0] ||
-                          JSON.stringify(backendData);
+          const errorMsg = backendData.error ||
+            backendData.detail ||
+            backendData.message ||
+            backendData.new_password?.[0] ||
+            backendData.confirm_password?.[0] ||
+            JSON.stringify(backendData);
           setError(errorMsg);
         } else {
           setError(String(backendData));
@@ -149,18 +149,18 @@ const SetNewPassword = () => {
         <div className="w-full md:w-1/2 flex relative p-6 md:p-4 h-64 md:h-full">
           {/* Purple background and content layout */}
           <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col justify-between relative overflow-hidden p-8">
-            
+
             {/* Logo/Branding (Top) */}
             <img src={logo} alt="Login Logo" className="w-1/3 max-w-[150px] h-auto object-contain" />
-            
+
             {/* Main Text Content (Middle - Takes up remaining space) */}
             <div className="flex flex-col items-center justify-center flex-grow ">
-                <h1 className="text-[30px] font-semibold text-white font-poppins-custom">Invest Globally. <br />
+              <h1 className="text-[30px] font-semibold text-white font-poppins-custom">Invest Globally. <br />
                 Compliantly. Confidently.</h1>
-                <p className="text-white font-poppins-custom leading-tight mr-16 mt-2">Built for global accredited investors and <br />
+              <p className="text-white font-poppins-custom leading-tight mr-16 mt-2">Built for global accredited investors and <br />
                 syndicate leads.</p>
             </div>
-            
+
 
             {/* Image Content (Bottom - MOVED HERE) */}
             <div className="flex justify-start items-end w-full space-x-3 mt-7">
@@ -168,7 +168,7 @@ const SetNewPassword = () => {
               <img src={loginimg2} alt="Login Asset 2" className="w-1/3 max-w-[50px] h-auto object-contain" />
               <img src={loginimg3} alt="Login Asset 3" className="w-1/3 max-w-[50px] h-auto object-contain" />
             </div>
-            
+
           </div>
         </div>
 
@@ -179,7 +179,7 @@ const SetNewPassword = () => {
               <h1 className="text-3xl text-[#001D21] mb-2">Set New Password</h1>
               <p className="text-[#0A2A2E] font-poppins-custom">Use at least 8 characters with a mix of uppercase, lowercase, numbers, and special characters.</p>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Error Message */}
               {error && (
@@ -227,21 +227,20 @@ const SetNewPassword = () => {
                     )}
                   </button>
                 </div>
-                
+
                 {/* Password Strength Indicator */}
                 <div className="flex space-x-1 mt-2">
                   {[1, 2, 3].map((level) => (
                     <div
                       key={level}
-                      className={`h-1 flex-1 rounded ${
-                        level <= passwordStrength
+                      className={`h-1 flex-1 rounded ${level <= passwordStrength
                           ? passwordStrength <= 2
                             ? "bg-red-400"
                             : passwordStrength <= 3
-                            ? "bg-yellow-400"
-                            : "bg-green-400"
+                              ? "bg-yellow-400"
+                              : "bg-green-400"
                           : "bg-gray-200"
-                      }`}
+                        }`}
                     />
                   ))}
                 </div>

@@ -48,18 +48,15 @@ const DOCUMENT_CATEGORY_COUNTS = documentCenterDocuments.reduce(
 );
 
 const navButtonClasses = (isActive) =>
-  `px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${
-    isActive ? "bg-[#FFFFFF1A] text-white" : "text-gray-300 hover:text-white"
+  `px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${isActive ? "bg-[#FFFFFF1A] text-white" : "text-gray-300 hover:text-white"
   }`;
 
 const topTabClasses = (isActive) =>
-  `px-4 py-2 text-sm font-medium font-poppins-custom rounded-xl  transition-colors ${
-    isActive ? "bg-[#00F0C3] text-black" : "bg-[#F4F6F5] text-[#01373D] hover:bg-[#E2E8F0]"
+  `px-4 py-2 text-sm font-medium font-poppins-custom rounded-xl  transition-colors ${isActive ? "bg-[#00F0C3] text-black" : "bg-[#F4F6F5] text-[#01373D] hover:bg-[#E2E8F0]"
   }`;
 
 const centerTabClasses = (isActive) =>
-  `px-4 py-2 text-sm font-medium font-poppins-custom rounded-xl transition-colors ${
-    isActive ? "bg-[#00F0C3] text-[#001D21]" : "bg-[#F4F6F5] text-[#001D21] border border-[#E5E7EB] hover:bg-[#F9FAFB]"
+  `px-4 py-2 text-sm font-medium font-poppins-custom rounded-xl transition-colors ${isActive ? "bg-[#00F0C3] text-[#001D21]" : "bg-[#F4F6F5] text-[#001D21] border border-[#E5E7EB] hover:bg-[#F9FAFB]"
   }`;
 
 const TaxDocuments = () => {
@@ -124,9 +121,9 @@ const TaxDocuments = () => {
   useEffect(() => {
     const fetchTaxOverview = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const accessToken = localStorage.getItem("accessToken");
-        
+
         if (!accessToken) {
           console.error("No access token found");
           setTaxOverviewLoading(false);
@@ -170,9 +167,9 @@ const TaxDocuments = () => {
   useEffect(() => {
     const fetchTaxDocuments = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const accessToken = localStorage.getItem("accessToken");
-        
+
         if (!accessToken) {
           console.error("No access token found");
           setTaxDocumentsLoading(false);
@@ -223,10 +220,10 @@ const TaxDocuments = () => {
     if (!dateString) return "N/A";
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
       });
     } catch (e) {
       return dateString;
@@ -254,7 +251,7 @@ const TaxDocuments = () => {
 
   return (
     <div className="min-h-screen bg-[#F4F6F5] overflow-x-hidden">
-   
+
 
       <main className="w-full px-4 sm:px-6 py-8 space-y-8">
         <div className="flex items-center gap-3 bg-white rounded-xl border border-[#E5E7EB] px-4 py-3 w-full sm:w-fit">
@@ -438,11 +435,10 @@ const TaxDocuments = () => {
                               <p className="text-xs text-[#9CA3AF]">{document.file_size_display || "N/A"}</p>
                             </div>
                             <span
-                              className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                document.status === "available" || document.status_display === "Available"
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${document.status === "available" || document.status_display === "Available"
                                   ? "bg-[#22C55E] text-white"
                                   : "bg-[#F9F8FF] text-black border border-[#748A91]"
-                              }`}
+                                }`}
                             >
                               {document.status_display || document.status}
                             </span>
@@ -508,45 +504,45 @@ const TaxDocuments = () => {
         ) : (
           <section className="   p-6 md:p-8 space-y-6">
             <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 md:p-8 space-y-6">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-              <div className="flex-1">
-                <h1 className="text-3xl font-medium text-[#0A2A2E] font-poppins-custom">
-                  Document Center
-                </h1>
-                <p className="text-sm text-[#748A91] font-poppins-custom mt-2">
-                  Manage your investment documents and reports
-                </p>
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="flex-1">
+                  <h1 className="text-3xl font-medium text-[#0A2A2E] font-poppins-custom">
+                    Document Center
+                  </h1>
+                  <p className="text-sm text-[#748A91] font-poppins-custom mt-2">
+                    Manage your investment documents and reports
+                  </p>
+                </div>
+                <button className="ml-auto inline-flex items-center gap-2 px-5 py-2.5 bg-[#00F0C3] text-[#001D21] rounded-xl font-medium text-sm font-poppins-custom hover:bg-[#00D9B0] transition-colors">
+                  Upload Document
+                </button>
               </div>
-              <button className="ml-auto inline-flex items-center gap-2 px-5 py-2.5 bg-[#00F0C3] text-[#001D21] rounded-xl font-medium text-sm font-poppins-custom hover:bg-[#00D9B0] transition-colors">
-                Upload Document
-              </button>
+
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="relative w-full md:max-w-md">
+                  <input
+                    type="text"
+                    value={documentSearchTerm}
+                    onChange={(event) => setDocumentSearchTerm(event.target.value)}
+                    placeholder="Search documents..."
+                    className="w-full bg-[#F4F6F5] border border-[#E5E7EB] rounded-xl px-4 py-2.5 text-sm font-poppins-custom focus:outline-none focus:ring-2 focus:ring-[#00F0C3]"
+                  />
+                </div>
+                <select
+                  value={documentStatusFilter}
+                  onChange={(event) => setDocumentStatusFilter(event.target.value)}
+                  className="w-full md:w-auto bg-[#F4F6F5] border border-[#E5E7EB] rounded-xl px-4 py-2.5 text-sm font-poppins-custom focus:outline-none focus:ring-2 focus:ring-[#00F0C3]"
+                >
+                  {DOCUMENT_STATUS_FILTERS.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
             </div>
 
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div className="relative w-full md:max-w-md">
-                <input
-                  type="text"
-                  value={documentSearchTerm}
-                  onChange={(event) => setDocumentSearchTerm(event.target.value)}
-                  placeholder="Search documents..."
-                  className="w-full bg-[#F4F6F5] border border-[#E5E7EB] rounded-xl px-4 py-2.5 text-sm font-poppins-custom focus:outline-none focus:ring-2 focus:ring-[#00F0C3]"
-                />
-              </div>
-              <select
-                value={documentStatusFilter}
-                onChange={(event) => setDocumentStatusFilter(event.target.value)}
-                className="w-full md:w-auto bg-[#F4F6F5] border border-[#E5E7EB] rounded-xl px-4 py-2.5 text-sm font-poppins-custom focus:outline-none focus:ring-2 focus:ring-[#00F0C3]"
-              >
-                {DOCUMENT_STATUS_FILTERS.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            </div>
-           
 
             <div className="flex flex-wrap gap-3 bg-white rounded-xl border border-[#E5E7EB] py-6 md:py-4 px-6 md:px-3 w-full sm:w-fit">
               {documentCenterTabs.map((tab) => {
@@ -555,9 +551,8 @@ const TaxDocuments = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveDocumentCategory(tab.id)}
-                    className={`px-4 py-2 text-sm font-medium font-poppins-custom rounded-xl transition-colors ${
-                      isActive ? "bg-[#00F0C3] text-[#001D21]" : "bg-[#F4F6F5] text-[#01373D] hover:bg-[#E2E8F0]"
-                    }`}
+                    className={`px-4 py-2 text-sm font-medium font-poppins-custom rounded-xl transition-colors ${isActive ? "bg-[#00F0C3] text-[#001D21]" : "bg-[#F4F6F5] text-[#01373D] hover:bg-[#E2E8F0]"
+                      }`}
                   >
                     {`${tab.label} (${DOCUMENT_CATEGORY_COUNTS[tab.id] || 0})`}
                   </button>
@@ -574,10 +569,10 @@ const TaxDocuments = () => {
                   >
                     <div className="flex items-start gap-4">
                       <div className="items-center justify-center">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M19.5 10.3711V19.5C19.5 20.0967 19.2629 20.669 18.841 21.091C18.419 21.5129 17.8467 21.75 17.25 21.75H6.75C6.15326 21.75 5.58097 21.5129 5.15901 21.091C4.73705 20.669 4.5 20.0967 4.5 19.5V4.5C4.5 3.90326 4.73705 3.33097 5.15901 2.90901C5.58097 2.48705 6.15326 2.25 6.75 2.25H11.3789C11.7766 2.25006 12.158 2.40804 12.4392 2.68922L19.0608 9.31078C19.342 9.59202 19.4999 9.97341 19.5 10.3711Z" stroke="#001D21" stroke-linejoin="round"/>
-                      <path d="M12 2.625V8.25C12 8.64782 12.158 9.02936 12.4393 9.31066C12.7206 9.59196 13.1022 9.75 13.5 9.75H19.125" stroke="#001D21" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M19.5 10.3711V19.5C19.5 20.0967 19.2629 20.669 18.841 21.091C18.419 21.5129 17.8467 21.75 17.25 21.75H6.75C6.15326 21.75 5.58097 21.5129 5.15901 21.091C4.73705 20.669 4.5 20.0967 4.5 19.5V4.5C4.5 3.90326 4.73705 3.33097 5.15901 2.90901C5.58097 2.48705 6.15326 2.25 6.75 2.25H11.3789C11.7766 2.25006 12.158 2.40804 12.4392 2.68922L19.0608 9.31078C19.342 9.59202 19.4999 9.97341 19.5 10.3711Z" stroke="#001D21" stroke-linejoin="round" />
+                          <path d="M12 2.625V8.25C12 8.64782 12.158 9.02936 12.4393 9.31066C12.7206 9.59196 13.1022 9.75 13.5 9.75H19.125" stroke="#001D21" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
 
                       </div>
                       <div>
@@ -598,11 +593,10 @@ const TaxDocuments = () => {
                     </div>
                     <div className="flex items-center gap-2 md:gap-3">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium font-poppins-custom ${
-                          document.status === "Approved"
+                        className={`px-3 py-1 rounded-full text-xs font-medium font-poppins-custom ${document.status === "Approved"
                             ? "bg-[#22C55E] text-white"
                             : "bg-[#F9F8FF] text-[#001D21] border border-[#E5E7EB]"
-                        }`}
+                          }`}
                       >
                         {document.status}
                       </span>
@@ -613,14 +607,14 @@ const TaxDocuments = () => {
                       >
                         <EyeIcon />
                       </button>
-                                          <button
+                      <button
                         type="button"
                         className=""
                         aria-label="Download document"
                       >
                         <TaxDocumentsDownloadIcon />
                       </button>
-                    
+
                     </div>
                   </div>
                 ))

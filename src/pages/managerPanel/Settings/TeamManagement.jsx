@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { UsersIcon, SearchIcon, PlusIcon, SaveIcon, EyeIcon, DotsVerticalIcon,ThreeUsersIcon } from "../../../components/Icons";
+import { UsersIcon, SearchIcon, PlusIcon, SaveIcon, EyeIcon, DotsVerticalIcon, ThreeUsersIcon } from "../../../components/Icons";
 
 const TeamManagement = () => {
   const [teamMembers, setTeamMembers] = useState([]);
@@ -23,7 +23,7 @@ const TeamManagement = () => {
   const [deleting, setDeleting] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
   const buttonRefs = useRef({});
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -57,7 +57,7 @@ const TeamManagement = () => {
       document.addEventListener('mousedown', handleClickOutside);
       window.addEventListener('scroll', updateDropdownPosition, true);
       window.addEventListener('resize', updateDropdownPosition);
-      
+
       return () => {
         document.removeEventListener('mousedown', handleClickOutside);
         window.removeEventListener('scroll', updateDropdownPosition, true);
@@ -83,7 +83,7 @@ const TeamManagement = () => {
 
   // Get API URL
   const getApiUrl = () => {
-    const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+    const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
     return `${API_URL.replace(/\/$/, "")}`;
   };
 
@@ -114,7 +114,7 @@ const TeamManagement = () => {
     if (member.can_manage_transfers) permissions.push("Transfers");
     if (member.can_manage_team) permissions.push("Team");
     if (member.can_manage_settings) permissions.push("Settings");
-    
+
     return permissions.length > 0 ? permissions.join(", ") : "No Permissions";
   };
 
@@ -127,7 +127,7 @@ const TeamManagement = () => {
       try {
         const API_URL = getApiUrl();
         const accessToken = getAccessToken();
-        
+
         if (!accessToken) {
           throw new Error("No access token found. Please login again.");
         }
@@ -139,7 +139,7 @@ const TeamManagement = () => {
         if (searchQuery && searchQuery.trim()) {
           params.append('search', searchQuery.trim());
         }
-        
+
         const response = await axios.get(`${API_URL}/team-members/?${params.toString()}`, {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
@@ -149,11 +149,11 @@ const TeamManagement = () => {
         });
 
         console.log("Team members fetched:", response.data);
-        
+
         // Handle different response formats
         let membersData = [];
         let paginationInfo = null;
-        
+
         if (response.data?.results && Array.isArray(response.data.results)) {
           // Paginated response (Django REST Framework style)
           membersData = response.data.results;
@@ -190,7 +190,7 @@ const TeamManagement = () => {
         }
 
         setTeamMembers(membersData);
-        
+
         if (paginationInfo) {
           setTotalCount(paginationInfo.count);
           setTotalPages(paginationInfo.totalPages || 1);
@@ -257,7 +257,7 @@ const TeamManagement = () => {
     try {
       const API_URL = getApiUrl();
       const accessToken = getAccessToken();
-      
+
       if (!accessToken) {
         throw new Error("No access token found. Please login again.");
       }
@@ -287,7 +287,7 @@ const TeamManagement = () => {
       });
 
       console.log("Team member added:", response.data);
-      
+
       // Merge payload with response to ensure all fields are present
       const newMember = {
         ...payload,
@@ -295,10 +295,10 @@ const TeamManagement = () => {
         name: response.data.name || payload.name,
         email: response.data.email || payload.email
       };
-      
+
       // Add new member to list immediately with merged data
       setTeamMembers(prev => [...prev, newMember]);
-      
+
       // Refetch team members in background to get complete server data
       try {
         const membersResponse = await axios.get(`${API_URL}/team-members/`, {
@@ -325,7 +325,7 @@ const TeamManagement = () => {
         console.error("Error refreshing team members:", refreshErr);
         // If refresh fails, keep the merged data we already added
       }
-      
+
       // Close modal and reset form
       setShowAddModal(false);
       setNewMemberForm({
@@ -412,7 +412,7 @@ const TeamManagement = () => {
             'can_manage_investors', 'can_view_reports', 'can_manage_transfers',
             'can_manage_team', 'can_manage_settings', 'is_active'
           ];
-          
+
           const permissionChanges = {};
           permissionKeys.forEach(key => {
             if (key in changes) {
@@ -675,14 +675,14 @@ const TeamManagement = () => {
       member.role?.toLowerCase().includes(query)
     );
   });
-  
+
   // Calculate pagination for filtered results
   const filteredTotalPages = searchQuery ? Math.ceil(filteredMembers.length / pageSize) : totalPages;
   const effectiveTotalPages = Math.max(1, filteredTotalPages);
-  
+
   // Calculate display counts for pagination info
   const displayStart = filteredMembers.length > 0 && currentPage <= effectiveTotalPages ? ((currentPage - 1) * pageSize + 1) : 0;
-  const displayEnd = searchQuery 
+  const displayEnd = searchQuery
     ? Math.min(currentPage * pageSize, filteredMembers.length)
     : Math.min(currentPage * pageSize, totalCount);
   const displayTotal = searchQuery ? filteredMembers.length : totalCount;
@@ -697,7 +697,7 @@ const TeamManagement = () => {
         </div>
       </div>
 
-      
+
       {/* Action Bar */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div className="relative w-full lg:max-w-md">
@@ -738,7 +738,7 @@ const TeamManagement = () => {
         </div>
       ) : (
         <>
-      {/* Team Members Table */}
+          {/* Team Members Table */}
           {filteredMembers.length === 0 ? (
             <div className="bg-white rounded-lg p-12 flex flex-col items-center justify-center">
               <div className="w-16 h-16 text-gray-400 mb-4">
@@ -750,270 +750,265 @@ const TeamManagement = () => {
               </p>
             </div>
           ) : (
-      <div className="overflow-x-auto rounded-lg border border-gray-100 bg-white">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-poppins-custom">
-                Team Member
-              </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-poppins-custom">
-                Manage Roles
-              </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-poppins-custom">
-                Permissions
-              </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-poppins-custom">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+            <div className="overflow-x-auto rounded-lg border border-gray-100 bg-white">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-poppins-custom">
+                      Team Member
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-poppins-custom">
+                      Manage Roles
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-poppins-custom">
+                      Permissions
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-poppins-custom">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
                   {filteredMembers.map((member) => {
                     const memberId = String(member.id);
                     const currentRole = memberChanges[memberId]?.role || member.role;
                     const currentPermissions = memberChanges[memberId] || member;
                     const permissionsSummary = getPermissionsSummary(currentPermissions);
-                    
+
                     return (
                       <tr key={memberId} className="hover:bg-gray-50">
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-gray-700">
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                              <span className="text-sm font-medium text-gray-700">
                                 {member.name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || "?"}
-                      </span>
-                    </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900 font-poppins-custom">
+                              </span>
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900 font-poppins-custom">
                                 {member.name || "Unknown"}
                               </div>
                               {member.email && (
                                 <div className="text-xs text-gray-500 font-poppins-custom">
                                   {member.email}
-                      </div>
+                                </div>
                               )}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                          <select 
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <select
                             value={currentRole || ""}
                             onChange={(e) => handleRoleChange(memberId, e.target.value)}
                             className="text-sm border-0 rounded-md px-3 py-1 focus:outline-none focus:ring-0 focus:border-0 focus-visible:outline-none focus-visible:ring-0 active:ring-0 font-poppins-custom bg-transparent cursor-pointer"
                           >
                             <option value="analyst">Analyst</option>
-                    <option value="manager">Manager</option>
-                    <option value="admin">Admin</option>
-                    <option value="member">Member</option>
-                  </select>
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
+                            <option value="manager">Manager</option>
+                            <option value="admin">Admin</option>
+                            <option value="member">Member</option>
+                          </select>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
                           <div className="text-sm text-gray-700 font-poppins-custom max-w-xs truncate">
                             {permissionsSummary}
                           </div>
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium relative">
-                  <div className="flex items-center space-x-2">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        handleViewMember(member);
-                      }}
-                      className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer p-1"
-                      title="View Details"
-                    >
-                      <EyeIcon />
-                    </button>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        ref={(el) => (buttonRefs.current[memberId] = el)}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          
-                          if (String(openDropdown) === String(memberId)) {
-                            setOpenDropdown(null);
-                          } else {
-                            // Calculate dropdown position (fixed positioning uses viewport coordinates)
-                            const button = buttonRefs.current[memberId];
-                            if (button) {
-                              const rect = button.getBoundingClientRect();
-                              setDropdownPosition({
-                                top: rect.bottom + 8,
-                                right: window.innerWidth - rect.right
-                              });
-                            }
-                            setOpenDropdown(String(memberId));
-                          }
-                        }}
-                        className="dropdown-button text-gray-400 hover:text-gray-600 transition-colors cursor-pointer p-1"
-                        title="More Actions"
-                      >
-                      <DotsVerticalIcon />
-                      </button>
-                      
-                      {String(openDropdown) === String(memberId) && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-[100]"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenDropdown(null);
-                            }}
-                          ></div>
-                          <div
-                            className="dropdown-menu fixed w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-[101]"
-                            style={{
-                              top: `${dropdownPosition.top}px`,
-                              right: `${dropdownPosition.right}px`
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                            }}
-                            onMouseDown={(e) => {
-                              e.stopPropagation();
-                            }}
-                          >
-                            <div className="py-1 flex flex-col gap-2">
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium relative">
+                          <div className="flex items-center space-x-2">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                handleViewMember(member);
+                              }}
+                              className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer p-1"
+                              title="View Details"
+                            >
+                              <EyeIcon />
+                            </button>
+                            <div className="relative">
                               <button
                                 type="button"
+                                ref={(el) => (buttonRefs.current[memberId] = el)}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   e.preventDefault();
-                                  handleEditMember(member);
+
+                                  if (String(openDropdown) === String(memberId)) {
+                                    setOpenDropdown(null);
+                                  } else {
+                                    // Calculate dropdown position (fixed positioning uses viewport coordinates)
+                                    const button = buttonRefs.current[memberId];
+                                    if (button) {
+                                      const rect = button.getBoundingClientRect();
+                                      setDropdownPosition({
+                                        top: rect.bottom + 8,
+                                        right: window.innerWidth - rect.right
+                                      });
+                                    }
+                                    setOpenDropdown(String(memberId));
+                                  }
                                 }}
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                                className="dropdown-button text-gray-400 hover:text-gray-600 transition-colors cursor-pointer p-1"
+                                title="More Actions"
                               >
-                                Edit Member
+                                <DotsVerticalIcon />
                               </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  e.preventDefault();
-                                  handleDeleteMember(member);
-                                }}
-                                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                              >
-                                Delete Member
-                    </button>
+
+                              {String(openDropdown) === String(memberId) && (
+                                <>
+                                  <div
+                                    className="fixed inset-0 z-[100]"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenDropdown(null);
+                                    }}
+                                  ></div>
+                                  <div
+                                    className="dropdown-menu fixed w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-[101]"
+                                    style={{
+                                      top: `${dropdownPosition.top}px`,
+                                      right: `${dropdownPosition.right}px`
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                    }}
+                                    onMouseDown={(e) => {
+                                      e.stopPropagation();
+                                    }}
+                                  >
+                                    <div className="py-1 flex flex-col gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          e.preventDefault();
+                                          handleEditMember(member);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                                      >
+                                        Edit Member
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          e.preventDefault();
+                                          handleDeleteMember(member);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                                      >
+                                        Delete Member
+                                      </button>
+                                    </div>
+                                  </div>
+                                </>
+                              )}
                             </div>
                           </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </td>
-              </tr>
+                        </td>
+                      </tr>
                     );
                   })}
-          </tbody>
-        </table>
-      </div>
+                </tbody>
+              </table>
+            </div>
           )}
 
-      {/* Pagination + Save (right aligned, stacked) */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex items-center justify-center sm:justify-start gap-2">
-          <button 
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage === 1 || loading}
-            className={`p-2 text-[#01373D] hover:text-gray-700 transition-colors ${
-              currentPage === 1 || loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-            }`}
-          >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-          
-          {/* Page Numbers */}
-          {Array.from({ length: Math.min(5, effectiveTotalPages) }, (_, i) => {
-            let pageNum;
-            if (effectiveTotalPages <= 5) {
-              pageNum = i + 1;
-            } else if (currentPage <= 3) {
-              pageNum = i + 1;
-            } else if (currentPage >= effectiveTotalPages - 2) {
-              pageNum = effectiveTotalPages - 4 + i;
-            } else {
-              pageNum = currentPage - 2 + i;
-            }
-            
-            return (
+          {/* Pagination + Save (right aligned, stacked) */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center justify-center sm:justify-start gap-2">
               <button
-                key={pageNum}
-                onClick={() => setCurrentPage(pageNum)}
-                disabled={loading}
-                className={`px-3 py-1 rounded-lg font-poppins-custom transition-colors ${
-                  currentPage === pageNum
-                    ? 'bg-[#00F0C3] text-black'
-                    : 'text-[#01373D] hover:bg-gray-100'
-                } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1 || loading}
+                className={`p-2 text-[#01373D] hover:text-gray-700 transition-colors ${currentPage === 1 || loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                  }`}
               >
-                {pageNum}
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
               </button>
-            );
-          })}
-          
-          {effectiveTotalPages > 5 && currentPage < effectiveTotalPages - 2 && (
-            <>
-              <span className="px-2 text-[#01373D]">...</span>
+
+              {/* Page Numbers */}
+              {Array.from({ length: Math.min(5, effectiveTotalPages) }, (_, i) => {
+                let pageNum;
+                if (effectiveTotalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= effectiveTotalPages - 2) {
+                  pageNum = effectiveTotalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    disabled={loading}
+                    className={`px-3 py-1 rounded-lg font-poppins-custom transition-colors ${currentPage === pageNum
+                        ? 'bg-[#00F0C3] text-black'
+                        : 'text-[#01373D] hover:bg-gray-100'
+                      } ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              {effectiveTotalPages > 5 && currentPage < effectiveTotalPages - 2 && (
+                <>
+                  <span className="px-2 text-[#01373D]">...</span>
+                  <button
+                    onClick={() => setCurrentPage(effectiveTotalPages)}
+                    disabled={loading}
+                    className={`px-3 py-1 rounded-lg font-poppins-custom transition-colors text-[#01373D] hover:bg-gray-100 ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                      }`}
+                  >
+                    {effectiveTotalPages}
+                  </button>
+                </>
+              )}
+
               <button
-                onClick={() => setCurrentPage(effectiveTotalPages)}
-                disabled={loading}
-                className={`px-3 py-1 rounded-lg font-poppins-custom transition-colors text-[#01373D] hover:bg-gray-100 ${
-                  loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                }`}
+                onClick={() => setCurrentPage(prev => Math.min(effectiveTotalPages, prev + 1))}
+                disabled={currentPage === effectiveTotalPages || loading}
+                className={`p-2 text-[#01373D] hover:text-gray-700 transition-colors ${currentPage === totalPages || loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                  }`}
               >
-                {effectiveTotalPages}
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </button>
-            </>
-          )}
-          
-          <button 
-            onClick={() => setCurrentPage(prev => Math.min(effectiveTotalPages, prev + 1))}
-            disabled={currentPage === effectiveTotalPages || loading}
-            className={`p-2 text-[#01373D] hover:text-gray-700 transition-colors ${
-              currentPage === totalPages || loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-            }`}
-          >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          
-          {/* Results count */}
-          <span className="ml-2 text-sm text-gray-600 font-poppins-custom">
-            Showing {displayStart} - {displayEnd} of {displayTotal}
-            {searchQuery && ` (filtered)`}
-          </span>
-          </div>
-        <button
-          onClick={handleSave}
+
+              {/* Results count */}
+              <span className="ml-2 text-sm text-gray-600 font-poppins-custom">
+                Showing {displayStart} - {displayEnd} of {displayTotal}
+                {searchQuery && ` (filtered)`}
+              </span>
+            </div>
+            <button
+              onClick={handleSave}
               disabled={Object.keys(memberChanges).length === 0 || saving}
-              className={`flex items-center justify-center gap-2 px-6 py-2 rounded-lg transition-colors font-poppins-custom font-medium cursor-pointer ${
-                Object.keys(memberChanges).length === 0 || saving
+              className={`flex items-center justify-center gap-2 px-6 py-2 rounded-lg transition-colors font-poppins-custom font-medium cursor-pointer ${Object.keys(memberChanges).length === 0 || saving
                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                   : "bg-[#00F0C3] text-black hover:bg-[#00D4A8]"
-              }`}
-        >
-          {saving ? (
-            <>
-              <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
-              <span>Saving...</span>
-            </>
-          ) : (
-            <>
-          <SaveIcon />
-          <span>Save changes</span>
-            </>
-          )}
-        </button>
+                }`}
+            >
+              {saving ? (
+                <>
+                  <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <SaveIcon />
+                  <span>Save changes</span>
+                </>
+              )}
+            </button>
           </div>
         </>
       )}
@@ -1123,9 +1118,9 @@ const TeamManagement = () => {
                     </div>
                   ))}
                 </div>
-      </div>
-      </div>
- 
+              </div>
+            </div>
+
             {/* Modal Footer */}
             <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 sticky bottom-0 bg-white">
               <button
@@ -1143,11 +1138,10 @@ const TeamManagement = () => {
                 type="button"
                 onClick={handleAddMemberSubmit}
                 disabled={addingMember}
-                className={`flex items-center justify-center gap-2 px-6 py-2 rounded-lg transition-colors font-poppins-custom font-medium ${
-                  addingMember
+                className={`flex items-center justify-center gap-2 px-6 py-2 rounded-lg transition-colors font-poppins-custom font-medium ${addingMember
                     ? "bg-gray-400 text-gray-600 cursor-not-allowed"
                     : "bg-[#00F0C3] text-black hover:bg-[#00D4A8]"
-                }`}
+                  }`}
               >
                 {addingMember ? (
                   <>
@@ -1222,9 +1216,8 @@ const TeamManagement = () => {
                       </div>
                       <div>
                         <p className="text-sm text-gray-500 mb-1">Status</p>
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          selectedMember.is_active !== false ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                        }`}>
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${selectedMember.is_active !== false ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
+                          }`}>
                           {selectedMember.is_active !== false ? "Active" : "Inactive"}
                         </span>
                       </div>
@@ -1414,11 +1407,10 @@ const TeamManagement = () => {
                 type="button"
                 onClick={handleEditSave}
                 disabled={saving}
-                className={`flex items-center justify-center gap-2 px-6 py-2 rounded-lg transition-colors font-poppins-custom font-medium ${
-                  saving
+                className={`flex items-center justify-center gap-2 px-6 py-2 rounded-lg transition-colors font-poppins-custom font-medium ${saving
                     ? "bg-gray-400 text-gray-600 cursor-not-allowed"
                     : "bg-[#00F0C3] text-black hover:bg-[#00D4A8]"
-                }`}
+                  }`}
               >
                 {saving ? (
                   <>
@@ -1474,7 +1466,7 @@ const TeamManagement = () => {
                   <p className="text-sm text-red-600">{error}</p>
                 </div>
               )}
-              
+
               <div className="space-y-4">
                 <p className="text-gray-700 font-poppins-custom">
                   Are you sure you want to delete <span className="font-semibold text-gray-900">{memberToDelete.name}</span>?
@@ -1519,11 +1511,10 @@ const TeamManagement = () => {
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={deleting}
-                className={`px-6 py-2 rounded-lg transition-colors font-poppins-custom font-medium ${
-                  deleting
+                className={`px-6 py-2 rounded-lg transition-colors font-poppins-custom font-medium ${deleting
                     ? "bg-gray-400 text-gray-600 cursor-not-allowed"
                     : "bg-red-600 text-white hover:bg-red-700"
-                }`}
+                  }`}
               >
                 {deleting ? (
                   <span className="flex items-center gap-2">

@@ -27,9 +27,9 @@ const SPVStep6 = () => {
   // Helper function to construct file URL from API response
   const constructFileUrl = (filePath) => {
     if (!filePath) return null;
-    
+
     const baseDomain = "http://168.231.121.7";
-    
+
     if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
       return filePath;
     } else if (filePath.startsWith('/')) {
@@ -128,8 +128,8 @@ const SPVStep6 = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-        
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
+
         let step5Data = null;
         let currentSpvId = null;
 
@@ -169,7 +169,7 @@ const SPVStep6 = () => {
         // Try to get step5 data with SPV ID or default to 1
         const testSpvId = currentSpvId || 1;
         const step5Url = `${API_URL.replace(/\/$/, "")}/spv/${testSpvId}/update_step5/`;
-        
+
         try {
           console.log("🔍 Fetching step5 data from:", step5Url);
           const step5Response = await axios.get(step5Url, {
@@ -211,7 +211,7 @@ const SPVStep6 = () => {
         // If we got step5 data, populate the form
         if (step5Data) {
           const responseData = step5Data.step_data || step5Data.data || step5Data;
-          
+
           console.log("✅ Step5 data found:", responseData);
 
           // Map investment_visibility from API format (lowercase) to form format
@@ -226,10 +226,10 @@ const SPVStep6 = () => {
 
           const mappedData = {
             dealName: responseData.deal_name || "",
-            accessMode: investmentVisibilityMap[responseData.investment_visibility] || 
+            accessMode: investmentVisibilityMap[responseData.investment_visibility] ||
               (responseData.investment_visibility === "visible" ? "public" : "private"),
-            tags: Array.isArray(responseData.deal_tags) 
-              ? responseData.deal_tags 
+            tags: Array.isArray(responseData.deal_tags)
+              ? responseData.deal_tags
               : (responseData.deal_tags ? [responseData.deal_tags] : []),
             syndicateSelector: responseData.syndicate_selection || "",
             dealMemo: responseData.deal_memo || "",
@@ -245,7 +245,7 @@ const SPVStep6 = () => {
 
           setFormData(prev => ({ ...prev, ...mappedData }));
           setHasExistingData(true);
-          
+
           console.log("✅ Form populated with existing step5 data:", mappedData);
         } else if (currentSpvId) {
           setSpvId(currentSpvId);
@@ -275,11 +275,11 @@ const SPVStep6 = () => {
         throw new Error("No access token found. Please login again.");
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
 
       // Get SPV ID from state, localStorage, or fetch it
       let currentSpvId = spvId || localStorage.getItem("currentSpvId");
-      
+
       // Parse if it's a string from localStorage
       if (currentSpvId && typeof currentSpvId === 'string' && !isNaN(currentSpvId)) {
         currentSpvId = parseInt(currentSpvId, 10);
@@ -353,7 +353,7 @@ const SPVStep6 = () => {
         invite_private_note: "",
         invite_tags: []
       };
-      
+
       if (hasExistingData && currentSpvId) {
         try {
           const getStep5Url = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/update_step5/`;
@@ -364,7 +364,7 @@ const SPVStep6 = () => {
               'Accept': 'application/json'
             }
           });
-          
+
           const responseData = step5Response.data?.step_data || step5Response.data?.data || step5Response.data;
           if (responseData) {
             existingStep5Data = {
@@ -394,7 +394,7 @@ const SPVStep6 = () => {
       if (hasDocument) {
         // Use FormData for file upload
         dataToSend = new FormData();
-        
+
         // Add all text fields
         if (existingStep5Data.lp_invite_emails && existingStep5Data.lp_invite_emails.length > 0) {
           existingStep5Data.lp_invite_emails.forEach(email => {
@@ -481,7 +481,7 @@ const SPVStep6 = () => {
           headers: headers
         });
         console.log("✅ SPV step5 created successfully with POST:", response.data);
-        
+
         if (response?.data?.id || response?.data?.spv_id) {
           const newSpvId = response.data.id || response.data.spv_id;
           setSpvId(newSpvId);
@@ -507,14 +507,14 @@ const SPVStep6 = () => {
       console.error("Error response:", err.response);
       console.error("Error status:", err.response?.status);
       console.error("Error data:", err.response?.data);
-      
+
       const backendData = err.response?.data;
-      
+
       if (backendData) {
         if (typeof backendData === "object") {
           // Handle specific field errors
           let errorMessages = [];
-          
+
           // Check for field errors
           Object.keys(backendData).forEach(key => {
             if (Array.isArray(backendData[key])) {
@@ -530,7 +530,7 @@ const SPVStep6 = () => {
               errorMessages.push(`${key}: ${backendData[key]}`);
             }
           });
-          
+
           if (errorMessages.length > 0) {
             setError(errorMessages.join(" "));
           } else {
@@ -557,7 +557,7 @@ const SPVStep6 = () => {
     <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 lg:p-8 space-y-8">
       {/* Header */}
       <div className="space-y-2 text-center sm:text-left">
-            <h1 className="text-3xl font-medium text-gray-800">Additional Information</h1>
+        <h1 className="text-3xl font-medium text-gray-800">Additional Information</h1>
         <p className="text-gray-600">Configure how your SPV will appear to investors and control access settings.</p>
         {isLoadingExistingData && (
           <p className="text-sm text-gray-500">Loading existing data...</p>
@@ -573,24 +573,23 @@ const SPVStep6 = () => {
 
       {/* Form Fields */}
       <div className="space-y-6">
-      
+
 
         {/* Access Mode */}
         <div>
           <label className="block text-lg font-medium text-gray-800 mb-4">Access Mode</label>
           <div className="flex flex-col sm:flex-row sm:space-x-4 gap-4">
             <div
-              className={`flex-1 border rounded-lg p-4 cursor-pointer ${
-                formData.accessMode === "private"
+              className={`flex-1 border rounded-lg p-4 cursor-pointer ${formData.accessMode === "private"
                   ? "border-blue-500 ring-1 ring-blue-500"
                   : "border-gray-300 hover:border-gray-400"
-              }`}
+                }`}
               onClick={() => handleInputChange("accessMode", "private")}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M7.41 7.41C7.18894 7.61599 7.01163 7.86439 6.88866 8.14039C6.76568 8.41638 6.69955 8.71432 6.69422 9.01643C6.68889 9.31854 6.74447 9.61863 6.85763 9.89879C6.97079 10.179 7.13923 10.4335 7.35288 10.6471C7.56654 10.8608 7.82104 11.0292 8.10121 11.1424C8.38137 11.2555 8.68146 11.3111 8.98357 11.3058C9.28568 11.3004 9.58362 11.2343 9.85961 11.1113C10.1356 10.9884 10.384 10.8111 10.59 10.59M8.0475 3.81C8.36348 3.77063 8.68157 3.75059 9 3.75C14.25 3.75 16.5 9 16.5 9C16.1647 9.71784 15.7442 10.3927 15.2475 11.01M4.9575 4.9575C3.46594 5.97347 2.2724 7.36894 1.5 9C1.5 9 3.75 14.25 9 14.25C10.4369 14.2539 11.8431 13.8338 13.0425 13.0425M1.5 1.5L16.5 16.5" stroke="#01373D" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M7.41 7.41C7.18894 7.61599 7.01163 7.86439 6.88866 8.14039C6.76568 8.41638 6.69955 8.71432 6.69422 9.01643C6.68889 9.31854 6.74447 9.61863 6.85763 9.89879C6.97079 10.179 7.13923 10.4335 7.35288 10.6471C7.56654 10.8608 7.82104 11.0292 8.10121 11.1424C8.38137 11.2555 8.68146 11.3111 8.98357 11.3058C9.28568 11.3004 9.58362 11.2343 9.85961 11.1113C10.1356 10.9884 10.384 10.8111 10.59 10.59M8.0475 3.81C8.36348 3.77063 8.68157 3.75059 9 3.75C14.25 3.75 16.5 9 16.5 9C16.1647 9.71784 15.7442 10.3927 15.2475 11.01M4.9575 4.9575C3.46594 5.97347 2.2724 7.36894 1.5 9C1.5 9 3.75 14.25 9 14.25C10.4369 14.2539 11.8431 13.8338 13.0425 13.0425M1.5 1.5L16.5 16.5" stroke="#01373D" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   <div>
                     <p className="font-medium text-gray-900">Private</p>
@@ -609,18 +608,17 @@ const SPVStep6 = () => {
             </div>
 
             <div
-              className={`flex-1 border rounded-lg p-4 cursor-pointer ${
-                formData.accessMode === "public"
+              className={`flex-1 border rounded-lg p-4 cursor-pointer ${formData.accessMode === "public"
                   ? "border-blue-500 ring-1 ring-blue-500"
                   : "border-gray-300 hover:border-gray-400"
-              }`}
+                }`}
               onClick={() => handleInputChange("accessMode", "public")}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1.5 9C1.5 9 3.75 3.75 9 3.75C14.25 3.75 16.5 9 16.5 9C16.5 9 14.25 14.25 9 14.25C3.75 14.25 1.5 9 1.5 9Z" stroke="#01373D" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M9 11.25C10.2426 11.25 11.25 10.2426 11.25 9C11.25 7.75736 10.2426 6.75 9 6.75C7.75736 6.75 6.75 7.75736 6.75 9C6.75 10.2426 7.75736 11.25 9 11.25Z" stroke="#01373D" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M1.5 9C1.5 9 3.75 3.75 9 3.75C14.25 3.75 16.5 9 16.5 9C16.5 9 14.25 14.25 9 14.25C3.75 14.25 1.5 9 1.5 9Z" stroke="#01373D" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M9 11.25C10.2426 11.25 11.25 10.2426 11.25 9C11.25 7.75736 10.2426 6.75 9 6.75C7.75736 6.75 6.75 7.75736 6.75 9C6.75 10.2426 7.75736 11.25 9 11.25Z" stroke="#01373D" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   <div>
                     <p className="font-medium text-gray-900">Visible to all</p>
@@ -680,10 +678,10 @@ const SPVStep6 = () => {
                 </svg>
               </button>
             </div>
-            
+
             {/* Tag Dropdown */}
             {showTagDropdown && (
-              <div 
+              <div
                 data-tag-dropdown
                 className="absolute z-10 w-full mt-1 bg-white border border-[#0A2A2E] rounded-lg shadow-lg max-h-48 overflow-y-auto"
               >
@@ -766,9 +764,8 @@ const SPVStep6 = () => {
         {/* Upload a Document */}
         <div>
           <label className="block text-lg font-medium text-gray-800 mb-2">Upload a Document</label>
-          <div className={`border border-[#0A2A2E] rounded-lg p-8 text-center hover:border-gray-400 transition-colors ${
-            (formData.document || supportingDocumentUrl) ? "bg-green-50 border-green-500" : "bg-[#F4F6F5]"
-          }`}>
+          <div className={`border border-[#0A2A2E] rounded-lg p-8 text-center hover:border-gray-400 transition-colors ${(formData.document || supportingDocumentUrl) ? "bg-green-50 border-green-500" : "bg-[#F4F6F5]"
+            }`}>
             <input
               type="file"
               accept=".pdf,.docx"
@@ -779,11 +776,11 @@ const SPVStep6 = () => {
             {formData.document ? (
               <div className="space-y-3">
                 <div className="flex items-center justify-center">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M17 8L12 3L7 8" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M12 3V15" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M17 8L12 3L7 8" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M12 3V15" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
 
                 </div>
                 <div className="space-y-2">
@@ -824,9 +821,9 @@ const SPVStep6 = () => {
                   <p className="text-sm text-gray-600">
                     {supportingDocumentUrl.split('/').pop() || "Supporting Document"}
                   </p>
-                  <a 
-                    href={supportingDocumentUrl} 
-                    target="_blank" 
+                  <a
+                    href={supportingDocumentUrl}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-500 text-xs underline mt-1 inline-block hover:text-blue-700"
                   >
@@ -869,7 +866,7 @@ const SPVStep6 = () => {
       <div className="flex flex-col sm:flex-row sm:justify-between gap-3 sm:gap-4 pt-8 border-t border-gray-200">
         <button
           onClick={handlePrevious}
-            className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 border border-[#0A2A2E] w-full sm:w-auto"
+          className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 border border-[#0A2A2E] w-full sm:w-auto"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />

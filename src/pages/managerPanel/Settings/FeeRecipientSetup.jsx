@@ -30,7 +30,7 @@ const FeeRecipientSetup = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   // --- Configuration ---
-  const API_URL = "http://168.231.121.7/blockchain-backend/api/syndicate/settings/fee-recipient/";
+  const API_URL = "http://72.61.251.114/blockchain-backend/api/syndicate/settings/fee-recipient/";
   const TEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY0MzIyMjg0LCJpYXQiOjE3NjQzMDQyODQsImp0aSI6IjkyMDRhMGY3ODhjNDRlMDQ5MWE4NjkzZWY3NzlmYTljIiwidXNlcl9pZCI6IjIifQ.6h81mnprtOjPpn2-_mkasbrXSwKwbr7wHkhEC-j6_ag";
 
   useEffect(() => {
@@ -57,28 +57,28 @@ const FeeRecipientSetup = () => {
       if (response.ok) {
         const data = await response.json();
         console.log("API Response:", data); // Debug log to check structure
-        
+
         let results = [];
-        
+
         // Handle specific structure: { success: true, data: { ... } }
         if (data.data && !Array.isArray(data.data) && typeof data.data === 'object') {
-             results = [data.data];
-        } 
+          results = [data.data];
+        }
         // Handle if 'data' is an array: { success: true, data: [ ... ] }
         else if (data.data && Array.isArray(data.data)) {
-             results = data.data;
+          results = data.data;
         }
         // Case 1: API returns a direct array [{}, {}]
         else if (Array.isArray(data)) {
-            results = data;
-        } 
+          results = data;
+        }
         // Case 2: API returns paginated object { count: 1, results: [] }
         else if (data.results && Array.isArray(data.results)) {
-            results = data.results;
-        } 
+          results = data.results;
+        }
         // Case 3: API returns a single object at the root (Singleton resource)
         else if (data && typeof data === 'object' && Object.keys(data).length > 0) {
-            results = [data];
+          results = [data];
         }
 
         setFeeRecipients(results);
@@ -100,7 +100,7 @@ const FeeRecipientSetup = () => {
 
   const handleDelete = async (id) => {
     if (!id) return;
-    
+
     const confirmDelete = window.confirm("Are you sure you want to delete this fee recipient?");
     if (!confirmDelete) return;
 
@@ -140,9 +140,9 @@ const FeeRecipientSetup = () => {
       {/* Header - White Card */}
       <div className="bg-white rounded-xl shadow-sm p-6 flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-4 sm:space-y-0 w-full border border-gray-100">
         <div className="flex items-center justify-center sm:justify-start">
-            <div className="p-2 bg-[#F4F6F5] rounded-full">
-                <FreeIcon />
-            </div>
+          <div className="p-2 bg-[#F4F6F5] rounded-full">
+            <FreeIcon />
+          </div>
         </div>
         <div>
           <h4 className="text-base sm:text-lg text-[#001D21] font-semibold">Fee Recipient</h4>
@@ -156,91 +156,90 @@ const FeeRecipientSetup = () => {
         <p className="text-[#748A91] mb-4 text-[13px] leading-relaxed max-w-3xl">
           It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters.
         </p>
-        
+
         <div className="flex flex-col items-start gap-2">
-            <button
+          <button
             onClick={handleAddFeeRecipients}
             disabled={feeRecipients.length > 0}
-            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium text-sm shadow-sm transition-colors ${
-                feeRecipients.length > 0 
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200" 
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium text-sm shadow-sm transition-colors ${feeRecipients.length > 0
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
                 : "bg-[#00F0C3] text-black hover:bg-[#00D4A8] cursor-pointer"
-            }`}
-            >
+              }`}
+          >
             <PlusIcon />
             <span>Add Fee Recipients</span>
-            </button>
-            
-            {feeRecipients.length > 0 && (
-                <p className="text-xs text-orange-600 font-medium ml-1">
-                    Recipient already exists.
-                </p>
-            )}
+          </button>
+
+          {feeRecipients.length > 0 && (
+            <p className="text-xs text-orange-600 font-medium ml-1">
+              Recipient already exists.
+            </p>
+          )}
         </div>
       </div>
 
       {/* List Section */}
       <div className="space-y-4">
         <h3 className="text-lg text-[#001D21] font-semibold ml-1">Existing Recipients</h3>
-        
+
         {isLoading ? (
-            <div className="flex justify-center p-8">
-                <div className="w-8 h-8 border-4 border-[#00F0C3] border-t-transparent rounded-full animate-spin"></div>
-            </div>
+          <div className="flex justify-center p-8">
+            <div className="w-8 h-8 border-4 border-[#00F0C3] border-t-transparent rounded-full animate-spin"></div>
+          </div>
         ) : error ? (
-            <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-100 text-sm">
-                {error}
-            </div>
+          <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-100 text-sm">
+            {error}
+          </div>
         ) : feeRecipients.length === 0 ? (
-            <div className="p-8 text-center text-gray-500 bg-white rounded-xl border border-gray-100 italic">
-                No fee recipients found.
-            </div>
+          <div className="p-8 text-center text-gray-500 bg-white rounded-xl border border-gray-100 italic">
+            No fee recipients found.
+          </div>
         ) : (
-            <div className="grid grid-cols-1 gap-4">
-                {feeRecipients.map((recipient, index) => (
-                    <div key={recipient.id || index} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div>
-                            <h5 className="text-[#001D21] font-semibold text-base">
-                                {recipient.entity_name || recipient.first_name || "Unknown Entity"}
-                            </h5>
-                            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-[#748A91]">
-                                <span className="flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[#00F0C3]"></span>
-                                    {recipient.recipient_type_display || recipient.recipient_type || "Individual"}
-                                </span>
-                                {recipient.residence && (
-                                    <span className="flex items-center gap-1">
-                                        <span className="text-gray-300">|</span>
-                                        {recipient.residence}
-                                    </span>
-                                )}
-                                {recipient.tax_id && (
-                                    <span className="flex items-center gap-1">
-                                        <span className="text-gray-300">|</span>
-                                        ID: {recipient.tax_id}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                        
-                        {/* Status / Actions */}
-                        <div className="flex items-center gap-3">
-                             <div className="px-3 py-1 bg-[#F4F6F5] text-[#001D21] text-xs rounded-full font-medium">
-                                Active
-                             </div>
-                             
-                             <button 
-                                onClick={() => handleDelete(recipient.id)}
-                                disabled={isDeleting}
-                                className="p-2 hover:bg-red-50 rounded-full transition-colors cursor-pointer group"
-                                title="Delete Recipient"
-                             >
-                                <TrashIcon />
-                             </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
+          <div className="grid grid-cols-1 gap-4">
+            {feeRecipients.map((recipient, index) => (
+              <div key={recipient.id || index} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <h5 className="text-[#001D21] font-semibold text-base">
+                    {recipient.entity_name || recipient.first_name || "Unknown Entity"}
+                  </h5>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-[#748A91]">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#00F0C3]"></span>
+                      {recipient.recipient_type_display || recipient.recipient_type || "Individual"}
+                    </span>
+                    {recipient.residence && (
+                      <span className="flex items-center gap-1">
+                        <span className="text-gray-300">|</span>
+                        {recipient.residence}
+                      </span>
+                    )}
+                    {recipient.tax_id && (
+                      <span className="flex items-center gap-1">
+                        <span className="text-gray-300">|</span>
+                        ID: {recipient.tax_id}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Status / Actions */}
+                <div className="flex items-center gap-3">
+                  <div className="px-3 py-1 bg-[#F4F6F5] text-[#001D21] text-xs rounded-full font-medium">
+                    Active
+                  </div>
+
+                  <button
+                    onClick={() => handleDelete(recipient.id)}
+                    disabled={isDeleting}
+                    className="p-2 hover:bg-red-50 rounded-full transition-colors cursor-pointer group"
+                    title="Delete Recipient"
+                  >
+                    <TrashIcon />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>

@@ -38,9 +38,9 @@ const SPVStep1 = () => {
   // Helper function to construct file URL from API response
   const constructFileUrl = (filePath) => {
     if (!filePath) return null;
-    
+
     const baseDomain = "http://168.231.121.7";
-    
+
     if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
       return filePath;
     } else if (filePath.startsWith('/')) {
@@ -78,7 +78,7 @@ const SPVStep1 = () => {
       localStorage.setItem("currentSpvId", String(foundDraftSpvId));
       setShowDraftModal(false);
       console.log("✅ User chose to continue with draft SPV:", foundDraftSpvId);
-      
+
       // Fetch and populate existing step1 data
       try {
         const accessToken = localStorage.getItem("accessToken");
@@ -87,9 +87,9 @@ const SPVStep1 = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const step1Url = `${API_URL.replace(/\/$/, "")}/spv/${foundDraftSpvId}/update_step1/`;
-        
+
         const step1Response = await axios.get(step1Url, {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
@@ -100,7 +100,7 @@ const SPVStep1 = () => {
 
         if (step1Response.data && step1Response.status === 200) {
           const responseData = step1Response.data.step_data || step1Response.data.data || step1Response.data;
-          
+
           // Map the data to form format (same logic as in useEffect)
           const stageIdToString = (stageId) => {
             const stageMap = { 1: "pre-seed", 2: "seed", 3: "series-a", 4: "series-b", 5: "growth" };
@@ -112,10 +112,10 @@ const SPVStep1 = () => {
             return typeMap[typeId] || "";
           };
 
-          const companyStageValue = typeof responseData.company_stage === 'number' 
-            ? stageIdToString(responseData.company_stage) 
+          const companyStageValue = typeof responseData.company_stage === 'number'
+            ? stageIdToString(responseData.company_stage)
             : (responseData.company_stage || "pre-seed");
-          
+
           const incorporationTypeValue = typeof responseData.incorporation_type === 'number'
             ? typeIdToString(responseData.incorporation_type)
             : (responseData.incorporation_type || "");
@@ -164,18 +164,18 @@ const SPVStep1 = () => {
   const handleCreateNew = async () => {
     setUserChoseCreateNew(true); // Set flag to prevent modal from showing again
     setShowDraftModal(false);
-    
+
     if (foundDraftSpvId) {
       try {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
           console.log("⚠️ No access token, skipping deletion");
         } else {
-          const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+          const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
           const deleteUrl = `${API_URL.replace(/\/$/, "")}/spv/${foundDraftSpvId}/`;
 
           console.log("🗑️ Deleting old draft SPV:", foundDraftSpvId);
-          
+
           await axios.delete(deleteUrl, {
             headers: {
               'Authorization': `Bearer ${accessToken}`,
@@ -233,20 +233,20 @@ const SPVStep1 = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-        
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
+
         // Check if SPV ID was passed from navigation or localStorage
         // IMPORTANT: We need to VALIDATE that the SPV is actually a draft before using it
         let currentSpvId = location.state?.spvId || null;
         let step1Data = null;
-        
+
         // If we have an SPV ID from navigation, validate it's a draft first
         if (currentSpvId) {
           // Parse if it's a string
           if (typeof currentSpvId === 'string' && !isNaN(currentSpvId)) {
             currentSpvId = parseInt(currentSpvId, 10);
           }
-          
+
           // Validate this SPV is actually a draft before using it
           try {
             const checkDraftUrl = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/final_review/`;
@@ -257,10 +257,10 @@ const SPVStep1 = () => {
                 'Accept': 'application/json'
               }
             });
-            
+
             const reviewData = draftCheckResponse.data;
             const finalReviewStatus = reviewData?.spv_status || reviewData?.status;
-            
+
             if (finalReviewStatus && finalReviewStatus.toLowerCase() !== 'draft') {
               console.log("⚠️ SPV", currentSpvId, "is not a draft (status:", finalReviewStatus, "), will find/create draft SPV");
               currentSpvId = null; // Not a draft, don't use it
@@ -277,11 +277,11 @@ const SPVStep1 = () => {
             }
           }
         }
-        
+
         // If we have a validated draft SPV ID, try to fetch step1 data
         if (currentSpvId) {
           console.log("✅ Using validated draft SPV ID:", currentSpvId);
-          
+
           // Try to fetch step1 data for this SPV
           try {
             const step1Url = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/update_step1/`;
@@ -306,7 +306,7 @@ const SPVStep1 = () => {
             }
           }
         }
-        
+
         // If we don't have a validated SPV ID yet, check localStorage and SPV list
         if (!currentSpvId) {
           // First check localStorage, but we'll validate it
@@ -337,128 +337,128 @@ const SPVStep1 = () => {
               }
             }
           }
-          
+
           // If still no validated SPV ID, try to get SPV list to find existing draft SPV
           if (!currentSpvId) {
             try {
-          // Try to get user's SPVs
-          const spvListUrl = `${API_URL.replace(/\/$/, "")}/spv/`;
-          const spvListResponse = await axios.get(spvListUrl, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            }
-          });
-
-          console.log("SPV list response:", spvListResponse.data);
-
-          // Handle paginated response or direct array
-          const spvData = spvListResponse.data?.results || spvListResponse.data;
-
-          // Check if SPV is a draft (can be reused)
-          // A draft SPV is one that:
-          // 1. Has no final_review (404) - means it hasn't been submitted yet
-          // 2. Has final_review with status "draft"
-          // 3. Has status "draft" in the SPV list
-          const checkIfSPVIsDraft = async (spvId, spvStatus = null) => {
-            // First, check the status from the list if available
-            if (spvStatus) {
-              const normalizedStatus = spvStatus.toLowerCase();
-              if (normalizedStatus === 'draft') {
-                console.log("✅ SPV", spvId, "has draft status in list - can use same SPV");
-                return true; // It's a draft, can use this SPV
-              } else if (normalizedStatus === 'pending review' || normalizedStatus === 'pending_review') {
-                console.log("⚠️ SPV", spvId, "has pending review status - will create new SPV");
-                return false; // Already submitted, start new SPV
-              }
-            }
-            
-            // Then check the final_review endpoint to get the actual spv_status
-            try {
-              const finalReviewUrl = `${API_URL.replace(/\/$/, "")}/spv/${spvId}/final_review/`;
-              const finalReviewResponse = await axios.get(finalReviewUrl, {
+              // Try to get user's SPVs
+              const spvListUrl = `${API_URL.replace(/\/$/, "")}/spv/`;
+              const spvListResponse = await axios.get(spvListUrl, {
                 headers: {
                   'Authorization': `Bearer ${accessToken}`,
                   'Content-Type': 'application/json',
                   'Accept': 'application/json'
                 }
               });
-              
-              // Get spv_status from the final_review response
-              const reviewData = finalReviewResponse.data;
-              const finalReviewStatus = reviewData?.spv_status || reviewData?.status;
-              
-              if (finalReviewStatus) {
-                const normalizedStatus = finalReviewStatus.toLowerCase();
-                if (normalizedStatus === 'draft') {
-                  console.log("✅ SPV", spvId, "has draft status in final_review - can use same SPV");
-                  return true; // It's a draft, can use this SPV
+
+              console.log("SPV list response:", spvListResponse.data);
+
+              // Handle paginated response or direct array
+              const spvData = spvListResponse.data?.results || spvListResponse.data;
+
+              // Check if SPV is a draft (can be reused)
+              // A draft SPV is one that:
+              // 1. Has no final_review (404) - means it hasn't been submitted yet
+              // 2. Has final_review with status "draft"
+              // 3. Has status "draft" in the SPV list
+              const checkIfSPVIsDraft = async (spvId, spvStatus = null) => {
+                // First, check the status from the list if available
+                if (spvStatus) {
+                  const normalizedStatus = spvStatus.toLowerCase();
+                  if (normalizedStatus === 'draft') {
+                    console.log("✅ SPV", spvId, "has draft status in list - can use same SPV");
+                    return true; // It's a draft, can use this SPV
+                  } else if (normalizedStatus === 'pending review' || normalizedStatus === 'pending_review') {
+                    console.log("⚠️ SPV", spvId, "has pending review status - will create new SPV");
+                    return false; // Already submitted, start new SPV
+                  }
+                }
+
+                // Then check the final_review endpoint to get the actual spv_status
+                try {
+                  const finalReviewUrl = `${API_URL.replace(/\/$/, "")}/spv/${spvId}/final_review/`;
+                  const finalReviewResponse = await axios.get(finalReviewUrl, {
+                    headers: {
+                      'Authorization': `Bearer ${accessToken}`,
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json'
+                    }
+                  });
+
+                  // Get spv_status from the final_review response
+                  const reviewData = finalReviewResponse.data;
+                  const finalReviewStatus = reviewData?.spv_status || reviewData?.status;
+
+                  if (finalReviewStatus) {
+                    const normalizedStatus = finalReviewStatus.toLowerCase();
+                    if (normalizedStatus === 'draft') {
+                      console.log("✅ SPV", spvId, "has draft status in final_review - can use same SPV");
+                      return true; // It's a draft, can use this SPV
+                    } else {
+                      console.log("⚠️ SPV", spvId, "has status:", finalReviewStatus, "in final_review - will create new SPV");
+                      return false; // Not draft, start new SPV
+                    }
+                  }
+
+                  // If no spv_status found in final_review, check other indicators
+                  const fullSpvData = reviewData?.full_spv_data || reviewData;
+                  if (fullSpvData?.submitted_at || fullSpvData?.final_submitted) {
+                    console.log("⚠️ SPV", spvId, "has been submitted (found submitted_at/final_submitted) - will create new SPV");
+                    return false; // Already submitted, start new SPV
+                  }
+
+                  // If final_review exists but no clear status, assume it's been submitted (start new)
+                  console.log("⚠️ SPV", spvId, "final_review exists but no draft status - will create new SPV");
+                  return false;
+                } catch (err) {
+                  // If we can't access final_review (404), it means the SPV hasn't been submitted yet
+                  // This is a draft SPV - we can use it!
+                  if (err.response?.status === 404) {
+                    console.log("✅ SPV", spvId, "has no final_review (404) - this is a draft SPV, can use it");
+                    return true; // No final_review = draft = can use this SPV
+                  }
+                  // For other errors, assume it's not a draft to be safe (start new)
+                  console.log("⚠️ Error checking SPV", spvId, "status - will create new SPV");
+                  return false;
+                }
+              };
+
+              // If we get a list, find the most recent SPV that hasn't been finalized
+              if (Array.isArray(spvData) && spvData.length > 0) {
+                // Sort by id (highest first) or created_at to get most recent first
+                const sortedSpvs = [...spvData].sort((a, b) => {
+                  if (a.created_at && b.created_at) {
+                    return new Date(b.created_at) - new Date(a.created_at);
+                  }
+                  return (b.id || 0) - (a.id || 0);
+                });
+
+                // Check each SPV starting from most recent to find one that's a draft
+                for (const spv of sortedSpvs) {
+                  const isDraft = await checkIfSPVIsDraft(spv.id, spv.status);
+                  if (isDraft) {
+                    currentSpvId = spv.id;
+                    console.log("✅ Found draft SPV ID:", currentSpvId);
+                    break;
+                  } else {
+                    console.log("⚠️ SPV", spv.id, "is not a draft, checking next...");
+                  }
+                }
+
+                // If all SPVs are finalized, we'll start a new one (currentSpvId will remain null)
+                if (!currentSpvId) {
+                  console.log("ℹ️ All existing SPVs have been finalized. Starting new SPV creation.");
+                }
+              } else if (spvData && spvData.id) {
+                // Single SPV object - check if it's a draft
+                const isDraft = await checkIfSPVIsDraft(spvData.id, spvData.status);
+                if (isDraft) {
+                  currentSpvId = spvData.id;
+                  console.log("✅ Found draft SPV ID from single object:", currentSpvId);
                 } else {
-                  console.log("⚠️ SPV", spvId, "has status:", finalReviewStatus, "in final_review - will create new SPV");
-                  return false; // Not draft, start new SPV
+                  console.log("⚠️ SPV is not a draft. Starting new SPV creation.");
                 }
               }
-              
-              // If no spv_status found in final_review, check other indicators
-              const fullSpvData = reviewData?.full_spv_data || reviewData;
-              if (fullSpvData?.submitted_at || fullSpvData?.final_submitted) {
-                console.log("⚠️ SPV", spvId, "has been submitted (found submitted_at/final_submitted) - will create new SPV");
-                return false; // Already submitted, start new SPV
-              }
-              
-              // If final_review exists but no clear status, assume it's been submitted (start new)
-              console.log("⚠️ SPV", spvId, "final_review exists but no draft status - will create new SPV");
-              return false;
-            } catch (err) {
-              // If we can't access final_review (404), it means the SPV hasn't been submitted yet
-              // This is a draft SPV - we can use it!
-              if (err.response?.status === 404) {
-                console.log("✅ SPV", spvId, "has no final_review (404) - this is a draft SPV, can use it");
-                return true; // No final_review = draft = can use this SPV
-              }
-              // For other errors, assume it's not a draft to be safe (start new)
-              console.log("⚠️ Error checking SPV", spvId, "status - will create new SPV");
-              return false;
-            }
-          };
-
-          // If we get a list, find the most recent SPV that hasn't been finalized
-          if (Array.isArray(spvData) && spvData.length > 0) {
-            // Sort by id (highest first) or created_at to get most recent first
-            const sortedSpvs = [...spvData].sort((a, b) => {
-              if (a.created_at && b.created_at) {
-                return new Date(b.created_at) - new Date(a.created_at);
-              }
-              return (b.id || 0) - (a.id || 0);
-            });
-
-            // Check each SPV starting from most recent to find one that's a draft
-            for (const spv of sortedSpvs) {
-              const isDraft = await checkIfSPVIsDraft(spv.id, spv.status);
-              if (isDraft) {
-                currentSpvId = spv.id;
-                console.log("✅ Found draft SPV ID:", currentSpvId);
-                break;
-              } else {
-                console.log("⚠️ SPV", spv.id, "is not a draft, checking next...");
-              }
-            }
-
-            // If all SPVs are finalized, we'll start a new one (currentSpvId will remain null)
-            if (!currentSpvId) {
-              console.log("ℹ️ All existing SPVs have been finalized. Starting new SPV creation.");
-            }
-          } else if (spvData && spvData.id) {
-            // Single SPV object - check if it's a draft
-            const isDraft = await checkIfSPVIsDraft(spvData.id, spvData.status);
-            if (isDraft) {
-              currentSpvId = spvData.id;
-              console.log("✅ Found draft SPV ID from single object:", currentSpvId);
-            } else {
-              console.log("⚠️ SPV is not a draft. Starting new SPV creation.");
-            }
-          }
             } catch (spvListError) {
               console.log("⚠️ Could not get SPV list:", spvListError.response?.status, spvListError.response?.data);
               // If we can't get SPV list, we'll create a new SPV
@@ -470,7 +470,7 @@ const SPVStep1 = () => {
         // NOTE: 404 is normal if step1 data doesn't exist yet - we'll still use this SPV
         if (currentSpvId && !step1Data) {
           const step1Url = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/update_step1/`;
-          
+
           try {
             console.log("🔍 Fetching step1 data from:", step1Url);
             const step1Response = await axios.get(step1Url, {
@@ -503,7 +503,7 @@ const SPVStep1 = () => {
             }
           }
         }
-        
+
         if (!currentSpvId) {
           // No draft SPV found - we'll start fresh
           // Don't set a default SPV ID here, let the submission create a new one
@@ -535,7 +535,7 @@ const SPVStep1 = () => {
             }
           }
         }
-        
+
         if (currentSpvId && !userChoseCreateNew) {
           // Found a draft SPV - show modal to let user choose (only if user hasn't already chosen to create new)
           setFoundDraftSpvId(currentSpvId);
@@ -556,7 +556,7 @@ const SPVStep1 = () => {
         if (step1Data && currentSpvId) {
           // Handle different response structures
           const responseData = step1Data.step_data || step1Data.data || step1Data;
-          
+
           console.log("✅ Step1 data found:", responseData);
           console.log("📋 Raw step1 response:", step1Data);
 
@@ -585,10 +585,10 @@ const SPVStep1 = () => {
           };
 
           // Map API response to form data
-          const companyStageValue = typeof responseData.company_stage === 'number' 
-            ? stageIdToString(responseData.company_stage) 
+          const companyStageValue = typeof responseData.company_stage === 'number'
+            ? stageIdToString(responseData.company_stage)
             : (responseData.company_stage || "pre-seed");
-          
+
           const incorporationTypeValue = typeof responseData.incorporation_type === 'number'
             ? typeIdToString(responseData.incorporation_type)
             : (responseData.incorporation_type || "");
@@ -648,17 +648,17 @@ const SPVStep1 = () => {
         throw new Error("No access token found. Please login again.");
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
 
       // Get current SPV ID from state, location, or localStorage (in that order)
       // CRITICAL: Check localStorage FIRST to prevent creating duplicate SPVs
       let currentSpvId = localStorage.getItem("currentSpvId") || spvId || location.state?.spvId;
-      
+
       // If we have an SPV ID from localStorage, parse it (it's stored as string)
       if (currentSpvId && typeof currentSpvId === 'string' && !isNaN(currentSpvId)) {
         currentSpvId = parseInt(currentSpvId, 10);
       }
-      
+
       // If we have an SPV ID, ALWAYS use UPDATE - never create a new one
       // This prevents duplicate SPV creation
       if (currentSpvId) {
@@ -675,7 +675,7 @@ const SPVStep1 = () => {
           currentSpvId = parseInt(storedSpvId, 10);
           console.log("✅ Found SPV ID in localStorage:", currentSpvId);
         }
-        
+
         // If still no SPV ID, check the API for existing unfinalized SPVs
         if (!currentSpvId) {
           try {
@@ -689,7 +689,7 @@ const SPVStep1 = () => {
             });
 
             const spvData = spvListResponse.data?.results || spvListResponse.data;
-            
+
             if (Array.isArray(spvData) && spvData.length > 0) {
               // Check each SPV to find one that's not finalized
               for (const spv of spvData) {
@@ -702,10 +702,10 @@ const SPVStep1 = () => {
                       'Accept': 'application/json'
                     }
                   });
-                  
+
                   const reviewData = finalReviewResponse.data;
                   const finalReviewStatus = reviewData?.spv_status || reviewData?.status;
-                  
+
                   if (finalReviewStatus && finalReviewStatus.toLowerCase() === 'draft') {
                     currentSpvId = spv.id;
                     console.log("✅ Found existing draft SPV:", currentSpvId);
@@ -730,7 +730,7 @@ const SPVStep1 = () => {
           }
         }
       }
-      
+
       // If we found an SPV ID, update state
       if (currentSpvId) {
         setSpvId(currentSpvId);
@@ -830,10 +830,10 @@ const SPVStep1 = () => {
           });
           console.log("✅ SPV step1 updated successfully:", response.data);
         }
-        
+
         // Navigate to next step on success, passing SPV ID in state
-        navigate("/syndicate-creation/spv-creation/step2", { 
-          state: { spvId: currentSpvId } 
+        navigate("/syndicate-creation/spv-creation/step2", {
+          state: { spvId: currentSpvId }
         });
       } else {
         // Create new SPV using the create_step1 endpoint
@@ -905,7 +905,7 @@ const SPVStep1 = () => {
             }
           });
           console.log("✅ SPV step1 created successfully:", response.data);
-          
+
           // Update SPV ID if response includes it
           if (response.data?.id || response.data?.spv_id) {
             const newSpvId = response.data.id || response.data.spv_id;
@@ -914,10 +914,10 @@ const SPVStep1 = () => {
             localStorage.setItem("currentSpvId", String(newSpvId));
             console.log("✅ Stored new SPV ID in state and localStorage:", newSpvId);
             setHasExistingData(true);
-            
+
             // Navigate to next step, passing SPV ID
-            navigate("/syndicate-creation/spv-creation/step2", { 
-              state: { spvId: newSpvId } 
+            navigate("/syndicate-creation/spv-creation/step2", {
+              state: { spvId: newSpvId }
             });
             return; // Exit early after successful creation
           } else {
@@ -934,7 +934,7 @@ const SPVStep1 = () => {
               formDataToSend.append(key, payload[key]);
             });
             formDataToSend.append("pitch_deck", formData.pitchDeck);
-            
+
             response = await axios.post(createStep1Url, formDataToSend, {
               headers: {
                 'Authorization': `Bearer ${accessToken}`,
@@ -942,7 +942,7 @@ const SPVStep1 = () => {
               }
             });
             console.log("✅ SPV step1 created successfully with FormData:", response.data);
-            
+
             if (response.data?.id || response.data?.spv_id) {
               const newSpvId = response.data.id || response.data.spv_id;
               setSpvId(newSpvId);
@@ -950,10 +950,10 @@ const SPVStep1 = () => {
               localStorage.setItem("currentSpvId", String(newSpvId));
               console.log("✅ Stored new SPV ID in state and localStorage:", newSpvId);
               setHasExistingData(true);
-              
+
               // Navigate to next step, passing SPV ID
-              navigate("/syndicate-creation/spv-creation/step2", { 
-                state: { spvId: newSpvId } 
+              navigate("/syndicate-creation/spv-creation/step2", {
+                state: { spvId: newSpvId }
               });
               return; // Exit early after successful creation
             } else {
@@ -987,260 +987,260 @@ const SPVStep1 = () => {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8 space-y-8">
-          {/* Header */}
-          <div className="space-y-2 text-center sm:text-left">
-            <h1 className="text-3xl font-medium text-gray-800">Company Overview</h1>
-            <p className="text-gray-600">Let's start by gathering some basic information about the deal you're creating.</p>
-            {isLoadingExistingData && (
-              <p className="text-sm text-gray-500">Loading existing data...</p>
-            )}
-          </div>
+      {/* Header */}
+      <div className="space-y-2 text-center sm:text-left">
+        <h1 className="text-3xl font-medium text-gray-800">Company Overview</h1>
+        <p className="text-gray-600">Let's start by gathering some basic information about the deal you're creating.</p>
+        {isLoadingExistingData && (
+          <p className="text-sm text-gray-500">Loading existing data...</p>
+        )}
+      </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-600 text-sm">{error}</p>
-            </div>
-          )}
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-600 text-sm">{error}</p>
+        </div>
+      )}
 
-          {/* Draft SPV Found Modal */}
-          {showDraftModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-lg w-full max-w-md p-6 space-y-4 shadow-xl">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-semibold text-gray-900">Draft SPV Found</h2>
-                </div>
-                
-                <div className="space-y-2">
-                  <p className="text-gray-700">
-                    We found an existing draft SPV (ID: <span className="font-semibold">{foundDraftSpvId}</span>).
-                  </p>
-                  <p className="text-gray-600 text-sm">
-                    Would you like to continue with this draft or create a new SPV?
-                  </p>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                  <button
-                    onClick={handleContinueDraft}
-                    className="flex-1 bg-[#00F0C3] hover:bg-[#00D4A3] text-black px-6 py-3 rounded-lg font-medium transition-colors"
-                  >
-                    Continue with Draft
-                  </button>
-                  <button
-                    onClick={handleCreateNew}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
-                  >
-                    Create New SPV
-                  </button>
-                </div>
-                
-                <p className="text-xs text-gray-500 text-center pt-2">
-                  Note: Creating a new SPV will delete the existing draft.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Form Fields */}
-          <div className="space-y-6">
-            {/* Portfolio Company */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Portfolio Company
-              </label>
-              <input
-                type="text"
-                value={formData.portfolioCompany}
-                onChange={(e) => handleInputChange("portfolioCompany", e.target.value)}
-                className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Enter company"
-              />
+      {/* Draft SPV Found Modal */}
+      {showDraftModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-md p-6 space-y-4 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-semibold text-gray-900">Draft SPV Found</h2>
             </div>
 
-            {/* Company Stage */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Company stage
-                </label>
-                <select
-                value={formData.companyStage}
-                onChange={(e) => handleInputChange("companyStage", e.target.value)}
-                className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              >
-                  <option value="pre-seed">Pre-seed</option>
-                  <option value="seed">Seed</option>
-                  <option value="series-a">Series A</option>
-                  <option value="series-b">Series B</option>
-                  <option value="growth">Growth</option>
-                </select>
+            <div className="space-y-2">
+              <p className="text-gray-700">
+                We found an existing draft SPV (ID: <span className="font-semibold">{foundDraftSpvId}</span>).
+              </p>
+              <p className="text-gray-600 text-sm">
+                Would you like to continue with this draft or create a new SPV?
+              </p>
             </div>
 
-            {/* Country of Incorporation */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Country of incorporation
-              </label>
-              <select
-                value={formData.countryOfIncorporation}
-                onChange={(e) => handleInputChange("countryOfIncorporation", e.target.value)}
-                className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              >
-                <option value="">Choose county of incorporation</option>
-                <option value="us">United States</option>
-                <option value="uk">United Kingdom</option>
-                <option value="ca">Canada</option>
-                <option value="au">Australia</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            {/* Incorporation Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Incorporation type
-              </label>
-              <select
-                value={formData.incorporationType}
-                onChange={(e) => handleInputChange("incorporationType", e.target.value)}
-                className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              >
-                <option value="">Choose incorporation type</option>
-                <option value="llc">LLC</option>
-                <option value="corporation">Corporation</option>
-                <option value="c-corp">C-Corp</option>
-                <option value="s-corp">S-Corp</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            {/* Founder Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Founder email
-                <span className="ml-2 relative inline-block group">
-                  <svg className="w-4 h-4 text-gray-400 cursor-help" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                  </svg>
-                  <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-72 p-3 bg-yellow-100 text-xs text-gray-700 rounded-lg border border-yellow-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none z-10 transition-all shadow-lg">
-                    Our platform will reach out to this contact to validate the deal.
-                  </span>
-                </span>
-              </label>
-              <input
-                type="email"
-                value={formData.founderEmail}
-                onChange={(e) => handleInputChange("founderEmail", e.target.value)}
-                className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Enter founder email"
-              />
-            </div>
-
-            {/* Display Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Display name
-              </label>
-              <input
-                type="text"
-                value={formData.displayName}
-                onChange={(e) => handleInputChange("displayName", e.target.value)}
-                className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Display name for SPV"
-              />
-            </div>
-
-            {/* Upload Pitch Deck */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Pitch Deck
-              </label>
-              <input
-                type="file"
-                accept=".pdf,.ppt,.pptx"
-                onChange={handleFileChange}
-                className="hidden"
-                id="pitch-deck-upload"
-              />
-              <label
-                htmlFor="pitch-deck-upload"
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                className="w-full flex flex-col items-center justify-center gap-2 border-1 bg-[#F4F6F5] border-[#0A2A2E] rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors block"
-              >
-               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M17 8L12 3L7 8" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M12 3V15" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-
-                <p className="text-sm text-gray-600">
-                  Drag and drop or click to upload pitch deck (PDF, PPT, PPTX)
-                </p>
-                {formData.pitchDeck && (
-                  <p className="text-sm text-green-600 mt-2">✓ {formData.pitchDeck.name}</p>
-                )}
-                {pitchDeckUrl && !formData.pitchDeck && (
-                  <div className="mt-2">
-                    <p className="text-blue-600 text-sm">✓ File loaded from server</p>
-                    <a 
-                      href={pitchDeckUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-blue-500 text-xs underline mt-1 inline-block"
-                    >
-                      View existing file
-                    </a>
-                  </div>
-                )}
-              </label>
-              {(formData.pitchDeck || pitchDeckUrl) && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setFormData(prev => ({ ...prev, pitchDeck: null }));
-                    setPitchDeckUrl(null);
-                    const fileInput = document.getElementById("pitch-deck-upload");
-                    if (fileInput) fileInput.value = "";
-                  }}
-                  className="mt-2 px-3 py-1 text-sm text-red-600 hover:text-red-800"
-                >
-                  Remove
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Navigation Buttons */}
-          <div className="flex flex-col sm:flex-row sm:justify-end gap-3 sm:gap-4 pt-6 border-t border-gray-200 mt-8">
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <button
-                onClick={handleNext}
-                disabled={loading || isLoadingExistingData}
-                className="bg-[#00F0C3] hover:scale-102 text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleContinueDraft}
+                className="flex-1 bg-[#00F0C3] hover:bg-[#00D4A3] text-black px-6 py-3 rounded-lg font-medium transition-colors"
               >
-                {loading ? (
-                  <>
-                    <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Submitting...
-                  </>
-                ) : (
-                  <>
+                Continue with Draft
+              </button>
+              <button
+                onClick={handleCreateNew}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
+              >
+                Create New SPV
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500 text-center pt-2">
+              Note: Creating a new SPV will delete the existing draft.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Form Fields */}
+      <div className="space-y-6">
+        {/* Portfolio Company */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Portfolio Company
+          </label>
+          <input
+            type="text"
+            value={formData.portfolioCompany}
+            onChange={(e) => handleInputChange("portfolioCompany", e.target.value)}
+            className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            placeholder="Enter company"
+          />
+        </div>
+
+        {/* Company Stage */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Company stage
+          </label>
+          <select
+            value={formData.companyStage}
+            onChange={(e) => handleInputChange("companyStage", e.target.value)}
+            className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          >
+            <option value="pre-seed">Pre-seed</option>
+            <option value="seed">Seed</option>
+            <option value="series-a">Series A</option>
+            <option value="series-b">Series B</option>
+            <option value="growth">Growth</option>
+          </select>
+        </div>
+
+        {/* Country of Incorporation */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Country of incorporation
+          </label>
+          <select
+            value={formData.countryOfIncorporation}
+            onChange={(e) => handleInputChange("countryOfIncorporation", e.target.value)}
+            className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          >
+            <option value="">Choose county of incorporation</option>
+            <option value="us">United States</option>
+            <option value="uk">United Kingdom</option>
+            <option value="ca">Canada</option>
+            <option value="au">Australia</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        {/* Incorporation Type */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Incorporation type
+          </label>
+          <select
+            value={formData.incorporationType}
+            onChange={(e) => handleInputChange("incorporationType", e.target.value)}
+            className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          >
+            <option value="">Choose incorporation type</option>
+            <option value="llc">LLC</option>
+            <option value="corporation">Corporation</option>
+            <option value="c-corp">C-Corp</option>
+            <option value="s-corp">S-Corp</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        {/* Founder Email */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Founder email
+            <span className="ml-2 relative inline-block group">
+              <svg className="w-4 h-4 text-gray-400 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+              </svg>
+              <span className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-72 p-3 bg-yellow-100 text-xs text-gray-700 rounded-lg border border-yellow-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible pointer-events-none z-10 transition-all shadow-lg">
+                Our platform will reach out to this contact to validate the deal.
+              </span>
+            </span>
+          </label>
+          <input
+            type="email"
+            value={formData.founderEmail}
+            onChange={(e) => handleInputChange("founderEmail", e.target.value)}
+            className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            placeholder="Enter founder email"
+          />
+        </div>
+
+        {/* Display Name */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Display name
+          </label>
+          <input
+            type="text"
+            value={formData.displayName}
+            onChange={(e) => handleInputChange("displayName", e.target.value)}
+            className="w-full bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            placeholder="Display name for SPV"
+          />
+        </div>
+
+        {/* Upload Pitch Deck */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Upload Pitch Deck
+          </label>
+          <input
+            type="file"
+            accept=".pdf,.ppt,.pptx"
+            onChange={handleFileChange}
+            className="hidden"
+            id="pitch-deck-upload"
+          />
+          <label
+            htmlFor="pitch-deck-upload"
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            className="w-full flex flex-col items-center justify-center gap-2 border-1 bg-[#F4F6F5] border-[#0A2A2E] rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors block"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M17 8L12 3L7 8" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M12 3V15" stroke="#01373D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+
+            <p className="text-sm text-gray-600">
+              Drag and drop or click to upload pitch deck (PDF, PPT, PPTX)
+            </p>
+            {formData.pitchDeck && (
+              <p className="text-sm text-green-600 mt-2">✓ {formData.pitchDeck.name}</p>
+            )}
+            {pitchDeckUrl && !formData.pitchDeck && (
+              <div className="mt-2">
+                <p className="text-blue-600 text-sm">✓ File loaded from server</p>
+                <a
+                  href={pitchDeckUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-blue-500 text-xs underline mt-1 inline-block"
+                >
+                  View existing file
+                </a>
+              </div>
+            )}
+          </label>
+          {(formData.pitchDeck || pitchDeckUrl) && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setFormData(prev => ({ ...prev, pitchDeck: null }));
+                setPitchDeckUrl(null);
+                const fileInput = document.getElementById("pitch-deck-upload");
+                if (fileInput) fileInput.value = "";
+              }}
+              className="mt-2 px-3 py-1 text-sm text-red-600 hover:text-red-800"
+            >
+              Remove
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Navigation Buttons */}
+      <div className="flex flex-col sm:flex-row sm:justify-end gap-3 sm:gap-4 pt-6 border-t border-gray-200 mt-8">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+          <button
+            onClick={handleNext}
+            disabled={loading || isLoadingExistingData}
+            className="bg-[#00F0C3] hover:scale-102 text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? (
+              <>
+                <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Submitting...
+              </>
+            ) : (
+              <>
                 Next
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
+              </>
+            )}
+          </button>
         </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import {UpdateContactIcon, SavechangesIcon } from "../../../components/Icons";
+import { UpdateContactIcon, SavechangesIcon } from "../../../components/Icons";
 
 const GeneralInfo = () => {
   const [formData, setFormData] = useState({
@@ -22,7 +22,7 @@ const GeneralInfo = () => {
 
   // Get API URL
   const getApiUrl = () => {
-    const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+    const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
     return `${API_URL.replace(/\/$/, "")}`;
   };
 
@@ -40,7 +40,7 @@ const GeneralInfo = () => {
       try {
         const API_URL = getApiUrl();
         const accessToken = getAccessToken();
-        
+
         if (!accessToken) {
           throw new Error("No access token found. Please login again.");
         }
@@ -54,9 +54,9 @@ const GeneralInfo = () => {
         });
 
         console.log("General info fetched:", response.data);
-        
+
         const data = response.data?.data || response.data || {};
-        
+
         setFormData({
           firstName: data.first_name || "",
           lastName: data.last_name || "",
@@ -150,7 +150,7 @@ const GeneralInfo = () => {
     try {
       const API_URL = getApiUrl();
       const accessToken = getAccessToken();
-      
+
       if (!accessToken) {
         throw new Error("No access token found. Please login again.");
       }
@@ -168,25 +168,25 @@ const GeneralInfo = () => {
       });
 
       console.log("Logo uploaded:", response.data);
-      
+
       // Update logo from response
       const uploadedLogo = response.data?.data?.logo || response.data?.logo;
       if (uploadedLogo) {
         setLogo(uploadedLogo);
         setLogoError(false);
       }
-      
+
       // Clear preview and file selection after successful upload
       setLogoPreview(null);
       setLogoFile(null);
-      
+
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-      
+
       setSuccess("Logo uploaded successfully!");
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => {
         setSuccess("");
@@ -208,7 +208,7 @@ const GeneralInfo = () => {
     try {
       const API_URL = getApiUrl();
       const accessToken = getAccessToken();
-      
+
       if (!accessToken) {
         throw new Error("No access token found. Please login again.");
       }
@@ -232,7 +232,7 @@ const GeneralInfo = () => {
 
       console.log("General info saved:", response.data);
       setSuccess("General information updated successfully!");
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => {
         setSuccess("");
@@ -281,31 +281,31 @@ const GeneralInfo = () => {
         </div>
       ) : (
         <>
-      {/* Logo Upload Section */}
-      <div>
-        <div className="!border-1 border-dashed border-[#E2E2E2] rounded-lg p-6 sm:p-8 bg-white">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+          {/* Logo Upload Section */}
+          <div>
+            <div className="!border-1 border-dashed border-[#E2E2E2] rounded-lg p-6 sm:p-8 bg-white">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-6">
                 <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full flex items-center justify-center bg-[#F4F6F5] mx-auto sm:mx-0 overflow-hidden relative">
                   {(logoPreview || (logo && !logoError)) ? (
-                    <img 
-                      src={logoPreview || logo} 
-                      alt="Logo" 
+                    <img
+                      src={logoPreview || logo}
+                      alt="Logo"
                       className="w-full h-full object-cover rounded-full"
                       onError={() => {
                         setLogoError(true);
                       }}
                     />
                   ) : (
-                    <svg 
+                    <svg
                       className="w-12 h-12 text-gray-400"
-                      fill="none" 
-                      stroke="currentColor" 
+                      fill="none"
+                      stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
                   )}
-            </div>
+                </div>
                 <div className="flex flex-col gap-2">
                   <input
                     ref={fileInputRef}
@@ -316,33 +316,31 @@ const GeneralInfo = () => {
                     id="logo-upload"
                   />
                   <div className="flex gap-2 flex-wrap">
-                    <button 
+                    <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploadingLogo}
-                      className={`px-3 py-2 !border border-[#01373D] rounded-lg transition-colors font-poppins-custom text-base ${
-                        uploadingLogo
+                      className={`px-3 py-2 !border border-[#01373D] rounded-lg transition-colors font-poppins-custom text-base ${uploadingLogo
                           ? "text-gray-400 cursor-not-allowed"
                           : "text-gray-700 hover:bg-gray-50"
-                      }`}
+                        }`}
                     >
                       Choose Logo
                     </button>
                     {logoFile && (
                       <>
-                        <button 
+                        <button
                           type="button"
                           onClick={handleLogoUpload}
                           disabled={uploadingLogo}
-                          className={`px-3 py-2 rounded-lg font-poppins-custom text-base transition-colors ${
-                            uploadingLogo
+                          className={`px-3 py-2 rounded-lg font-poppins-custom text-base transition-colors ${uploadingLogo
                               ? "bg-gray-400 text-gray-600 cursor-not-allowed"
                               : "bg-[#00F0C3] text-black hover:bg-[#00D4A8]"
-                          }`}
+                            }`}
                         >
                           {uploadingLogo ? "Uploading..." : "Upload"}
                         </button>
-                        <button 
+                        <button
                           type="button"
                           onClick={() => {
                             setLogoFile(null);
@@ -353,14 +351,13 @@ const GeneralInfo = () => {
                             }
                           }}
                           disabled={uploadingLogo}
-                          className={`px-3 py-2 rounded-lg font-poppins-custom text-base transition-colors ${
-                            uploadingLogo
+                          className={`px-3 py-2 rounded-lg font-poppins-custom text-base transition-colors ${uploadingLogo
                               ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                          }`}
+                            }`}
                         >
                           Cancel
-              </button>
+                        </button>
                       </>
                     )}
                   </div>
@@ -368,89 +365,88 @@ const GeneralInfo = () => {
                     <p className="text-xs text-gray-600 font-poppins-custom">{logoFile.name}</p>
                   )}
                   <p className="text-sm sm:text-base text-gray-500 font-poppins-custom">JPG, GIF or PNG. 1MB max.</p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Form Fields */}
-      <div className="space-y-6">
-        {/* First Name and Last Name Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* First Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2 font-poppins-custom">First Name</label>
-            <div className="relative">
+          {/* Form Fields */}
+          <div className="space-y-6">
+            {/* First Name and Last Name Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* First Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 font-poppins-custom">First Name</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-[#0A2A2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] bg-[#F4F6F5] font-poppins-custom"
+                  />
+                  <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Last Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 font-poppins-custom">Last Name</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-[#0A2A2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] bg-[#F4F6F5] font-poppins-custom"
+                  />
+                  <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Bio */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 font-poppins-custom">Bio</label>
+              <textarea
+                name="bio"
+                value={formData.bio}
+                onChange={handleInputChange}
+                rows={3}
+                className="w-full px-3 py-2 border border-[#0A2A2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] bg-[#F4F6F5] resize-none font-poppins-custom"
+              />
+            </div>
+
+            {/* Link */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 font-poppins-custom">Link</label>
               <input
                 type="text"
-                name="firstName"
-                value={formData.firstName}
+                name="link"
+                value={formData.link}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-[#0A2A2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] bg-[#F4F6F5] font-poppins-custom"
               />
-              <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                </svg>
-              </button>
             </div>
           </div>
 
-          {/* Last Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2 font-poppins-custom">Last Name</label>
-            <div className="relative">
-              <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-[#0A2A2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] bg-[#F4F6F5] font-poppins-custom"
-              />
-              <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Bio */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2 font-poppins-custom">Bio</label>
-          <textarea
-            name="bio"
-            value={formData.bio}
-            onChange={handleInputChange}
-            rows={3}
-            className="w-full px-3 py-2 border border-[#0A2A2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] bg-[#F4F6F5] resize-none font-poppins-custom"
-          />
-        </div>
-
-        {/* Link */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2 font-poppins-custom">Link</label>
-          <input
-            type="text"
-            name="link"
-            value={formData.link}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-[#0A2A2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] bg-[#F4F6F5] font-poppins-custom"
-          />
-        </div>
-      </div>
-
-      {/* Save Button */}
-      <div className="flex flex-col sm:flex-row sm:justify-end gap-3">
-        <button
-          onClick={handleSave}
+          {/* Save Button */}
+          <div className="flex flex-col sm:flex-row sm:justify-end gap-3">
+            <button
+              onClick={handleSave}
               disabled={saving}
-              className={`flex items-center justify-center gap-2 px-6 py-2 rounded-lg transition-colors font-poppins-custom font-medium ${
-                saving
+              className={`flex items-center justify-center gap-2 px-6 py-2 rounded-lg transition-colors font-poppins-custom font-medium ${saving
                   ? "bg-gray-400 text-gray-600 cursor-not-allowed"
                   : "bg-[#00F0C3] text-black hover:bg-[#00D4A8]"
-              }`}
+                }`}
             >
               {saving ? (
                 <>
@@ -459,12 +455,12 @@ const GeneralInfo = () => {
                 </>
               ) : (
                 <>
-          <SavechangesIcon />
-          <span>Save changes</span>
+                  <SavechangesIcon />
+                  <span>Save changes</span>
                 </>
               )}
-        </button>
-      </div>
+            </button>
+          </div>
         </>
       )}
     </div>

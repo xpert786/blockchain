@@ -23,12 +23,12 @@ const Juridiction = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Role selected:", selectedRole);
-    
+
     // Save role to localStorage for SignUp page
     localStorage.setItem("tempUserData", JSON.stringify({
       role: selectedRole
     }));
-    
+
     // Navigate to signup page
     navigate("/signup");
   };
@@ -49,7 +49,7 @@ const Juridiction = () => {
     // Fetch investor profile ID and quick profile data
     (async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const token = localStorage.getItem("accessToken");
         if (!token) return;
 
@@ -58,7 +58,7 @@ const Juridiction = () => {
           const progressResp = await axios.get(`${API_URL.replace(/\/$/, "")}/investor-progress/`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-          
+
           // Get investor_id from response
           if (progressResp.data?.investor_id) {
             setProfileId(progressResp.data.investor_id);
@@ -118,9 +118,9 @@ const Juridiction = () => {
     setError("");
     setSuccess("");
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const token = localStorage.getItem("accessToken");
-      
+
       if (!token) {
         setError("No access token found. Please login again.");
         setSaving(false);
@@ -134,7 +134,7 @@ const Juridiction = () => {
           const progressResp = await axios.get(`${API_URL.replace(/\/$/, "")}/investor-progress/`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-          
+
           if (progressResp.data?.investor_id) {
             currentProfileId = progressResp.data.investor_id;
             setProfileId(currentProfileId);
@@ -169,13 +169,13 @@ const Juridiction = () => {
       console.log("📋 Payload:", payload);
 
       // Use PATCH only. If server returns any error, show it to the user.
-      await axios.patch(url, payload, { 
-        headers: { 
-          Authorization: `Bearer ${token}`, 
-          "Content-Type": "application/json" 
-        } 
+      await axios.patch(url, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
       });
-      
+
       setSuccess("Accreditation check updated.");
       // navigate to Terms of Service after successful submission
       navigate("/terms-of-service");
@@ -206,45 +206,45 @@ const Juridiction = () => {
       <div className="flex flex-col md:flex-row w-full max-w-5xl h-auto md:h-[600px] bg-white rounded-3xl overflow-hidden">
         {/* Left Panel */}
         <div className="w-full md:w-1/2 flex relative p-6 md:p-4 h-64 md:h-full">
-                 {/* Purple background and content layout */}
-                 <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col justify-between relative overflow-hidden p-8">
-                   
-                   {/* Logo/Branding (Top) */}
-                   <img src={logo} alt="Login Logo" className="w-1/3 max-w-[150px] h-auto object-contain" />
-                   
-                   {/* Main Text Content (Middle - Takes up remaining space) */}
-                   <div className="flex flex-col items-center justify-center flex-grow ">
-                       <h1 className="text-[30px] font-semibold text-white font-poppins-custom">Invest Globally. <br />
-                       Compliantly. Confidently.</h1>
-                       <p className="text-white font-poppins-custom leading-tight mr-16 mt-2">Built for global accredited investors and <br />
-                       syndicate leads.</p>
-                   </div>
-                   
-       
-                   {/* Image Content (Bottom - MOVED HERE) */}
-                   <div className="flex justify-start items-end w-full space-x-3 mt-7">
-                     <img src={loginimg} alt="Login Asset 1" className="w-1/3 max-w-[50px] h-auto object-contain" />
-                     <img src={loginimg2} alt="Login Asset 2" className="w-1/3 max-w-[50px] h-auto object-contain" />
-                     <img src={loginimg3} alt="Login Asset 3" className="w-1/3 max-w-[50px] h-auto object-contain" />
-                   </div>
-                   
-                 </div>
-               </div>
+          {/* Purple background and content layout */}
+          <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col justify-between relative overflow-hidden p-8">
+
+            {/* Logo/Branding (Top) */}
+            <img src={logo} alt="Login Logo" className="w-1/3 max-w-[150px] h-auto object-contain" />
+
+            {/* Main Text Content (Middle - Takes up remaining space) */}
+            <div className="flex flex-col items-center justify-center flex-grow ">
+              <h1 className="text-[30px] font-semibold text-white font-poppins-custom">Invest Globally. <br />
+                Compliantly. Confidently.</h1>
+              <p className="text-white font-poppins-custom leading-tight mr-16 mt-2">Built for global accredited investors and <br />
+                syndicate leads.</p>
+            </div>
+
+
+            {/* Image Content (Bottom - MOVED HERE) */}
+            <div className="flex justify-start items-end w-full space-x-3 mt-7">
+              <img src={loginimg} alt="Login Asset 1" className="w-1/3 max-w-[50px] h-auto object-contain" />
+              <img src={loginimg2} alt="Login Asset 2" className="w-1/3 max-w-[50px] h-auto object-contain" />
+              <img src={loginimg3} alt="Login Asset 3" className="w-1/3 max-w-[50px] h-auto object-contain" />
+            </div>
+
+          </div>
+        </div>
 
         {/* Right Panel */}
         <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-8 md:p-6 ">
           <div className="w-full max-w-md">
             <div className="mb-8 text-center md:text-left">
               <h1 className="text-3xl text-[#001D21] text-semibold mb-2">Jurisdiction-Aware Accreditation
-Check </h1>
-                <p className="text-sm text-gray-700">Detected country: <strong>{detectedCountry || 'Not detected'}</strong></p>
-                <p className="text-sm text-gray-700">Jurisdiction: <strong>{(accreditationRules[jurisdictionCode]?.jurisdiction) || accreditationRules['default'].jurisdiction}</strong></p>
+                Check </h1>
+              <p className="text-sm text-gray-700">Detected country: <strong>{detectedCountry || 'Not detected'}</strong></p>
+              <p className="text-sm text-gray-700">Jurisdiction: <strong>{(accreditationRules[jurisdictionCode]?.jurisdiction) || accreditationRules['default'].jurisdiction}</strong></p>
             </div>
             <form onSubmit={(e) => { e.preventDefault(); handleAccreditationSubmit(); }} className="space-y-6">
 
               {/* Accreditation check section (auto-detected jurisdiction) */}
               <div className="bg-gray-50 p-4 rounded-lg border">
-              
+
 
                 <div className="mt-3">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Select the rules that apply to you</label>
@@ -261,7 +261,7 @@ Check </h1>
 
                   <div className="mt-3 w-full text-center h-8 bg-[#F4F6F5] border-1 border-[#0A2A2E] rounded-lg flex items-center justify-center">
                     <p className="text-[#748A91] text-sm font-thin">
-                        You may be asked to upload documentation before investing.
+                      You may be asked to upload documentation before investing.
                     </p>
                   </div>
 
@@ -269,17 +269,17 @@ Check </h1>
                 </div>
               </div>
 
-           
-             <div className="mt-4">
-                
+
+              <div className="mt-4">
+
                 <button type="submit" disabled={saving || (submitMode === 'complete' && selectedRules.length === 0)} className="bg-[#0A3A38] text-white px-4 py-2 rounded w-full">
                   {saving ? 'Submitting...' : (submitMode === 'complete' ? 'Submit Accreditation Check' : 'Submit Jurisdiction Only')}
                 </button>
-             </div>
-              
+              </div>
+
             </form>
 
-                                
+
           </div>
         </div>
       </div>

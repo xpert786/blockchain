@@ -33,7 +33,7 @@ const Wishlist = () => {
       const now = new Date();
       const diffTime = Math.abs(now - date);
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
+
       if (diffDays === 1) return "1 Day Ago";
       if (diffDays < 7) return `${diffDays} Days Ago`;
       if (diffDays < 14) return "1 Week Ago";
@@ -55,7 +55,7 @@ const Wishlist = () => {
     }
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
 
       if (!token) {
@@ -65,7 +65,7 @@ const Wishlist = () => {
 
       const response = await fetch(`${API_URL.replace(/\/$/, "")}/dashboard/delete_wishlist/?spv_id=${spvId}`, {
         method: 'DELETE',
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
@@ -96,7 +96,7 @@ const Wishlist = () => {
     setError(null);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
 
       if (!token) {
@@ -114,7 +114,7 @@ const Wishlist = () => {
       if (response.ok) {
         const data = await response.json();
         console.log("Wishlist API response:", data);
-        
+
         // Map API response to component data structure
         const mappedItems = data.results?.map(item => ({
           id: item.id || item.spv_id,
@@ -180,7 +180,7 @@ const Wishlist = () => {
             </p>
           </div>
           <div className="w-full sm:w-auto px-4 py-2 bg-gray-100 text-[#0A2A2E] rounded-lg font-medium font-poppins-custom text-center"
-          style={{border: "1px solid #D1D5DB"}}
+            style={{ border: "1px solid #D1D5DB" }}
           >
             {pendingCount} Pending
           </div>
@@ -208,83 +208,82 @@ const Wishlist = () => {
             </div>
           ) : (
             wishlistItems.map((item, index) => (
-            <div key={index} className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
-              {/* Top Row: Company Name and Tags */}
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-                <h3 className="text-lg sm:text-xl font-semibold text-[#0A2A2E] font-poppins-custom">
-                  {item.name}
-                </h3>
-                {/* Tags */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  {item.tags.map((tag, tagIndex) => (
+              <div key={index} className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
+                {/* Top Row: Company Name and Tags */}
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+                  <h3 className="text-lg sm:text-xl font-semibold text-[#0A2A2E] font-poppins-custom">
+                    {item.name}
+                  </h3>
+                  {/* Tags */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {item.tags.map((tag, tagIndex) => (
+                      <span
+                        key={tagIndex}
+                        className="px-3 py-1 rounded-full text-xs font-medium font-poppins-custom bg-gray-100 text-[#0A2A2E] border border-gray-300"
+                      >
+                        {tag}
+                      </span>
+                    ))}
                     <span
-                      key={tagIndex}
-                      className="px-3 py-1 rounded-full text-xs font-medium font-poppins-custom bg-gray-100 text-[#0A2A2E] border border-gray-300"
+                      className={`px-3 py-1 rounded-full text-xs font-medium font-poppins-custom text-white ${item.statusTagColor === "purple"
+                          ? "bg-[#9889FF]"
+                          : item.statusTagColor === "blue"
+                            ? "bg-blue-500"
+                            : "bg-gray-800"
+                        }`}
                     >
-                      {tag}
+                      {item.statusTag}
                     </span>
-                  ))}
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium font-poppins-custom text-white ${
-                      item.statusTagColor === "purple"
-                        ? "bg-[#9889FF]"
-                        : item.statusTagColor === "blue"
-                        ? "bg-blue-500"
-                        : "bg-gray-800"
-                    }`}
+                  </div>
+                </div>
+
+                {/* Details Row: Estimated Min, Updates, Added */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
+                  <div className="bg-[#F9F8FF] rounded-lg p-3 sm:p-2 flex flex-row items-center justify-between"
+                    style={{ border: "0.5px solid #E2E2FB" }}
                   >
-                    {item.statusTag}
-                  </span>
+                    <p className="text-xs text-[#748A91] font-poppins-custom">Estimated Min</p>
+                    <p className="text-sm sm:text-base font-semibold text-[#0A2A2E] font-poppins-custom">{item.estimatedMin}</p>
+                  </div>
+                  <div className="bg-[#F9F8FF] rounded-lg p-3 sm:p-2 flex flex-row items-center justify-between"
+                    style={{ border: "0.5px solid #E2E2FB" }}
+                  >
+                    <p className="text-xs text-[#748A91] font-poppins-custom">Updates</p>
+                    <p className="text-sm sm:text-base font-medium text-[#0A2A2E] font-poppins-custom">{item.updates}</p>
+                  </div>
+                  <div className="bg-[#F9F8FF] rounded-lg p-3 sm:p-2 flex flex-row items-center justify-between"
+                    style={{ border: "0.5px solid #E2E2FB" }}
+                  >
+                    <p className="text-xs text-[#748A91] font-poppins-custom">Added</p>
+                    <p className="text-sm sm:text-base font-medium text-[#0A2A2E] font-poppins-custom">{item.added}</p>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <button className="px-4 py-2.5 bg-[#00F0C3] text-[#0A2A2E] rounded-lg hover:bg-[#00d4a8] transition-colors font-medium font-poppins-custom flex items-center gap-2 text-sm">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M7.725 15.75C7.85054 15.9783 8.03509 16.1688 8.25937 16.3014C8.48365 16.434 8.73943 16.504 9 16.504C9.26057 16.504 9.51635 16.434 9.74063 16.3014C9.96491 16.1688 10.1495 15.9783 10.275 15.75M4.5 6C4.5 4.80653 4.97411 3.66193 5.81802 2.81802C6.66193 1.97411 7.80653 1.5 9 1.5C10.1935 1.5 11.3381 1.97411 12.182 2.81802C13.0259 3.66193 13.5 4.80653 13.5 6C13.5 11.25 15.75 12.75 15.75 12.75H2.25C2.25 12.75 4.5 11.25 4.5 6Z" stroke="#001D21" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+
+                    Set Alert
+                  </button>
+                  <button className="px-4 py-2.5 bg-[#F4F6F5] text-[#0A2A2E]  rounded-lg hover:bg-gray-50 transition-colors font-medium font-poppins-custom text-sm"
+                    style={{ border: "0.5px solid #01373D" }}>
+                    View Updates
+                  </button >
+                  <button
+                    onClick={() => deleteWishlistItem(item.id || item.spvId)}
+                    className="w-10 h-10 bg-[#F4F6F5] text-[#0A2A2E] rounded-lg hover:bg-red-50 transition-colors flex items-center justify-center"
+                    style={{ border: "0.5px solid #01373D" }}
+                    title="Remove from wishlist"
+                  >
+                    <svg width="13" height="14" viewBox="0 0 13 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M0.5 3H11.75M10.5 3V11.75C10.5 12.375 9.875 13 9.25 13H3C2.375 13 1.75 12.375 1.75 11.75V3M3.625 3V1.75C3.625 1.125 4.25 0.5 4.875 0.5H7.375C8 0.5 8.625 1.125 8.625 1.75V3M4.875 6.125V9.875M7.375 6.125V9.875" stroke="#001D21" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
                 </div>
               </div>
-
-              {/* Details Row: Estimated Min, Updates, Added */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
-              <div className="bg-[#F9F8FF] rounded-lg p-3 sm:p-2 flex flex-row items-center justify-between"
-                style={{border: "0.5px solid #E2E2FB"}}
-                >
-                  <p className="text-xs text-[#748A91] font-poppins-custom">Estimated Min</p>
-                  <p className="text-sm sm:text-base font-semibold text-[#0A2A2E] font-poppins-custom">{item.estimatedMin}</p>
-                </div>
-                <div className="bg-[#F9F8FF] rounded-lg p-3 sm:p-2 flex flex-row items-center justify-between"
-                style={{border: "0.5px solid #E2E2FB"}}
-                >
-                  <p className="text-xs text-[#748A91] font-poppins-custom">Updates</p>
-                  <p className="text-sm sm:text-base font-medium text-[#0A2A2E] font-poppins-custom">{item.updates}</p>
-                </div>
-                <div className="bg-[#F9F8FF] rounded-lg p-3 sm:p-2 flex flex-row items-center justify-between"
-                style={{border: "0.5px solid #E2E2FB"}}
-                >
-                  <p className="text-xs text-[#748A91] font-poppins-custom">Added</p>
-                  <p className="text-sm sm:text-base font-medium text-[#0A2A2E] font-poppins-custom">{item.added}</p>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3">
-                <button className="px-4 py-2.5 bg-[#00F0C3] text-[#0A2A2E] rounded-lg hover:bg-[#00d4a8] transition-colors font-medium font-poppins-custom flex items-center gap-2 text-sm">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M7.725 15.75C7.85054 15.9783 8.03509 16.1688 8.25937 16.3014C8.48365 16.434 8.73943 16.504 9 16.504C9.26057 16.504 9.51635 16.434 9.74063 16.3014C9.96491 16.1688 10.1495 15.9783 10.275 15.75M4.5 6C4.5 4.80653 4.97411 3.66193 5.81802 2.81802C6.66193 1.97411 7.80653 1.5 9 1.5C10.1935 1.5 11.3381 1.97411 12.182 2.81802C13.0259 3.66193 13.5 4.80653 13.5 6C13.5 11.25 15.75 12.75 15.75 12.75H2.25C2.25 12.75 4.5 11.25 4.5 6Z" stroke="#001D21" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-
-                  Set Alert
-                </button>
-                <button className="px-4 py-2.5 bg-[#F4F6F5] text-[#0A2A2E]  rounded-lg hover:bg-gray-50 transition-colors font-medium font-poppins-custom text-sm"
-                 style={{border: "0.5px solid #01373D"}}>
-                  View Updates
-                </button >
-                <button 
-                  onClick={() => deleteWishlistItem(item.id || item.spvId)}
-                  className="w-10 h-10 bg-[#F4F6F5] text-[#0A2A2E] rounded-lg hover:bg-red-50 transition-colors flex items-center justify-center"
-                  style={{border: "0.5px solid #01373D"}}
-                  title="Remove from wishlist"
-                >
-                <svg width="13" height="14" viewBox="0 0 13 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0.5 3H11.75M10.5 3V11.75C10.5 12.375 9.875 13 9.25 13H3C2.375 13 1.75 12.375 1.75 11.75V3M3.625 3V1.75C3.625 1.125 4.25 0.5 4.875 0.5H7.375C8 0.5 8.625 1.125 8.625 1.75V3M4.875 6.125V9.875M7.375 6.125V9.875" stroke="#001D21" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                </button>
-              </div>
-            </div>
             ))
           )}
         </div>

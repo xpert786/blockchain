@@ -22,7 +22,7 @@ const SPVLayout = () => {
       try {
         const accessToken = localStorage.getItem("accessToken");
         const userDataStr = localStorage.getItem("userData");
-        
+
         if (!accessToken) {
           console.log("⚠️ SPVLayout: No access token, redirecting to login");
           navigate("/login", { replace: true });
@@ -47,11 +47,11 @@ const SPVLayout = () => {
         // Check user role
         const userRole = userData?.role?.toLowerCase()?.trim();
         const isSyndicate = userRole && (
-          userRole === "syndicate" || 
-          userRole === "syndicate_manager" || 
+          userRole === "syndicate" ||
+          userRole === "syndicate_manager" ||
           userRole.includes("syndicate")
         );
-        
+
         if (!isSyndicate) {
           console.log("⚠️ SPVLayout: User is not a syndicate, redirecting");
           if (userRole === "investor") {
@@ -70,7 +70,7 @@ const SPVLayout = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const userUrl = `${API_URL.replace(/\/$/, "")}/users/${userId}/`;
 
         console.log("=== SPVLayout: Checking User Status for SPV Creation Access ===");
@@ -125,10 +125,10 @@ const SPVLayout = () => {
         }
       } catch (error) {
         console.error("Error checking user status:", error);
-        const errorMsg = error.response?.data?.message || 
-                        error.response?.data?.error || 
-                        error.message || 
-                        "Failed to verify access. Please try again.";
+        const errorMsg = error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "Failed to verify access. Please try again.";
         setAccessError(errorMsg);
         setAccessDenied(true);
         setIsCheckingAccess(false);
@@ -217,7 +217,7 @@ const SPVLayout = () => {
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
                 <p className="text-red-600 mb-4">{accessError}</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                
+
                   <button
                     onClick={() => navigate("/manager-panel/dashboard")}
                     className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors border border-gray-300"
@@ -298,11 +298,10 @@ const SPVLayout = () => {
                 <button
                   key={step.id}
                   onClick={() => handleStepClick(step)}
-                  className={`w-full text-left px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    activeStep === step.id
+                  className={`w-full text-left px-4 py-2 rounded-lg font-medium transition-all duration-200 ${activeStep === step.id
                       ? "bg-white text-gray-800 shadow-sm"
                       : "text-gray-700 hover:bg-white/60 hover:text-gray-900"
-                  }`}
+                    }`}
                 >
                   {step.name}
                 </button>
@@ -320,11 +319,10 @@ const SPVLayout = () => {
               <button
                 key={step.id}
                 onClick={() => handleStepClick(step)}
-                className={`w-full text-left px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                  activeStep === step.id
+                className={`w-full text-left px-4 py-2 rounded-lg font-medium transition-all duration-200 ${activeStep === step.id
                     ? "bg-white text-gray-800 shadow-sm"
                     : "text-gray-600 hover:bg-white/60 hover:text-gray-800"
-                }`}
+                  }`}
               >
                 {step.name}
               </button>

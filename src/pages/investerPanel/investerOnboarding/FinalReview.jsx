@@ -19,7 +19,7 @@ const FinalReview = () => {
     try {
       // Get access token from localStorage (preferred) or use the one from your curl if needed for testing
       const accessToken = localStorage.getItem("accessToken");
-      
+
       // If you strictly need the hardcoded token from the curl command for testing, uncomment below:
       // const accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY0MDY1ODEyLCJpYXQiOjE3NjQwNDc4MTIsImp0aSI6Ijc0MzYzNzBmMDkwZjQ5ZDA5ZjU5NGE1NWViNjU4YTI0IiwidXNlcl9pZCI6IjIifQ.hz35dR_es8sj15iIT67KG8hRacwM9jdPZj40iAzV1iI";
 
@@ -32,14 +32,14 @@ const FinalReview = () => {
       // Use the profile ID from the fetched data, or fallback to '2' from your curl command
       const profileId = profileData?.id || "";
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const submitUrl = `${API_URL.replace(/\/$/, "")}/profiles/${profileId}/submit_application/`;
 
       console.log("Submitting application to:", submitUrl);
 
       // Execute the POST request
       const response = await axios.post(
-        submitUrl, 
+        submitUrl,
         {}, // Empty body as per --data ''
         {
           headers: {
@@ -154,7 +154,7 @@ const FinalReview = () => {
         }
 
         // Get API URL from environment variable
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const finalUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
 
         console.log("Fetching profile data from:", finalUrl);
@@ -256,9 +256,8 @@ const FinalReview = () => {
                 <button
                   key={step}
                   type="button"
-                  className={`w-full rounded-lg px-4 py-3 transition-colors flex items-center gap-2 font-poppins-custom ${
-                    isActive ? "bg-white text-[#001D21]" : "text-[#001D21] hover:bg-[#ffffff]/70"
-                  }`}
+                  className={`w-full rounded-lg px-4 py-3 transition-colors flex items-center gap-2 font-poppins-custom ${isActive ? "bg-white text-[#001D21]" : "text-[#001D21] hover:bg-[#ffffff]/70"
+                    }`}
                   onClick={() => handleStepClick(step)}
                 >
                   {isCompleted && (
@@ -279,7 +278,7 @@ const FinalReview = () => {
           <div className="w-full max-w-4xl mx-auto">
             {/* Title */}
             <h1 className="text-3xl text-[#0A2A2E] mb-2 font-poppins-custom text-center sm:text-left">Final Review & Submit</h1>
-            
+
             {/* Subtitle */}
             <p className="text-sm sm:text-base text-[#748A91] mb-8 font-poppins-custom text-center sm:text-left">
               Please review all information before submitting your syndicate application for platform compliance review.
@@ -302,217 +301,217 @@ const FinalReview = () => {
 
             {/* Review Sections */}
             {!fetching && profileData && (
-            <div className="space-y-6">
-              {/* Lead Information Section */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-</svg>
-
-                  <h2 className="text-lg font-semibold text-[#0A2A2E] font-poppins-custom">Lead Information</h2>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">Full Name:</span>
-                    <span className="text-[#748A91] font-poppins-custom">{profileData.full_name || "N/A"}</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">Email Address:</span>
-                    <span className="text-[#748A91] font-poppins-custom">{profileData.email_address || "N/A"}</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">Country:</span>
-                    <span className="text-[#748A91] font-poppins-custom">{profileData.country_of_residence || "N/A"}</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">Phone Number:</span>
-                    <span className="text-[#748A91] font-poppins-custom">{profileData.phone_number || "N/A"}</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">Role:</span>
-                    <span className="text-[#748A91] font-poppins-custom">Investor</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* KYC Details Section */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
+              <div className="space-y-6">
+                {/* Lead Information Section */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
                     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                      <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
 
-                  <h2 className="text-lg font-semibold text-[#0A2A2E] font-poppins-custom">KYC Details</h2>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">Date of Birth:</span>
-                    <span className="text-[#748A91] font-poppins-custom">{formatDate(profileData.date_of_birth)}</span>
+                    <h2 className="text-lg font-semibold text-[#0A2A2E] font-poppins-custom">Lead Information</h2>
                   </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">ID Uploaded:</span>
-                    {profileData.government_id ? (
-                      <>
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-                          <path fillRule="evenodd" clipRule="evenodd" d="M8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2417 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2417 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2417 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C6.4087 2 4.88258 2.63214 3.75736 3.75736C2.63214 4.88258 2 6.4087 2 8C2 9.5913 2.63214 11.1174 3.75736 12.2426C4.88258 13.3679 6.4087 14 8 14ZM7.84533 10.4267L11.1787 6.42667L10.1547 5.57333L7.288 9.01267L5.80467 7.52867L4.862 8.47133L6.862 10.4713L7.378 10.9873L7.84533 10.4267Z" fill="#22C55E"/>
-                        </svg>
-                        <a href={profileData.government_id} target="_blank" rel="noopener noreferrer" className="text-[#748A91] font-poppins-custom hover:text-[#00F0C3] underline">
-                          {getFilenameFromUrl(profileData.government_id)}
-                        </a>
-                      </>
-                    ) : (
-                      <span className="text-[#748A91] font-poppins-custom">N/A</span>
-                    )}
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">Street Address:</span>
-                    <span className="text-[#748A91] font-poppins-custom">{profileData.street_address || "N/A"}</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">City:</span>
-                    <span className="text-[#748A91] font-poppins-custom">{profileData.city || "N/A"}</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">State/Province:</span>
-                    <span className="text-[#748A91] font-poppins-custom">{profileData.state_province || "N/A"}</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">Zip/Postal Code:</span>
-                    <span className="text-[#748A91] font-poppins-custom">{profileData.zip_postal_code || "N/A"}</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">Country:</span>
-                    <span className="text-[#748A91] font-poppins-custom">{profileData.country || "N/A"}</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">Full Name:</span>
+                      <span className="text-[#748A91] font-poppins-custom">{profileData.full_name || "N/A"}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">Email Address:</span>
+                      <span className="text-[#748A91] font-poppins-custom">{profileData.email_address || "N/A"}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">Country:</span>
+                      <span className="text-[#748A91] font-poppins-custom">{profileData.country_of_residence || "N/A"}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">Phone Number:</span>
+                      <span className="text-[#748A91] font-poppins-custom">{profileData.phone_number || "N/A"}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">Role:</span>
+                      <span className="text-[#748A91] font-poppins-custom">Investor</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Bank Details Section */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
+                {/* KYC Details Section */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
                     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                      <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
 
-                  <h2 className="text-lg font-semibold text-[#0A2A2E] font-poppins-custom">Bank Details</h2>
+                    <h2 className="text-lg font-semibold text-[#0A2A2E] font-poppins-custom">KYC Details</h2>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">Date of Birth:</span>
+                      <span className="text-[#748A91] font-poppins-custom">{formatDate(profileData.date_of_birth)}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">ID Uploaded:</span>
+                      {profileData.government_id ? (
+                        <>
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
+                            <path fillRule="evenodd" clipRule="evenodd" d="M8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2417 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2417 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2417 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C6.4087 2 4.88258 2.63214 3.75736 3.75736C2.63214 4.88258 2 6.4087 2 8C2 9.5913 2.63214 11.1174 3.75736 12.2426C4.88258 13.3679 6.4087 14 8 14ZM7.84533 10.4267L11.1787 6.42667L10.1547 5.57333L7.288 9.01267L5.80467 7.52867L4.862 8.47133L6.862 10.4713L7.378 10.9873L7.84533 10.4267Z" fill="#22C55E" />
+                          </svg>
+                          <a href={profileData.government_id} target="_blank" rel="noopener noreferrer" className="text-[#748A91] font-poppins-custom hover:text-[#00F0C3] underline">
+                            {getFilenameFromUrl(profileData.government_id)}
+                          </a>
+                        </>
+                      ) : (
+                        <span className="text-[#748A91] font-poppins-custom">N/A</span>
+                      )}
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">Street Address:</span>
+                      <span className="text-[#748A91] font-poppins-custom">{profileData.street_address || "N/A"}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">City:</span>
+                      <span className="text-[#748A91] font-poppins-custom">{profileData.city || "N/A"}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">State/Province:</span>
+                      <span className="text-[#748A91] font-poppins-custom">{profileData.state_province || "N/A"}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">Zip/Postal Code:</span>
+                      <span className="text-[#748A91] font-poppins-custom">{profileData.zip_postal_code || "N/A"}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">Country:</span>
+                      <span className="text-[#748A91] font-poppins-custom">{profileData.country || "N/A"}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">Bank Name:</span>
-                    <span className="text-[#748A91] font-poppins-custom">{profileData.bank_name || "N/A"}</span>
+
+                {/* Bank Details Section */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+
+                    <h2 className="text-lg font-semibold text-[#0A2A2E] font-poppins-custom">Bank Details</h2>
                   </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">Account Number:</span>
-                    <span className="text-[#748A91] font-poppins-custom">{maskAccountNumber(profileData.bank_account_number)}</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">Bank Name:</span>
+                      <span className="text-[#748A91] font-poppins-custom">{profileData.bank_name || "N/A"}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">Account Number:</span>
+                      <span className="text-[#748A91] font-poppins-custom">{maskAccountNumber(profileData.bank_account_number)}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">Account Holder Name:</span>
+                      <span className="text-[#748A91] font-poppins-custom">{profileData.account_holder_name || "N/A"}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">SWIFT/IFSC Code:</span>
+                      <span className="text-[#748A91] font-poppins-custom">{profileData.swift_ifsc_code || "N/A"}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">Proof of Bank Ownership:</span>
+                      {profileData.proof_of_bank_ownership ? (
+                        <>
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
+                            <path fillRule="evenodd" clipRule="evenodd" d="M8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2417 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2417 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2417 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C6.4087 2 4.88258 2.63214 3.75736 3.75736C2.63214 4.88258 2 6.4087 2 8C2 9.5913 2.63214 11.1174 3.75736 12.2426C4.88258 13.3679 6.4087 14 8 14ZM7.84533 10.4267L11.1787 6.42667L10.1547 5.57333L7.288 9.01267L5.80467 7.52867L4.862 8.47133L6.862 10.4713L7.378 10.9873L7.84533 10.4267Z" fill="#22C55E" />
+                          </svg>
+                          <a href={profileData.proof_of_bank_ownership} target="_blank" rel="noopener noreferrer" className="text-[#748A91] font-poppins-custom hover:text-[#00F0C3] underline">
+                            {getFilenameFromUrl(profileData.proof_of_bank_ownership)}
+                          </a>
+                        </>
+                      ) : (
+                        <span className="text-[#748A91] font-poppins-custom">N/A</span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">Account Holder Name:</span>
-                    <span className="text-[#748A91] font-poppins-custom">{profileData.account_holder_name || "N/A"}</span>
+                </div>
+
+                {/* Accreditation (Optional) Section */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+
+                    <h2 className="text-lg font-semibold text-[#0A2A2E] font-poppins-custom">Accreditation (Optional)</h2>
                   </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">SWIFT/IFSC Code:</span>
-                    <span className="text-[#748A91] font-poppins-custom">{profileData.swift_ifsc_code || "N/A"}</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">Accredited Investor:</span>
+                      <span className="text-[#748A91] font-poppins-custom">{formatBoolean(profileData.is_accredited_investor)}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">Meets Local Investment Thresholds:</span>
+                      <span className="text-[#748A91] font-poppins-custom">{formatBoolean(profileData.meets_local_investment_thresholds)}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="text-[#0A2A2E] font-poppins-custom mr-2">Proof Document:</span>
+                      {profileData.proof_of_income_net_worth ? (
+                        <>
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
+                            <path fillRule="evenodd" clipRule="evenodd" d="M8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2417 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2417 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2417 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C6.4087 2 4.88258 2.63214 3.75736 3.75736C2.63214 4.88258 2 6.4087 2 8C2 9.5913 2.63214 11.1174 3.75736 12.2426C4.88258 13.3679 6.4087 14 8 14ZM7.84533 10.4267L11.1787 6.42667L10.1547 5.57333L7.288 9.01267L5.80467 7.52867L4.862 8.47133L6.862 10.4713L7.378 10.9873L7.84533 10.4267Z" fill="#22C55E" />
+                          </svg>
+                          <a href={profileData.proof_of_income_net_worth} target="_blank" rel="noopener noreferrer" className="text-[#748A91] font-poppins-custom hover:text-[#00F0C3] underline">
+                            {getFilenameFromUrl(profileData.proof_of_income_net_worth)}
+                          </a>
+                        </>
+                      ) : (
+                        <span className="text-[#748A91] font-poppins-custom">N/A</span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">Proof of Bank Ownership:</span>
-                    {profileData.proof_of_bank_ownership ? (
-                      <>
+                </div>
+
+                {/* Agreements Section */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+
+                    <h2 className="text-lg font-semibold text-[#0A2A2E] font-poppins-custom">Agreements</h2>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      {toBoolean(profileData.terms_and_conditions_accepted) && (
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-                          <path fillRule="evenodd" clipRule="evenodd" d="M8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2417 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2417 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2417 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C6.4087 2 4.88258 2.63214 3.75736 3.75736C2.63214 4.88258 2 6.4087 2 8C2 9.5913 2.63214 11.1174 3.75736 12.2426C4.88258 13.3679 6.4087 14 8 14ZM7.84533 10.4267L11.1787 6.42667L10.1547 5.57333L7.288 9.01267L5.80467 7.52867L4.862 8.47133L6.862 10.4713L7.378 10.9873L7.84533 10.4267Z" fill="#22C55E"/>
+                          <path fillRule="evenodd" clipRule="evenodd" d="M8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2417 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2417 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2417 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C6.4087 2 4.88258 2.63214 3.75736 3.75736C2.63214 4.88258 2 6.4087 2 8C2 9.5913 2.63214 11.1174 3.75736 12.2426C4.88258 13.3679 6.4087 14 8 14ZM7.84533 10.4267L11.1787 6.42667L10.1547 5.57333L7.288 9.01267L5.80467 7.52867L4.862 8.47133L6.862 10.4713L7.378 10.9873L7.84533 10.4267Z" fill="#22C55E" />
                         </svg>
-                        <a href={profileData.proof_of_bank_ownership} target="_blank" rel="noopener noreferrer" className="text-[#748A91] font-poppins-custom hover:text-[#00F0C3] underline">
-                          {getFilenameFromUrl(profileData.proof_of_bank_ownership)}
-                        </a>
-                      </>
-                    ) : (
-                      <span className="text-[#748A91] font-poppins-custom">N/A</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Accreditation (Optional) Section */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-
-                  <h2 className="text-lg font-semibold text-[#0A2A2E] font-poppins-custom">Accreditation (Optional)</h2>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">Accredited Investor:</span>
-                    <span className="text-[#748A91] font-poppins-custom">{formatBoolean(profileData.is_accredited_investor)}</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">Meets Local Investment Thresholds:</span>
-                    <span className="text-[#748A91] font-poppins-custom">{formatBoolean(profileData.meets_local_investment_thresholds)}</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    <span className="text-[#0A2A2E] font-poppins-custom mr-2">Proof Document:</span>
-                    {profileData.proof_of_income_net_worth ? (
-                      <>
+                      )}
+                      <span className="text-[#0A2A2E] font-poppins-custom">Terms & Conditions</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      {toBoolean(profileData.risk_disclosure_accepted) && (
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-                          <path fillRule="evenodd" clipRule="evenodd" d="M8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2417 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2417 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2417 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C6.4087 2 4.88258 2.63214 3.75736 3.75736C2.63214 4.88258 2 6.4087 2 8C2 9.5913 2.63214 11.1174 3.75736 12.2426C4.88258 13.3679 6.4087 14 8 14ZM7.84533 10.4267L11.1787 6.42667L10.1547 5.57333L7.288 9.01267L5.80467 7.52867L4.862 8.47133L6.862 10.4713L7.378 10.9873L7.84533 10.4267Z" fill="#22C55E"/>
+                          <path fillRule="evenodd" clipRule="evenodd" d="M8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2417 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2417 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2417 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C6.4087 2 4.88258 2.63214 3.75736 3.75736C2.63214 4.88258 2 6.4087 2 8C2 9.5913 2.63214 11.1174 3.75736 12.2426C4.88258 13.3679 6.4087 14 8 14ZM7.84533 10.4267L11.1787 6.42667L10.1547 5.57333L7.288 9.01267L5.80467 7.52867L4.862 8.47133L6.862 10.4713L7.378 10.9873L7.84533 10.4267Z" fill="#22C55E" />
                         </svg>
-                        <a href={profileData.proof_of_income_net_worth} target="_blank" rel="noopener noreferrer" className="text-[#748A91] font-poppins-custom hover:text-[#00F0C3] underline">
-                          {getFilenameFromUrl(profileData.proof_of_income_net_worth)}
-                        </a>
-                      </>
-                    ) : (
-                      <span className="text-[#748A91] font-poppins-custom">N/A</span>
-                    )}
+                      )}
+                      <span className="text-[#0A2A2E] font-poppins-custom">Risk Disclosure</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      {toBoolean(profileData.privacy_policy_accepted) && (
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
+                          <path fillRule="evenodd" clipRule="evenodd" d="M8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2417 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2417 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2417 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C6.4087 2 4.88258 2.63214 3.75736 3.75736C2.63214 4.88258 2 6.4087 2 8C2 9.5913 2.63214 11.1174 3.75736 12.2426C4.88258 13.3679 6.4087 14 8 14ZM7.84533 10.4267L11.1787 6.42667L10.1547 5.57333L7.288 9.01267L5.80467 7.52867L4.862 8.47133L6.862 10.4713L7.378 10.9873L7.84533 10.4267Z" fill="#22C55E" />
+                        </svg>
+                      )}
+                      <span className="text-[#0A2A2E] font-poppins-custom">Privacy Policy</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      {toBoolean(profileData.confirmation_of_true_information) && (
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
+                          <path fillRule="evenodd" clipRule="evenodd" d="M8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2417 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2417 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2417 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C6.4087 2 4.88258 2.63214 3.75736 3.75736C2.63214 4.88258 2 6.4087 2 8C2 9.5913 2.63214 11.1174 3.75736 12.2426C4.88258 13.3679 6.4087 14 8 14ZM7.84533 10.4267L11.1787 6.42667L10.1547 5.57333L7.288 9.01267L5.80467 7.52867L4.862 8.47133L6.862 10.4713L7.378 10.9873L7.84533 10.4267Z" fill="#22C55E" />
+                        </svg>
+                      )}
+                      <span className="text-[#0A2A2E] font-poppins-custom">Confirmation of True Information</span>
+                    </div>
                   </div>
                 </div>
               </div>
-
-              {/* Agreements Section */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16.5 8.31039V9.00039C16.4991 10.6177 15.9754 12.1914 15.007 13.4868C14.0386 14.7821 12.6775 15.7297 11.1265 16.1883C9.57557 16.6469 7.91794 16.5918 6.40085 16.0313C4.88376 15.4708 3.58849 14.435 2.70822 13.0782C1.82795 11.7214 1.40984 10.1164 1.51626 8.50262C1.62267 6.88881 2.24791 5.35263 3.29871 4.12319C4.34951 2.89375 5.76959 2.03692 7.34714 1.6805C8.92469 1.32407 10.5752 1.48714 12.0525 2.14539M6.75 8.25039L9 10.5004L16.5 3.00039" stroke="#22C55E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-
-                  <h2 className="text-lg font-semibold text-[#0A2A2E] font-poppins-custom">Agreements</h2>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#F9F8FF] rounded-lg p-4" style={{ border: "0.5px solid #E2E2FB" }}>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    {toBoolean(profileData.terms_and_conditions_accepted) && (
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-                        <path fillRule="evenodd" clipRule="evenodd" d="M8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2417 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2417 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2417 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C6.4087 2 4.88258 2.63214 3.75736 3.75736C2.63214 4.88258 2 6.4087 2 8C2 9.5913 2.63214 11.1174 3.75736 12.2426C4.88258 13.3679 6.4087 14 8 14ZM7.84533 10.4267L11.1787 6.42667L10.1547 5.57333L7.288 9.01267L5.80467 7.52867L4.862 8.47133L6.862 10.4713L7.378 10.9873L7.84533 10.4267Z" fill="#22C55E"/>
-                      </svg>
-                    )}
-                    <span className="text-[#0A2A2E] font-poppins-custom">Terms & Conditions</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    {toBoolean(profileData.risk_disclosure_accepted) && (
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-                        <path fillRule="evenodd" clipRule="evenodd" d="M8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2417 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2417 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2417 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C6.4087 2 4.88258 2.63214 3.75736 3.75736C2.63214 4.88258 2 6.4087 2 8C2 9.5913 2.63214 11.1174 3.75736 12.2426C4.88258 13.3679 6.4087 14 8 14ZM7.84533 10.4267L11.1787 6.42667L10.1547 5.57333L7.288 9.01267L5.80467 7.52867L4.862 8.47133L6.862 10.4713L7.378 10.9873L7.84533 10.4267Z" fill="#22C55E"/>
-                      </svg>
-                    )}
-                    <span className="text-[#0A2A2E] font-poppins-custom">Risk Disclosure</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    {toBoolean(profileData.privacy_policy_accepted) && (
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-                        <path fillRule="evenodd" clipRule="evenodd" d="M8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2417 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2417 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2417 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C6.4087 2 4.88258 2.63214 3.75736 3.75736C2.63214 4.88258 2 6.4087 2 8C2 9.5913 2.63214 11.1174 3.75736 12.2426C4.88258 13.3679 6.4087 14 8 14ZM7.84533 10.4267L11.1787 6.42667L10.1547 5.57333L7.288 9.01267L5.80467 7.52867L4.862 8.47133L6.862 10.4713L7.378 10.9873L7.84533 10.4267Z" fill="#22C55E"/>
-                      </svg>
-                    )}
-                    <span className="text-[#0A2A2E] font-poppins-custom">Privacy Policy</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
-                    {toBoolean(profileData.confirmation_of_true_information) && (
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
-                        <path fillRule="evenodd" clipRule="evenodd" d="M8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2417 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2417 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2417 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C6.4087 2 4.88258 2.63214 3.75736 3.75736C2.63214 4.88258 2 6.4087 2 8C2 9.5913 2.63214 11.1174 3.75736 12.2426C4.88258 13.3679 6.4087 14 8 14ZM7.84533 10.4267L11.1787 6.42667L10.1547 5.57333L7.288 9.01267L5.80467 7.52867L4.862 8.47133L6.862 10.4713L7.378 10.9873L7.84533 10.4267Z" fill="#22C55E"/>
-                      </svg>
-                    )}
-                    <span className="text-[#0A2A2E] font-poppins-custom">Confirmation of True Information</span>
-                  </div>
-                </div>
-              </div>
-            </div>
             )}
 
             {/* Navigation Buttons */}
@@ -531,20 +530,20 @@ const FinalReview = () => {
                 className="w-full sm:w-auto px-6 py-3 bg-[#00F0C3] text-black rounded-xl hover:bg-[#00C4B3] transition-colors font-medium font-poppins-custom flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                    <>
+                  <>
                     <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     Submitting...
-                    </>
+                  </>
                 ) : (
-                    <>
+                  <>
                     Submit for Review
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17.5 2.5L9.16667 10.8333M17.5 2.5L12.5 17.5L9.16667 10.8333M17.5 2.5L2.5 7.5L9.16667 10.8333" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M17.5 2.5L9.16667 10.8333M17.5 2.5L12.5 17.5L9.16667 10.8333M17.5 2.5L2.5 7.5L9.16667 10.8333" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    </>
+                  </>
                 )}
               </button>
             </div>
@@ -554,9 +553,8 @@ const FinalReview = () => {
 
       {/* Mobile Sidebar Drawer */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-full transform bg-white transition-transform duration-300 ease-in-out lg:hidden ${
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-full transform bg-white transition-transform duration-300 ease-in-out lg:hidden ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
           <h4 className="text-lg font-semibold text-[#01373D]">Onboarding Steps</h4>
@@ -581,9 +579,8 @@ const FinalReview = () => {
                 key={step}
                 type="button"
                 onClick={() => handleStepClick(step)}
-                className={`w-full text-left rounded-lg px-4 py-3 transition-colors flex items-center gap-2 font-poppins-custom ${
-                  isActive ? "bg-[#00F0C3]/20 text-[#001D21]" : "text-[#001D21] hover:bg-[#F4F6F5]"
-                }`}
+                className={`w-full text-left rounded-lg px-4 py-3 transition-colors flex items-center gap-2 font-poppins-custom ${isActive ? "bg-[#00F0C3]/20 text-[#001D21]" : "text-[#001D21] hover:bg-[#F4F6F5]"
+                  }`}
               >
                 {isCompleted && (
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

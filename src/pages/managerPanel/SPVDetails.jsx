@@ -14,12 +14,12 @@ const InviteLPsModal = ({ isOpen, onClose, spvId, investorList = [] }) => {
   const [autoInvite, setAutoInvite] = useState(false);
   const [privateNote, setPrivateNote] = useState("");
   const [tags, setTags] = useState("");
-  
+
   // UI State
   const [isSending, setIsSending] = useState(false);
 
   // Constants (Ideally passed from parent or config, kept local for self-containment)
-  const API_BASE_URL = "http://168.231.121.7/blockchain-backend/api/spv";
+  const API_BASE_URL = "http://72.61.251.114/blockchain-backend/api/spv";
   const TEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY0MzQ4NjIzLCJpYXQiOjE3NjQzMzA2MjMsImp0aSI6IjFmZmIwMTUwN2U4YjQzN2I4NWYyYTE5ZDEwNWI2ZmQ5IiwidXNlcl9pZCI6IjY0In0.x0zZ-aZ3kqrbqw9vvhLU1JGoGhtINSu2TG7mVefvUDs";
 
   const handleSendInvite = async () => {
@@ -28,7 +28,7 @@ const InviteLPsModal = ({ isOpen, onClose, spvId, investorList = [] }) => {
 
     // Parse emails - backend will handle validation
     const emailList = emails.split(',').map(e => e.trim()).filter(e => e !== "");
-    
+
     if (emailList.length === 0) {
       alert("Please enter at least one email address.");
       setIsSending(false);
@@ -51,7 +51,7 @@ const InviteLPsModal = ({ isOpen, onClose, spvId, investorList = [] }) => {
       console.log("Sending invite request to:", url);
       console.log("Payload:", payload);
       console.log("SPV ID being used:", spvId);
-      
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -97,11 +97,11 @@ const InviteLPsModal = ({ isOpen, onClose, spvId, investorList = [] }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#01373DB2] p-4">
       <div className="bg-white rounded-xl w-full max-w-2xl shadow-xl relative flex flex-col max-h-[90vh]">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between px-8 py-5 border-b border-gray-100">
           <h2 className="text-xl font-semibold text-gray-900">Email Invite</h2>
-          <button 
+          <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 p-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
           >
@@ -113,29 +113,29 @@ const InviteLPsModal = ({ isOpen, onClose, spvId, investorList = [] }) => {
 
         {/* Scrollable Form Content */}
         <div className="p-8 overflow-y-auto custom-scrollbar">
-          
+
           {/* Section: Invite Details */}
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-5">Invite Details</h3>
-            
+
             <div className="mb-5">
               <label className="block text-sm font-medium text-gray-700 mb-2">LP Emails (Comma separated)</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={emails}
                 onChange={(e) => setEmails(e.target.value)}
-                placeholder="investor@example.com, another@example.com" 
+                placeholder="investor@example.com, another@example.com"
                 className="w-full px-4 py-3 bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent text-gray-900 placeholder-gray-500 transition-all"
               />
             </div>
 
             <div className="mb-5">
               <label className="block text-sm font-medium text-gray-700 mb-2">Email Message</label>
-              <textarea 
+              <textarea
                 rows="3"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="You are invited to invest..." 
+                placeholder="You are invited to invest..."
                 className="w-full px-4 py-3 bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent text-gray-900 placeholder-gray-500 transition-all resize-none"
               />
             </div>
@@ -147,11 +147,11 @@ const InviteLPsModal = ({ isOpen, onClose, spvId, investorList = [] }) => {
 
             <div className="mb-5">
               <label className="block text-sm font-medium text-gray-700 mb-2">Lead Carry %</label>
-              <input 
-                type="number" 
+              <input
+                type="number"
                 value={leadCarry}
                 onChange={(e) => setLeadCarry(e.target.value)}
-                placeholder="5.0" 
+                placeholder="5.0"
                 className="w-full px-4 py-3 bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent text-gray-900 placeholder-gray-500 transition-all"
               />
             </div>
@@ -159,7 +159,7 @@ const InviteLPsModal = ({ isOpen, onClose, spvId, investorList = [] }) => {
             <div className="mb-5">
               <label className="block text-sm font-medium text-gray-700 mb-2">Investment And Fund Valuations</label>
               <div className="relative">
-                <select 
+                <select
                   value={visibility}
                   onChange={(e) => setVisibility(e.target.value)}
                   className="w-full px-4 py-3 bg-[#F4F6F5] border border-[#0A2A2E] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] focus:border-transparent text-gray-900 appearance-none cursor-pointer"
@@ -175,17 +175,17 @@ const InviteLPsModal = ({ isOpen, onClose, spvId, investorList = [] }) => {
               </div>
             </div>
 
-            <div 
+            <div
               className="p-4 bg-[#F9F8FF] border border-[#E2E2FB] rounded-lg flex items-start gap-3 transition-colors cursor-pointer group"
               onClick={() => setAutoInvite(!autoInvite)}
             >
               <div className="flex items-center h-5 mt-1">
-                <input 
-                  id="raising-spv" 
-                  type="checkbox" 
+                <input
+                  id="raising-spv"
+                  type="checkbox"
                   checked={autoInvite}
                   onChange={(e) => setAutoInvite(e.target.checked)}
-                  className="w-5 h-5 border-[#F4F6F5] rounded text-[#00F0C3] focus:ring-[#00F0C3] cursor-pointer" 
+                  className="w-5 h-5 border-[#F4F6F5] rounded text-[#00F0C3] focus:ring-[#00F0C3] cursor-pointer"
                 />
               </div>
               <div className="flex-1">
@@ -198,11 +198,11 @@ const InviteLPsModal = ({ isOpen, onClose, spvId, investorList = [] }) => {
           {/* Section: Invite To */}
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-5">Internal Notes</h3>
-            
+
             <div className="mb-5">
               <label className="block text-sm font-medium text-gray-700 mb-2">Private Note</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={privateNote}
                 onChange={(e) => setPrivateNote(e.target.value)}
                 placeholder="Internal note about these investors"
@@ -212,8 +212,8 @@ const InviteLPsModal = ({ isOpen, onClose, spvId, investorList = [] }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Tags (Comma separated)</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
                 placeholder="accredited, tech-investors"
@@ -224,7 +224,7 @@ const InviteLPsModal = ({ isOpen, onClose, spvId, investorList = [] }) => {
 
           {/* Footer Action */}
           <div>
-            <button 
+            <button
               onClick={handleSendInvite}
               disabled={isSending}
               className={`px-6 py-3 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg transition-all shadow-sm hover:shadow-md transform active:scale-[0.98] flex items-center justify-center w-full sm:w-auto ${isSending ? 'opacity-70 cursor-not-allowed' : ''}`}
@@ -254,7 +254,7 @@ const SPVDocuments = ({ spvId }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const API_BASE_URL = "http://168.231.121.7/blockchain-backend/api/spv";
+  const API_BASE_URL = "http://72.61.251.114/blockchain-backend/api/spv";
   const TEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY0MzQ4NjIzLCJpYXQiOjE3NjQzMzA2MjMsImp0aSI6IjFmZmIwMTUwN2U4YjQzN2I4NWYyYTE5ZDEwNWI2ZmQ5IiwidXNlcl9pZCI6IjY0In0.x0zZ-aZ3kqrbqw9vvhLU1JGoGhtINSu2TG7mVefvUDs";
 
   useEffect(() => {
@@ -308,11 +308,11 @@ const SPVDocuments = ({ spvId }) => {
   }
 
   if (error) {
-     return (
+    return (
       <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 text-center text-red-500">
         {error}
       </div>
-     );
+    );
   }
 
   if (documents.length === 0) {
@@ -363,9 +363,9 @@ const SPVDocuments = ({ spvId }) => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(doc.uploaded_at)}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{doc.size_mb} MB</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <a 
-                    href={doc.url} 
-                    target="_blank" 
+                  <a
+                    href={doc.url}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-[#00F0C3] hover:text-[#00D4A3] flex justify-end"
                   >
@@ -422,11 +422,11 @@ const SPVDetails = () => {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [spvNumericId, setSpvNumericId] = useState(null); // Store the actual numeric SPV ID from API
-  
+
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = useParams();
-  
+
   // Get SPV ID from multiple sources (priority order):
   // 1. URL parameter (if route has :id)
   // 2. Location state (passed from navigation)
@@ -437,7 +437,7 @@ const SPVDetails = () => {
       console.log("Using SPV ID from URL params:", id);
       return String(id);
     }
-    
+
     // Try location state
     const stateSpv = location.state?.spv;
     if (stateSpv) {
@@ -453,16 +453,16 @@ const SPVDetails = () => {
         return String(stateSpv.code);
       }
     }
-    
+
     // Last resort: default (shouldn't happen)
     console.warn("No SPV ID found in URL or state, defaulting to 13. Location state:", location.state);
     return "13";
   };
-  
+
   const displayId = getSpvId();
 
   // --- Configuration ---
-  const API_BASE_URL = "http://168.231.121.7/blockchain-backend/api/spv";
+  const API_BASE_URL = "http://72.61.251.114/blockchain-backend/api/spv";
   const TEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY0MzQ4NjIzLCJpYXQiOjE3NjQzMzA2MjMsImp0aSI6IjFmZmIwMTUwN2U4YjQzN2I4NWYyYTE5ZDEwNWI2ZmQ5IiwidXNlcl9pZCI6IjY0In0.x0zZ-aZ3kqrbqw9vvhLU1JGoGhtINSu2TG7mVefvUDs";
 
   // --- Helpers ---
@@ -509,8 +509,8 @@ const SPVDetails = () => {
         if (result.success) {
           transformAndSetData(result.data);
         } else {
-           // If we can't get details, we might still be able to show the list, but usually we need context
-           console.warn("SPV Details success flag was false", result);
+          // If we can't get details, we might still be able to show the list, but usually we need context
+          console.warn("SPV Details success flag was false", result);
         }
       } else {
         const errorText = await response.text();
@@ -531,45 +531,45 @@ const SPVDetails = () => {
 
   const fetchInvestorsListWithId = async (spvIdToUse) => {
     const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || TEST_TOKEN;
-    
-    try {
-        console.log("Fetching investors with SPV ID:", spvIdToUse);
-        // Hit the exact endpoint requested for the investor list
-        const response = await fetch(`${API_BASE_URL}/${spvIdToUse}/investors/`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-        });
 
-        if (response.ok) {
-            const result = await response.json();
-            console.log("Investors API response:", result);
-            // Check based on the provided JSON structure
-            if (result.success && result.data && result.data.investors) {
-                const mappedInvestors = result.data.investors.map(inv => ({
-                    id: inv.id || inv.investor_id || inv.write_id, // Include investor ID
-                    name: inv.name,
-                    email: inv.email,
-                    // Map API 'amount' (e.g., 50000) to formatted currency
-                    amount: formatCurrency(inv.amount),
-                    // Map API 'percentage' (e.g., 25) to string
-                    ownership: `${inv.percentage}%`,
-                    // Map API 'date' (e.g., "11/28/2025")
-                    date: inv.date, 
-                    status: inv.status,
-                    // Determine styling based on status
-                    statusColor: inv.status === "Active" ? "bg-[#22C55E] text-white" : "bg-gray-200 text-gray-700"
-                }));
-                setInvestorList(mappedInvestors);
-            }
-        } else {
-            const errorText = await response.text();
-            console.error("Failed to fetch investor list:", response.status, errorText);
+    try {
+      console.log("Fetching investors with SPV ID:", spvIdToUse);
+      // Hit the exact endpoint requested for the investor list
+      const response = await fetch(`${API_BASE_URL}/${spvIdToUse}/investors/`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Investors API response:", result);
+        // Check based on the provided JSON structure
+        if (result.success && result.data && result.data.investors) {
+          const mappedInvestors = result.data.investors.map(inv => ({
+            id: inv.id || inv.investor_id || inv.write_id, // Include investor ID
+            name: inv.name,
+            email: inv.email,
+            // Map API 'amount' (e.g., 50000) to formatted currency
+            amount: formatCurrency(inv.amount),
+            // Map API 'percentage' (e.g., 25) to string
+            ownership: `${inv.percentage}%`,
+            // Map API 'date' (e.g., "11/28/2025")
+            date: inv.date,
+            status: inv.status,
+            // Determine styling based on status
+            statusColor: inv.status === "Active" ? "bg-[#22C55E] text-white" : "bg-gray-200 text-gray-700"
+          }));
+          setInvestorList(mappedInvestors);
         }
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to fetch investor list:", response.status, errorText);
+      }
     } catch (err) {
-        console.error("Error fetching investor list:", err);
+      console.error("Error fetching investor list:", err);
     }
   };
 
@@ -580,42 +580,42 @@ const SPVDetails = () => {
       setSpvNumericId(String(numericId));
       console.log("Stored SPV numeric ID for API calls:", numericId);
     }
-    
+
     // 1. Map API data to UI structure
     const mappedData = {
-        name: apiData.display_name || apiData.spv_code,
-        id: apiData.spv_code,
-        raised: formatCurrency(apiData.fundraising_progress?.total_raised),
-        target: formatCurrency(apiData.fundraising_progress?.target),
-        progress: apiData.fundraising_progress?.progress_percent || 0,
-        daysLeft: apiData.fundraising_progress?.days_to_close ? `${apiData.fundraising_progress.days_to_close} Days Left` : null,
-        status: apiData.status_label || null,
-        statusColor: apiData.status === "raising" || apiData.status === "active" ? "bg-[#22C55E] text-white" : "bg-gray-200 text-gray-700",
-        totalValue: formatCurrency(apiData.financial_metrics?.total_value),
-        unrealizedGain: formatCurrency(apiData.financial_metrics?.uninvested_sum), 
-        irr: formatPercent(apiData.financial_metrics?.irr),
-        multiple: `${apiData.financial_metrics?.multiple || 0}x`,
-        jurisdiction: `${apiData.spv_details?.jurisdiction}, ${apiData.spv_details?.country?.toUpperCase()}`,
-        created: formatDate(apiData.created_at),
-        focus: apiData.portfolio_company?.sector || null,
-        vintage: apiData.spv_details?.year,
-        fundTerm: `${apiData.spv_details?.term_length_years} Year(s)`,
-        closingDate: formatDate(apiData.fundraising_progress?.target_closing_date),
-        description: apiData.description || (apiData.portfolio_company?.sector ? `An SPV targeting ${apiData.portfolio_company?.stage || ''} stage companies in ${apiData.portfolio_company?.sector}.` : null),
-        minInvestment: formatCurrency(apiData.investment_terms?.minimum_investment),
-        managementFee: apiData.investment_terms?.management_fee ? formatPercent(apiData.investment_terms.management_fee) : null, 
-        investmentPeriod: apiData.investment_terms?.investment_period || null, 
-        maxCap: formatCurrency(apiData.fundraising_progress?.target), 
-        carriedInterest: formatPercent(apiData.carry_fees?.total_carry_percentage),
-        investorCount: apiData.investors?.count || 0,
-        activities: apiData.activities || apiData.activity_log || []
+      name: apiData.display_name || apiData.spv_code,
+      id: apiData.spv_code,
+      raised: formatCurrency(apiData.fundraising_progress?.total_raised),
+      target: formatCurrency(apiData.fundraising_progress?.target),
+      progress: apiData.fundraising_progress?.progress_percent || 0,
+      daysLeft: apiData.fundraising_progress?.days_to_close ? `${apiData.fundraising_progress.days_to_close} Days Left` : null,
+      status: apiData.status_label || null,
+      statusColor: apiData.status === "raising" || apiData.status === "active" ? "bg-[#22C55E] text-white" : "bg-gray-200 text-gray-700",
+      totalValue: formatCurrency(apiData.financial_metrics?.total_value),
+      unrealizedGain: formatCurrency(apiData.financial_metrics?.uninvested_sum),
+      irr: formatPercent(apiData.financial_metrics?.irr),
+      multiple: `${apiData.financial_metrics?.multiple || 0}x`,
+      jurisdiction: `${apiData.spv_details?.jurisdiction}, ${apiData.spv_details?.country?.toUpperCase()}`,
+      created: formatDate(apiData.created_at),
+      focus: apiData.portfolio_company?.sector || null,
+      vintage: apiData.spv_details?.year,
+      fundTerm: `${apiData.spv_details?.term_length_years} Year(s)`,
+      closingDate: formatDate(apiData.fundraising_progress?.target_closing_date),
+      description: apiData.description || (apiData.portfolio_company?.sector ? `An SPV targeting ${apiData.portfolio_company?.stage || ''} stage companies in ${apiData.portfolio_company?.sector}.` : null),
+      minInvestment: formatCurrency(apiData.investment_terms?.minimum_investment),
+      managementFee: apiData.investment_terms?.management_fee ? formatPercent(apiData.investment_terms.management_fee) : null,
+      investmentPeriod: apiData.investment_terms?.investment_period || null,
+      maxCap: formatCurrency(apiData.fundraising_progress?.target),
+      carriedInterest: formatPercent(apiData.carry_fees?.total_carry_percentage),
+      investorCount: apiData.investors?.count || 0,
+      activities: apiData.activities || apiData.activity_log || []
     };
 
     setSpvData(mappedData);
   };
 
   // Filter investors based on search query
-  const filteredInvestors = investorList.filter(investor => 
+  const filteredInvestors = investorList.filter(investor =>
     (investor.name && investor.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (investor.email && investor.email.toLowerCase().includes(searchQuery.toLowerCase()))
   );
@@ -628,21 +628,21 @@ const SPVDetails = () => {
 
   if (isLoading) {
     return (
-        <div className="min-h-screen bg-[#F4F6F5] flex justify-center items-center">
-             <div className="w-10 h-10 border-4 border-[#00F0C3] border-t-transparent rounded-full animate-spin"></div>
-        </div>
+      <div className="min-h-screen bg-[#F4F6F5] flex justify-center items-center">
+        <div className="w-10 h-10 border-4 border-[#00F0C3] border-t-transparent rounded-full animate-spin"></div>
+      </div>
     );
   }
 
   if (error || !spvData) {
-      return (
-        <div className="min-h-screen bg-[#F4F6F5] p-6 pt-10">
-             <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-100">
-                {error || "Data not found"}
-            </div>
-            <button onClick={() => navigate(-1)} className="mt-4 text-gray-600 underline">Go Back</button>
+    return (
+      <div className="min-h-screen bg-[#F4F6F5] p-6 pt-10">
+        <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-100">
+          {error || "Data not found"}
         </div>
-      );
+        <button onClick={() => navigate(-1)} className="mt-4 text-gray-600 underline">Go Back</button>
+      </div>
+    );
   }
 
   return (
@@ -650,7 +650,7 @@ const SPVDetails = () => {
       {/* Breadcrumbs */}
       <div className="mb-6">
         <nav className="text-sm">
-          <button 
+          <button
             onClick={() => navigate('/manager-panel/spv-management')}
             className="text-gray-500 hover:text-gray-700 transition-colors"
           >
@@ -724,7 +724,7 @@ const SPVDetails = () => {
             <span className="text-sm font-medium text-gray-900">{spvData.raised} of {spvData.target}</span>
           </div>
           <div className="w-full bg-[#CEC6FF] rounded-full h-3">
-            <div 
+            <div
               className="h-3 rounded-full bg-[#00F0C3]"
               style={{ width: `${Math.min(spvData.progress, 100)}%` }}
             ></div>
@@ -842,11 +842,10 @@ const SPVDetails = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === tab.id
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === tab.id
                   ? "bg-[#00F0C3] text-black"
                   : "bg-white text-gray-700 hover:bg-gray-50"
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -859,7 +858,7 @@ const SPVDetails = () => {
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-gray-900">Investor List</h2>
-            <button 
+            <button
               onClick={() => setIsInviteModalOpen(true)}
               className="bg-[#00F0C3] hover:bg-[#00D4A3] text-black px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer"
             >
@@ -909,47 +908,47 @@ const SPVDetails = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredInvestors.length === 0 ? (
-                    <tr>
-                        <td colSpan="6" className="px-6 py-8 text-center text-gray-500 italic">
-                            No investors found matching your search.
-                        </td>
-                    </tr>
+                  <tr>
+                    <td colSpan="6" className="px-6 py-8 text-center text-gray-500 italic">
+                      No investors found matching your search.
+                    </td>
+                  </tr>
                 ) : (
-                    filteredInvestors.map((investor, index) => (
+                  filteredInvestors.map((investor, index) => (
                     <tr key={index}>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{investor.email}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{investor.amount}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{investor.ownership}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{investor.date}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{investor.amount}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{investor.ownership}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{investor.date}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${investor.statusColor}`}>
-                            {investor.status}
+                          {investor.status}
                         </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
-                            <button 
+                          <button
                             onClick={() => navigate('/manager-panel/investor-details', { state: { investor } })}
                             className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors"
-                            >
+                          >
                             <svg className="w-4 h-4 text-[#01373D]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
-                            </button>
-                            <button className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors">
+                          </button>
+                          <button className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors">
                             <svg className="w-4 h-4 text-[#01373D]" fill="currentColor" viewBox="0 0 24 24">
-                                <circle cx="12" cy="5" r="2"/>
-                                <circle cx="12" cy="12" r="2"/>
-                                <circle cx="12" cy="19" r="2"/>
+                              <circle cx="12" cy="5" r="2" />
+                              <circle cx="12" cy="12" r="2" />
+                              <circle cx="12" cy="19" r="2" />
                             </svg>
-                            </button>
+                          </button>
                         </div>
-                        </td>
+                      </td>
                     </tr>
-                    ))
+                  ))
                 )}
               </tbody>
             </table>
@@ -958,11 +957,11 @@ const SPVDetails = () => {
           {/* Pagination */}
           {filteredInvestors.length > 0 && (
             <div className="flex items-center justify-end mt-6">
-                <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2">
                 <button className="px-3 py-1 text-sm text-gray-500 hover:text-gray-700">←</button>
                 <button className="px-3 py-1 text-sm bg-[#00F0C3] text-black rounded">1</button>
                 <button className="px-3 py-1 text-sm text-gray-500 hover:text-gray-700">→</button>
-                </div>
+              </div>
             </div>
           )}
         </div>
@@ -972,9 +971,9 @@ const SPVDetails = () => {
       {activeTab === "activity" && <SPVActivity activities={spvData.activities} />}
 
       {/* Invite LPs Modal */}
-      <InviteLPsModal 
-        isOpen={isInviteModalOpen} 
-        onClose={() => setIsInviteModalOpen(false)} 
+      <InviteLPsModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
         spvId={spvNumericId || displayId}
         investorList={investorList}
       />

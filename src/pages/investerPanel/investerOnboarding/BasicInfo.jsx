@@ -38,7 +38,7 @@ const BasicInfo = () => {
         }
 
         // Get API URL from environment variable
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const finalUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
 
         console.log("Fetching profile data from:", finalUrl);
@@ -161,7 +161,7 @@ const BasicInfo = () => {
       };
 
       // Get API URL from environment variable
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const finalUrl = `${API_URL.replace(/\/$/, "")}/profiles/my_profile/`;
 
       console.log("Sending profile data to:", finalUrl);
@@ -249,7 +249,7 @@ const BasicInfo = () => {
   ];
 
   return (
-    <div className="min-h-screen px-4 sm:px-6 py-6" style={{ backgroundColor: '#F4F6F5'  }}>
+    <div className="min-h-screen px-4 sm:px-6 py-6" style={{ backgroundColor: '#F4F6F5' }}>
       {/* Header */}
       <header className="bg-white rounded-xl mb-6">
         <div className="px-5 py-5">
@@ -294,9 +294,8 @@ const BasicInfo = () => {
               <button
                 key={step}
                 onClick={() => handleStepClick(step)}
-                className={`w-full text-left rounded-lg px-4 py-3 transition-colors font-poppins-custom ${
-                  activeStep === step ? "bg-white text-[#001D21]" : "text-[#001D21] hover:bg-[#ffffff]/60"
-                }`}
+                className={`w-full text-left rounded-lg px-4 py-3 transition-colors font-poppins-custom ${activeStep === step ? "bg-white text-[#001D21]" : "text-[#001D21] hover:bg-[#ffffff]/60"
+                  }`}
               >
                 {step}
               </button>
@@ -309,7 +308,7 @@ const BasicInfo = () => {
           <div className="mx-auto w-full max-w-3xl">
             {/* Title */}
             <h1 className="text-3xl text-[#0A2A2E] mb-2 font-poppins-custom">Step 1: Basic Info</h1>
-            
+
             {/* Subtitle */}
             <p className="text-sm sm:text-base text-[#748A91] mb-8 font-poppins-custom text-center sm:text-left">
               Tell us a bit about yourself to get started with your investment journey.
@@ -441,9 +440,8 @@ const BasicInfo = () => {
 
       {/* Mobile Sidebar Drawer */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-full transform bg-white transition-transform duration-300 ease-in-out lg:hidden ${
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-full transform bg-white transition-transform duration-300 ease-in-out lg:hidden ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
           <h4 className="text-lg font-semibold text-[#01373D]">Onboarding Steps</h4>
@@ -463,9 +461,8 @@ const BasicInfo = () => {
             <button
               key={step}
               onClick={() => handleStepClick(step)}
-              className={`w-full text-left rounded-lg px-4 py-3 transition-colors font-poppins-custom ${
-                activeStep === step ? "bg-[#00F0C3]/20 text-[#001D21]" : "text-[#001D21] hover:bg-[#F4F6F5]"
-              }`}
+              className={`w-full text-left rounded-lg px-4 py-3 transition-colors font-poppins-custom ${activeStep === step ? "bg-[#00F0C3]/20 text-[#001D21]" : "text-[#001D21] hover:bg-[#F4F6F5]"
+                }`}
             >
               {step}
             </button>

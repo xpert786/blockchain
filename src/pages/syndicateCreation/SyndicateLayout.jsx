@@ -18,7 +18,7 @@ const SyndicateLayout = () => {
     const verifySyndicateUser = async () => {
       const accessToken = localStorage.getItem("accessToken");
       const userDataStr = localStorage.getItem("userData");
-      
+
       if (!accessToken) {
         navigate("/login", { replace: true });
         return;
@@ -40,8 +40,8 @@ const SyndicateLayout = () => {
 
       const userRole = userData?.role?.toLowerCase()?.trim();
       const isSyndicate = userRole && (
-        userRole === "syndicate" || 
-        userRole === "syndicate_manager" || 
+        userRole === "syndicate" ||
+        userRole === "syndicate_manager" ||
         userRole.includes("syndicate")
       );
 
@@ -60,7 +60,7 @@ const SyndicateLayout = () => {
 
       if (!isCompleted) {
         try {
-          const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+          const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
           const finalUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step4/`;
 
           const response = await fetch(finalUrl, {
@@ -114,7 +114,7 @@ const SyndicateLayout = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const step3aUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step3a/`;
 
         const response = await axios.get(step3aUrl, {
@@ -133,13 +133,13 @@ const SyndicateLayout = () => {
           const nestedData = data.data || {};
           const stepData = data.step_data || {};
           const profile = data.profile || {};
-          
+
           // Get entity type from various possible locations
-          const entityTypeValue = nestedData.entity_type || 
-                                 stepData.entity_type || 
-                                 profile.entity_type || 
-                                 data.entity_type;
-          
+          const entityTypeValue = nestedData.entity_type ||
+            stepData.entity_type ||
+            profile.entity_type ||
+            data.entity_type;
+
           if (entityTypeValue) {
             const normalizedType = String(entityTypeValue).toLowerCase().trim();
             setEntityType(normalizedType);
@@ -160,7 +160,7 @@ const SyndicateLayout = () => {
     };
 
     fetchEntityType();
-    
+
     // Also listen for location changes to refetch when navigating to/from kyb-verification
     const interval = setInterval(() => {
       if (location.pathname.includes('kyb-verification')) {
@@ -227,7 +227,7 @@ const SyndicateLayout = () => {
     </button>
   );
 
-  
+
   useEffect(() => {
     const currentStep = steps.find(step => location.pathname === step.path);
     if (currentStep) {
@@ -308,11 +308,10 @@ const SyndicateLayout = () => {
                 <button
                   key={step.id}
                   onClick={() => handleStepClick(step)}
-                  className={`w-full text-left px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    activeStep === step.id
+                  className={`w-full text-left px-4 py-2 rounded-lg font-medium transition-all duration-200 ${activeStep === step.id
                       ? "bg-white text-gray-800 shadow-sm"
                       : "text-gray-700 hover:bg-white/60 hover:text-gray-900"
-                  }`}
+                    }`}
                 >
                   {step.name}
                 </button>
@@ -331,11 +330,10 @@ const SyndicateLayout = () => {
               <button
                 key={step.id}
                 onClick={() => handleStepClick(step)}
-                className={`w-full text-left px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                  activeStep === step.id
+                className={`w-full text-left px-4 py-2 rounded-lg font-medium transition-all duration-200 ${activeStep === step.id
                     ? "bg-white text-gray-800 shadow-sm"
                     : "text-gray-600 hover:bg-white/60 hover:text-gray-800"
-                }`}
+                  }`}
               >
                 {step.name}
               </button>

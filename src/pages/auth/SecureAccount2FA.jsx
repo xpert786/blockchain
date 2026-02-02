@@ -18,7 +18,7 @@ const SecureAccount2FA = () => {
   const handleEmailMethod = async () => {
     // First check current registration status; if email verified, navigate appropriately (phone bypassed)
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const statusUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/get_registration_status/`;
       const accessToken = localStorage.getItem("accessToken");
       if (accessToken) {
@@ -30,7 +30,7 @@ const SecureAccount2FA = () => {
             // Check user role
             const userData = JSON.parse(localStorage.getItem("userData") || "{}");
             const userRole = (userData?.role || "").toLowerCase();
-            
+
             if (userRole === "syndicate" || userRole.includes("syndicate")) {
               // Syndicate users go to terms of service after email verification
               navigate("/terms-of-service");
@@ -47,7 +47,7 @@ const SecureAccount2FA = () => {
       setLoading(true);
       setError("");
 
-      const finalUrl = `${(import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend").replace(/\/$/, "")}/registration-flow/choose_verification_method/`;
+      const finalUrl = `${(import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend").replace(/\/$/, "")}/registration-flow/choose_verification_method/`;
       const payload = { method: "email" };
 
       const access = localStorage.getItem("accessToken");
@@ -80,14 +80,14 @@ const SecureAccount2FA = () => {
       console.error("Error response:", err.response);
       console.error("Error status:", err.response?.status);
       console.error("Error data:", err.response?.data);
-      
+
       const backendData = err.response?.data;
-      
+
       // Handle 401 Unauthorized specifically
       if (err.response?.status === 401) {
         const errorMsg = "Your session has expired or the access token is invalid. Please try logging in again or complete your registration.";
         setError(errorMsg);
-        
+
         // Optionally clear invalid token
         console.warn("⚠️ Clearing potentially invalid access token");
         localStorage.removeItem("accessToken");
@@ -120,7 +120,7 @@ const SecureAccount2FA = () => {
   // ❌ PHONE NO LONGER USES API — ONLY NAVIGATION, but pre-check status first
   const handlePhoneClick = async () => {
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const statusUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/get_registration_status/`;
       const accessToken = localStorage.getItem("accessToken");
       if (accessToken) {
@@ -132,7 +132,7 @@ const SecureAccount2FA = () => {
             // Check user role
             const userData = JSON.parse(localStorage.getItem("userData") || "{}");
             const userRole = (userData?.role || "").toLowerCase();
-            
+
             if (userRole === "syndicate" || userRole.includes("syndicate")) {
               // Syndicate users go to terms of service after both verifications
               navigate("/terms-of-service");
@@ -167,7 +167,7 @@ const SecureAccount2FA = () => {
       }}
     >
       <div className="flex flex-col md:flex-row w-full max-w-5xl h-auto md:h-[650px] bg-white rounded-3xl overflow-hidden">
-        
+
         {/* LEFT SIDE */}
         <div className="w-full md:w-1/2 flex relative p-6 md:p-4 h-64 md:h-full">
           <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col justify-between relative overflow-hidden p-8">
@@ -207,9 +207,8 @@ const SecureAccount2FA = () => {
               {/* EMAIL OPTION */}
               <div
                 onClick={handleEmailMethod}
-                className={`flex items-center p-4 bg-white border rounded-lg cursor-pointer hover:bg-gray-50 ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                className={`flex items-center p-4 bg-white border rounded-lg cursor-pointer hover:bg-gray-50 ${loading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
               >
                 <div className="w-12 h-12 bg-[#CEC6FF] rounded-lg flex items-center justify-center mr-4">
                   <EmailIcon />

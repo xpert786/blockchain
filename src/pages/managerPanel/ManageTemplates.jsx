@@ -43,7 +43,7 @@ const ManageTemplates = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const apiEndpoint = `${API_URL.replace(/\/$/, "")}/documents/generated-documents/`;
 
         const response = await axios.get(apiEndpoint, {
@@ -63,7 +63,7 @@ const ManageTemplates = () => {
           templateName: doc.template_detail?.name || "Unknown Template",
           templateId: doc.template || doc.template_detail?.id,
           templateVersion: doc.template_detail?.version ? `v${doc.template_detail.version}` : "v1.0",
-          templateType: doc.template_detail?.category ? 
+          templateType: doc.template_detail?.category ?
             doc.template_detail.category.charAt(0).toUpperCase() + doc.template_detail.category.slice(1) : "Legal",
           documentId: doc.generated_document_detail?.document_id || `DOC-${doc.id}`,
           defaultFeeRate: doc.generation_data?.default_fee_rate || "",
@@ -94,11 +94,11 @@ const ManageTemplates = () => {
         setGeneratedDocuments(templatesOnly);
       } catch (error) {
         console.error('Error fetching generated documents:', error);
-        
+
         if (error.response) {
           const errorData = error.response.data;
-          const errorMessage = errorData?.detail || errorData?.error || errorData?.message || 
-                             (typeof errorData === 'string' ? errorData : 'Failed to load documents');
+          const errorMessage = errorData?.detail || errorData?.error || errorData?.message ||
+            (typeof errorData === 'string' ? errorData : 'Failed to load documents');
           setError(errorMessage);
         } else if (error.request) {
           setError("Network error. Please check your connection and try again.");
@@ -129,10 +129,10 @@ const ManageTemplates = () => {
     if (!dateString) return "N/A";
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit' 
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
       });
     } catch (e) {
       return dateString;
@@ -202,7 +202,7 @@ const ManageTemplates = () => {
         return;
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const apiEndpoint = `${API_URL.replace(/\/$/, "")}/document-generations/${doc.id}/view/`;
 
       // Fetch PDF from API
@@ -223,13 +223,13 @@ const ManageTemplates = () => {
       setPdfUrl(url);
     } catch (error) {
       console.error('Error fetching PDF preview:', error);
-      
+
       if (error.response) {
         // Check if response is JSON (error message) or PDF
         if (error.response.headers['content-type']?.includes('application/json')) {
           const errorData = error.response.data;
-          const errorMessage = errorData?.detail || errorData?.error || errorData?.message || 
-                             'Failed to load PDF preview';
+          const errorMessage = errorData?.detail || errorData?.error || errorData?.message ||
+            'Failed to load PDF preview';
           setPreviewError(errorMessage);
         } else {
           setPreviewError("Failed to load PDF preview. The document may not be available yet.");
@@ -264,7 +264,7 @@ const ManageTemplates = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         // Note: Update this endpoint if your API has a delete endpoint
         // const apiEndpoint = `${API_URL.replace(/\/$/, "")}/api/documents/generated-documents/${docId}/`;
         // await axios.delete(apiEndpoint, {
@@ -296,11 +296,11 @@ const ManageTemplates = () => {
       defaultFeeRate: doc.defaultFeeRate || "0.02",
       closePeriodDays: doc.defaultClosePeriodDays || "30"
     });
-    
+
     // Fetch SPV list and Investors list
     setSpvLoading(true);
     setInvestorLoading(true);
-    
+
     try {
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) {
@@ -310,7 +310,7 @@ const ManageTemplates = () => {
         return;
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
 
       // Fetch SPV list
       const spvEndpoint = `${API_URL.replace(/\/$/, "")}/documents/spvs/`;
@@ -324,7 +324,7 @@ const ManageTemplates = () => {
       });
 
       console.log("SPV list API response:", spvResponse.data);
-      
+
       // Map SPV list from API response
       const mappedSPVs = (spvResponse.data?.results || []).map(spv => ({
         id: spv.id,
@@ -347,7 +347,7 @@ const ManageTemplates = () => {
       });
 
       console.log("Investors list API response:", investorResponse.data);
-      
+
       // Map investors from API response
       const mappedInvestors = (investorResponse.data?.results || []).map(investor => ({
         id: investor.id,
@@ -360,10 +360,10 @@ const ManageTemplates = () => {
       }));
 
       setInvestorList(mappedInvestors);
-      
+
       // If there's a matching SPV by name, pre-select it and filter investors
       if (doc.legalEntityName && mappedSPVs.length > 0) {
-        const matchingSpv = mappedSPVs.find(spv => 
+        const matchingSpv = mappedSPVs.find(spv =>
           spv.displayName.toLowerCase() === doc.legalEntityName.toLowerCase() ||
           spv.portfolioCompanyName?.toLowerCase() === doc.legalEntityName.toLowerCase()
         );
@@ -373,7 +373,7 @@ const ManageTemplates = () => {
             spvName: matchingSpv.displayName
           }));
           // Filter investors for this SPV (now that investor list is loaded)
-          const filtered = mappedInvestors.filter(investor => 
+          const filtered = mappedInvestors.filter(investor =>
             investor.spvs.some(spv => spv.id === matchingSpv.id)
           );
           setFilteredInvestors(filtered);
@@ -390,7 +390,7 @@ const ManageTemplates = () => {
       setSpvLoading(false);
       setInvestorLoading(false);
     }
-    
+
     setShowSendModal(true);
   };
 
@@ -402,7 +402,7 @@ const ManageTemplates = () => {
     }
 
     // Filter investors who have this SPV in their spvs array
-    const filtered = investorList.filter(investor => 
+    const filtered = investorList.filter(investor =>
       investor.spvs && investor.spvs.some(spv => spv.id === spvId)
     );
 
@@ -464,7 +464,7 @@ const ManageTemplates = () => {
         return;
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const apiEndpoint = `${API_URL.replace(/\/$/, "")}/documents/generate-from-template/`;
 
       // Prepare field_data object from form data
@@ -515,24 +515,24 @@ const ManageTemplates = () => {
 
       // Refresh the documents list
       window.dispatchEvent(new Event('generatedDocumentsUpdated'));
-      
+
       alert("Document generated and sent to investor successfully!");
       handleCloseModal();
     } catch (error) {
       console.error('Error generating document:', error);
-      
+
       // Handle error response
       let errorMessage = 'Failed to generate document. Please try again.';
       if (error.response) {
         const errorData = error.response.data;
-        errorMessage = errorData?.detail || errorData?.error || errorData?.message || 
-                      (typeof errorData === 'string' ? errorData : errorMessage);
+        errorMessage = errorData?.detail || errorData?.error || errorData?.message ||
+          (typeof errorData === 'string' ? errorData : errorMessage);
       } else if (error.request) {
         errorMessage = "Network error. Please check your connection and try again.";
       } else {
         errorMessage = error.message || errorMessage;
       }
-      
+
       alert(errorMessage);
     } finally {
       setSubmitting(false);
@@ -631,7 +631,7 @@ const ManageTemplates = () => {
                         <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
                           {doc.title || doc.templateName || "Untitled Document"}
                         </h3>
-                        
+
                         {/* Metadata with icons */}
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 text-sm text-gray-600">
                           {doc.legalEntityName && (
@@ -676,14 +676,14 @@ const ManageTemplates = () => {
                         )}
                       </div>
                     </div>
-                    
+
                     {/* Status and Actions */}
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3">
                       <span className={`px-3 py-1 rounded-full text-sm font-medium text-center ${statusInfo.statusColor}`}>
                         {statusInfo.status}
                       </span>
                       <div className="flex items-center justify-end gap-2">
-                        <button 
+                        <button
                           onClick={() => handlePreview(doc)}
                           className="p-2 bg-gray-100 rounded-lg text-[#01373D] hover:bg-gray-200 transition-colors"
                           title="Preview"
@@ -693,7 +693,7 @@ const ManageTemplates = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDownload(doc)}
                           className="p-2 bg-gray-100 rounded-lg text-[#01373D] hover:bg-gray-200 transition-colors"
                           title="Download"
@@ -704,7 +704,7 @@ const ManageTemplates = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15V3" />
                           </svg>
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDelete(doc.id)}
                           className="p-2 bg-gray-100 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
                           title="Delete"
@@ -713,7 +713,7 @@ const ManageTemplates = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleSendToInvestor(doc)}
                           className="px-4 py-2 bg-[#00F0C3] hover:bg-[#00D4A3] text-black rounded-lg font-medium transition-colors text-sm"
                           title="Send to Investor"

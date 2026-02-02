@@ -3,14 +3,14 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import ManageTemplates from "./ManageTemplates";
 import GeneratedDocuments from "./GeneratedDocuments";
-import {FilesaddIcon, BlackfileIcon} from "../../components/Icons"
+import { FilesaddIcon, BlackfileIcon } from "../../components/Icons"
 
 const DocumentTemplateEngine = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState(tabFromUrl || "generate");
-  
+
   // Update active tab when URL parameter changes
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -18,7 +18,7 @@ const DocumentTemplateEngine = () => {
       setActiveTab(tab);
     }
   }, [searchParams]);
-  
+
   // State for generate document functionality
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [templates, setTemplates] = useState([]);
@@ -46,7 +46,7 @@ const DocumentTemplateEngine = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const apiEndpoint = `${API_URL.replace(/\/$/, "")}/document-templates/`;
 
         const response = await axios.get(apiEndpoint, {
@@ -100,11 +100,11 @@ const DocumentTemplateEngine = () => {
         }
       } catch (error) {
         console.error('Error fetching templates:', error);
-        
+
         if (error.response) {
           const errorData = error.response.data;
-          const errorMessage = errorData?.detail || errorData?.error || errorData?.message || 
-                             (typeof errorData === 'string' ? errorData : 'Failed to load templates');
+          const errorMessage = errorData?.detail || errorData?.error || errorData?.message ||
+            (typeof errorData === 'string' ? errorData : 'Failed to load templates');
           setTemplatesError(errorMessage);
         } else if (error.request) {
           setTemplatesError("Network error. Please check your connection and try again.");
@@ -143,7 +143,7 @@ const DocumentTemplateEngine = () => {
       defaultClosePeriodDays: "",
       legalEntityName: ""
     });
-    
+
     // Set default values from template configurable fields
     const defaultValues = {};
     template.configurableFields?.forEach(field => {
@@ -193,7 +193,7 @@ const DocumentTemplateEngine = () => {
       }
 
       // Get API URL from environment or use default
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const apiEndpoint = `${API_URL.replace(/\/$/, "")}/documents/generate-from-template/`;
 
       // Prepare field_data object
@@ -249,7 +249,7 @@ const DocumentTemplateEngine = () => {
         const documents = existing ? JSON.parse(existing) : [];
         documents.unshift(newDocument);
         localStorage.setItem('generatedDocuments', JSON.stringify(documents));
-        
+
         // Dispatch event to notify other components
         window.dispatchEvent(new Event('generatedDocumentsUpdated'));
       } catch (storageError) {
@@ -261,12 +261,12 @@ const DocumentTemplateEngine = () => {
       handleTabClick("generated");
     } catch (error) {
       console.error('Error generating document:', error);
-      
+
       // Handle error response
       if (error.response) {
         const errorData = error.response.data;
-        const errorMessage = errorData?.detail || errorData?.error || errorData?.message || 
-                           (typeof errorData === 'string' ? errorData : 'Failed to generate document');
+        const errorMessage = errorData?.detail || errorData?.error || errorData?.message ||
+          (typeof errorData === 'string' ? errorData : 'Failed to generate document');
         setError(errorMessage);
       } else if (error.request) {
         setError("Network error. Please check your connection and try again.");
@@ -295,31 +295,28 @@ const DocumentTemplateEngine = () => {
         <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
           <button
             onClick={() => handleTabClick("generate")}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === "generate"
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === "generate"
                 ? "bg-[#00F0C3] text-black"
                 : "bg-[#F4F6F5] text-gray-700 hover:bg-gray-300"
-            }`}
+              }`}
           >
             Generate Documents
           </button>
           <button
             onClick={() => handleTabClick("manage")}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === "manage"
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === "manage"
                 ? "bg-[#00F0C3] text-black"
                 : "bg-[#F4F6F5] text-gray-700 hover:bg-gray-300"
-            }`}
+              }`}
           >
             Manage Templates
           </button>
           <button
             onClick={() => handleTabClick("generated")}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === "generated"
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === "generated"
                 ? "bg-[#00F0C3] text-black"
                 : "bg-[#F4F6F5] text-gray-700 hover:bg-gray-300"
-            }`}
+              }`}
           >
             Generated Documents
           </button>
@@ -335,7 +332,7 @@ const DocumentTemplateEngine = () => {
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Select Template</h2>
               <p className="text-sm sm:text-base text-gray-600">Choose a document template to generate</p>
             </div>
-            
+
             {/* Templates Loading State */}
             {templatesLoading && (
               <div className="flex items-center justify-center py-12">
@@ -369,11 +366,10 @@ const DocumentTemplateEngine = () => {
                       <div
                         key={template.id}
                         onClick={() => handleTemplateSelect(template)}
-                        className={`p-4 rounded-lg border-2 cursor-pointer transition-colors ${
-                          selectedTemplate?.id === template.id
+                        className={`p-4 rounded-lg border-2 cursor-pointer transition-colors ${selectedTemplate?.id === template.id
                             ? "!border border-[#01373D] bg-[#E2E2FB]"
                             : "border-gray-200 hover:border-gray-300"
-                        }`}
+                          }`}
                       >
                         <div className="flex items-start gap-3 sm:gap-4">
                           <div className="w-10 h-10 bg-green-100 rounded flex items-center justify-center flex-shrink-0">
@@ -384,22 +380,20 @@ const DocumentTemplateEngine = () => {
                             <p className="text-xs sm:text-sm text-gray-600 mb-3">{template.description}</p>
                             <div className="flex flex-wrap items-center gap-2">
                               {template.version && (
-                                <span className={`px-3 py-1 rounded-full !border border-[#01373D] text-xs font-medium ${
-                                  selectedTemplate?.id === template.id
+                                <span className={`px-3 py-1 rounded-full !border border-[#01373D] text-xs font-medium ${selectedTemplate?.id === template.id
                                     ? "bg-[#FFFFFF] text-[#01373D]"
                                     : "bg-[#FFFFFF] text-gray-700"
-                                }`}>
+                                  }`}>
                                   {template.version}
                                 </span>
                               )}
                               {template.type && (
-                                <span className={`px-3 py-1 rounded-full !border border-[#01373D] text-xs font-medium ${
-                                  template.type === "Legal" 
-                                    ? "bg-white text-[#01373D] !border border-[#01373D]" 
+                                <span className={`px-3 py-1 rounded-full !border border-[#01373D] text-xs font-medium ${template.type === "Legal"
+                                    ? "bg-white text-[#01373D] !border border-[#01373D]"
                                     : template.type === "Compliance"
-                                    ? "bg-white text-[#01373D] border !border border-[#01373D]"
-                                    : "bg-white text-[#01373D] border !border border-[#01373D]"
-                                }`}>
+                                      ? "bg-white text-[#01373D] border !border border-[#01373D]"
+                                      : "bg-white text-[#01373D] border !border border-[#01373D]"
+                                  }`}>
                                   {template.type}
                                 </span>
                               )}
@@ -421,9 +415,9 @@ const DocumentTemplateEngine = () => {
                 <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Syndicate Document Defaults</h2>
                 <p className="text-sm sm:text-base text-gray-600">Select a template to see required fields</p>
               </div>
-             
+
             </div>
-            
+
             {selectedTemplate ? (
               <div className="space-y-6">
                 {/* Error Message */}
@@ -478,7 +472,7 @@ const DocumentTemplateEngine = () => {
                     />
                   </div>
                 </div>
-                
+
                 <button
                   onClick={handleGenerateDocument}
                   disabled={loading}

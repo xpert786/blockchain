@@ -5,8 +5,7 @@ import profileImage from "../../../assets/img/profile.png";
 import { HomeIcon, InvitesIcon, PortfolioIcon, TaxesIcon, MessagesIcon, SettingsIcon, AlertsIcon } from "./icon.jsx";
 
 const navButtonClasses = (isActive) =>
-  `px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${
-    isActive ? "bg-[#FFFFFF1A] text-white" : "text-gray-300 hover:text-white"
+  `px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${isActive ? "bg-[#FFFFFF1A] text-white" : "text-gray-300 hover:text-white"
   }`;
 
 const TopSyndicates = () => {
@@ -65,8 +64,8 @@ const TopSyndicates = () => {
       if (showActionsDropdown !== null) {
         const clickedDropdown = actionsDropdownRefs.current[showActionsDropdown];
         const clickedButton = actionButtonRefs.current[showActionsDropdown];
-        if (clickedDropdown && !clickedDropdown.contains(event.target) && 
-            clickedButton && !clickedButton.contains(event.target)) {
+        if (clickedDropdown && !clickedDropdown.contains(event.target) &&
+          clickedButton && !clickedButton.contains(event.target)) {
           setShowActionsDropdown(null);
         }
       }
@@ -88,7 +87,7 @@ const TopSyndicates = () => {
           const dropdownHeight = 180; // Approximate height of dropdown with 4 items
           const spaceBelow = window.innerHeight - buttonRect.bottom;
           const spaceAbove = buttonRect.top;
-          
+
           // Position dropdown above if not enough space below, but enough space above
           if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
             // Position above button
@@ -116,13 +115,13 @@ const TopSyndicates = () => {
           }
         }
       };
-      
+
       // Small delay to ensure button ref is set
       setTimeout(updatePosition, 0);
-      
+
       window.addEventListener('scroll', updatePosition, true);
       window.addEventListener('resize', updatePosition);
-      
+
       return () => {
         window.removeEventListener('scroll', updatePosition, true);
         window.removeEventListener('resize', updatePosition);
@@ -164,7 +163,7 @@ const TopSyndicates = () => {
     setError(null);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
 
       if (!token) {
@@ -182,19 +181,19 @@ const TopSyndicates = () => {
       if (response.ok) {
         const data = await response.json();
         console.log("Top Syndicates API response:", data);
-        
+
         // Map API response to component data structure
         const mappedSyndicates = data.results?.map(syndicate => {
           // Use total_allocation as target if available, otherwise use a calculated value
           const target = syndicate.total_allocation || syndicate.total_raised * 2 || 0;
           const progress = calculateProgress(syndicate.total_raised || 0, target);
-          
+
           return {
             id: syndicate.id,
             syndicateLeadId: syndicate.syndicate_lead_id,
             name: syndicate.syndicate_name || "Unnamed Syndicate",
-            sector: syndicate.sectors && syndicate.sectors.length > 0 
-              ? syndicate.sectors[0] 
+            sector: syndicate.sectors && syndicate.sectors.length > 0
+              ? syndicate.sectors[0]
               : "General",
             sectors: syndicate.sectors || [],
             allocated: formatAllocated(syndicate.total_allocation),
@@ -245,7 +244,7 @@ const TopSyndicates = () => {
           const dropdownHeight = 180;
           const spaceBelow = window.innerHeight - buttonRect.bottom;
           const spaceAbove = buttonRect.top;
-          
+
           if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
             // Position above button
             setDropdownPosition({
@@ -319,7 +318,7 @@ const TopSyndicates = () => {
                     className="w-full sm:w-auto px-4 py-2.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center sm:justify-start gap-2 text-sm font-medium font-poppins-custom text-[#0A2A2E]"
                   >
                     <svg width="17" height="18" viewBox="0 0 17 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M3.5087 1.6875H13.492C13.9644 1.6875 14.3682 1.6875 14.6912 1.73025C15.0333 1.776 15.3641 1.87875 15.6361 2.14875C15.9123 2.424 16.0221 2.76675 16.0703 3.123C16.1149 3.45075 16.1149 3.858 16.1149 4.323V4.905C16.1149 5.27175 16.1149 5.5875 16.0894 5.85225C16.0611 6.13725 16.0009 6.4035 15.8549 6.65925C15.7097 6.9135 15.5149 7.098 15.2897 7.263C15.0779 7.419 14.808 7.58025 14.4893 7.77L12.4054 9.012C11.9308 9.29475 11.7657 9.39675 11.6552 9.498C11.4024 9.7305 11.2572 9.98925 11.1892 10.3125C11.1601 10.4513 11.1566 10.6252 11.1566 11.1547V13.2037C11.1566 13.8795 11.1566 14.4533 11.0907 14.895C11.0213 15.3638 10.8591 15.8137 10.4341 16.095C10.0183 16.3702 9.56141 16.3447 9.11657 16.233C8.68803 16.1257 8.16033 15.9068 7.52708 15.645L7.46616 15.6195C7.16866 15.4965 6.90941 15.3892 6.70399 15.2767C6.48299 15.156 6.27757 15.006 6.12103 14.772C5.96166 14.535 5.89862 14.2815 5.86958 14.022C5.84408 13.7857 5.84408 13.5022 5.84408 13.1857V11.1547C5.84408 10.6252 5.84124 10.4513 5.81149 10.3125C5.74734 9.99311 5.58309 9.70607 5.34541 9.498C5.23491 9.39675 5.06916 9.29475 4.59528 9.012L2.51137 7.77C2.19262 7.58025 1.92274 7.419 1.71095 7.263C1.4857 7.098 1.29091 6.9135 1.1457 6.65925C0.999784 6.4035 0.939575 6.1365 0.91195 5.85225C0.885742 5.58825 0.885742 5.27175 0.885742 4.905V4.323C0.885742 3.858 0.885742 3.45075 0.930367 3.123C0.978534 2.76675 1.08833 2.424 1.36458 2.14875C1.63658 1.87875 1.96666 1.776 2.30949 1.73025C2.63249 1.6875 3.03624 1.6875 3.5087 1.6875ZM2.44266 2.847C2.20608 2.8785 2.13099 2.9295 2.09203 2.96925C2.05662 3.00375 2.01128 3.0645 1.98153 3.28275C1.94966 3.52125 1.94824 3.84675 1.94824 4.36125V4.87875C1.94824 5.27925 1.94824 5.53725 1.96808 5.73675C1.98649 5.922 2.01766 6.01125 2.05591 6.078C2.09487 6.14625 2.16003 6.2235 2.31658 6.339C2.48233 6.4605 2.70828 6.59625 3.05324 6.80175L5.11662 8.03175L5.17328 8.0655C5.56995 8.30175 5.83912 8.46225 6.0417 8.64825C6.45141 9.01422 6.73532 9.51339 6.8492 10.068C6.90657 10.3433 6.90657 10.653 6.90657 11.088V13.1572C6.90657 13.5112 6.90728 13.7288 6.9257 13.8923C6.94128 14.0408 6.96749 14.091 6.98662 14.1202C7.00787 14.1517 7.05037 14.2005 7.19133 14.2778C7.34149 14.3595 7.54903 14.4457 7.87628 14.5815C8.55699 14.8635 9.01528 15.0517 9.36166 15.1388C9.70095 15.2242 9.81287 15.18 9.87024 15.1417C9.91841 15.1095 9.99278 15.0442 10.0417 14.7195C10.0927 14.3767 10.0941 13.8923 10.0941 13.1565V11.088C10.0941 10.653 10.0941 10.3433 10.1522 10.068C10.2658 9.51349 10.5495 9.01434 10.9589 8.64825C11.1615 8.46225 11.4314 8.301 11.8267 8.0655L11.884 8.03175L13.9474 6.80175C14.2924 6.59625 14.5183 6.4605 14.6841 6.339C14.8406 6.2235 14.9058 6.14625 14.9447 6.078C14.983 6.01125 15.0142 5.922 15.0319 5.73675C15.0517 5.53725 15.0524 5.27925 15.0524 4.878V4.3605C15.0524 3.84675 15.051 3.5205 15.0191 3.28275C14.9894 3.0645 14.9433 3.00375 14.9093 2.96925C14.8697 2.93025 14.7946 2.8785 14.558 2.847C14.3101 2.81325 13.9736 2.8125 13.4587 2.8125H3.54199C3.02703 2.8125 2.69128 2.81325 2.44266 2.847Z" fill="#0A2A2E"/>
+                      <path fillRule="evenodd" clipRule="evenodd" d="M3.5087 1.6875H13.492C13.9644 1.6875 14.3682 1.6875 14.6912 1.73025C15.0333 1.776 15.3641 1.87875 15.6361 2.14875C15.9123 2.424 16.0221 2.76675 16.0703 3.123C16.1149 3.45075 16.1149 3.858 16.1149 4.323V4.905C16.1149 5.27175 16.1149 5.5875 16.0894 5.85225C16.0611 6.13725 16.0009 6.4035 15.8549 6.65925C15.7097 6.9135 15.5149 7.098 15.2897 7.263C15.0779 7.419 14.808 7.58025 14.4893 7.77L12.4054 9.012C11.9308 9.29475 11.7657 9.39675 11.6552 9.498C11.4024 9.7305 11.2572 9.98925 11.1892 10.3125C11.1601 10.4513 11.1566 10.6252 11.1566 11.1547V13.2037C11.1566 13.8795 11.1566 14.4533 11.0907 14.895C11.0213 15.3638 10.8591 15.8137 10.4341 16.095C10.0183 16.3702 9.56141 16.3447 9.11657 16.233C8.68803 16.1257 8.16033 15.9068 7.52708 15.645L7.46616 15.6195C7.16866 15.4965 6.90941 15.3892 6.70399 15.2767C6.48299 15.156 6.27757 15.006 6.12103 14.772C5.96166 14.535 5.89862 14.2815 5.86958 14.022C5.84408 13.7857 5.84408 13.5022 5.84408 13.1857V11.1547C5.84408 10.6252 5.84124 10.4513 5.81149 10.3125C5.74734 9.99311 5.58309 9.70607 5.34541 9.498C5.23491 9.39675 5.06916 9.29475 4.59528 9.012L2.51137 7.77C2.19262 7.58025 1.92274 7.419 1.71095 7.263C1.4857 7.098 1.29091 6.9135 1.1457 6.65925C0.999784 6.4035 0.939575 6.1365 0.91195 5.85225C0.885742 5.58825 0.885742 5.27175 0.885742 4.905V4.323C0.885742 3.858 0.885742 3.45075 0.930367 3.123C0.978534 2.76675 1.08833 2.424 1.36458 2.14875C1.63658 1.87875 1.96666 1.776 2.30949 1.73025C2.63249 1.6875 3.03624 1.6875 3.5087 1.6875ZM2.44266 2.847C2.20608 2.8785 2.13099 2.9295 2.09203 2.96925C2.05662 3.00375 2.01128 3.0645 1.98153 3.28275C1.94966 3.52125 1.94824 3.84675 1.94824 4.36125V4.87875C1.94824 5.27925 1.94824 5.53725 1.96808 5.73675C1.98649 5.922 2.01766 6.01125 2.05591 6.078C2.09487 6.14625 2.16003 6.2235 2.31658 6.339C2.48233 6.4605 2.70828 6.59625 3.05324 6.80175L5.11662 8.03175L5.17328 8.0655C5.56995 8.30175 5.83912 8.46225 6.0417 8.64825C6.45141 9.01422 6.73532 9.51339 6.8492 10.068C6.90657 10.3433 6.90657 10.653 6.90657 11.088V13.1572C6.90657 13.5112 6.90728 13.7288 6.9257 13.8923C6.94128 14.0408 6.96749 14.091 6.98662 14.1202C7.00787 14.1517 7.05037 14.2005 7.19133 14.2778C7.34149 14.3595 7.54903 14.4457 7.87628 14.5815C8.55699 14.8635 9.01528 15.0517 9.36166 15.1388C9.70095 15.2242 9.81287 15.18 9.87024 15.1417C9.91841 15.1095 9.99278 15.0442 10.0417 14.7195C10.0927 14.3767 10.0941 13.8923 10.0941 13.1565V11.088C10.0941 10.653 10.0941 10.3433 10.1522 10.068C10.2658 9.51349 10.5495 9.01434 10.9589 8.64825C11.1615 8.46225 11.4314 8.301 11.8267 8.0655L11.884 8.03175L13.9474 6.80175C14.2924 6.59625 14.5183 6.4605 14.6841 6.339C14.8406 6.2235 14.9058 6.14625 14.9447 6.078C14.983 6.01125 15.0142 5.922 15.0319 5.73675C15.0517 5.53725 15.0524 5.27925 15.0524 4.878V4.3605C15.0524 3.84675 15.051 3.5205 15.0191 3.28275C14.9894 3.0645 14.9433 3.00375 14.9093 2.96925C14.8697 2.93025 14.7946 2.8785 14.558 2.847C14.3101 2.81325 13.9736 2.8125 13.4587 2.8125H3.54199C3.02703 2.8125 2.69128 2.81325 2.44266 2.847Z" fill="#0A2A2E" />
                     </svg>
                     Filter
                   </button>
@@ -334,9 +333,8 @@ const TopSyndicates = () => {
                             setActiveFilter(option);
                             setShowFilterDropdown(false);
                           }}
-                          className={`w-full text-left px-4 py-2 text-sm font-poppins-custom hover:bg-gray-50 transition-colors ${
-                            activeFilter === option ? "bg-[#00F0C3] text-[#001D21]" : "text-[#0A2A2E]"
-                          } ${index === 0 ? "rounded-t-lg" : ""} ${index === filterOptions.length - 1 ? "rounded-b-lg" : ""}`}
+                          className={`w-full text-left px-4 py-2 text-sm font-poppins-custom hover:bg-gray-50 transition-colors ${activeFilter === option ? "bg-[#00F0C3] text-[#001D21]" : "text-[#0A2A2E]"
+                            } ${index === 0 ? "rounded-t-lg" : ""} ${index === filterOptions.length - 1 ? "rounded-b-lg" : ""}`}
                         >
                           {option}
                         </button>
@@ -351,9 +349,8 @@ const TopSyndicates = () => {
             <div className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg p-1 self-start sm:self-auto">
               <button
                 onClick={() => setViewMode("list")}
-                className={`p-2 rounded transition-colors ${
-                  viewMode === "list" ? "bg-[#00F0C3] text-[#001D21]" : "text-gray-400 hover:text-gray-600"
-                }`}
+                className={`p-2 rounded transition-colors ${viewMode === "list" ? "bg-[#00F0C3] text-[#001D21]" : "text-gray-400 hover:text-gray-600"
+                  }`}
               >
                 <div className="w-5 h-5">
                   {/* List icon placeholder */}
@@ -361,9 +358,8 @@ const TopSyndicates = () => {
               </button>
               <button
                 onClick={() => setViewMode("grid")}
-                className={`p-2 rounded transition-colors ${
-                  viewMode === "grid" ? "bg-[#00F0C3] text-[#001D21]" : "text-gray-400 hover:text-gray-600"
-                }`}
+                className={`p-2 rounded transition-colors ${viewMode === "grid" ? "bg-[#00F0C3] text-[#001D21]" : "text-gray-400 hover:text-gray-600"
+                  }`}
               >
                 <div className="w-5 h-5">
                   {/* Grid icon placeholder */}
@@ -374,7 +370,7 @@ const TopSyndicates = () => {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-lg overflow-hidden" style={{border: "0.5px solid #E2E2FB"}}>
+        <div className="bg-white rounded-lg overflow-hidden" style={{ border: "0.5px solid #E2E2FB" }}>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[800px]">
               <thead className="border-b border-[#E2E2FB]">
@@ -437,150 +433,150 @@ const TopSyndicates = () => {
                   </tr>
                 ) : (
                   syndicates.map((syndicate, index) => (
-                  <tr key={index} className="hover:bg-gray-50 border-b border-[#E2E2FB]">
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-[#0A2A2E] font-poppins-custom">
-                        {syndicate.name}
-                      </div>
-                    </td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-[#748A91] font-poppins-custom">
-                        {syndicate.sector}
-                      </div>
-                    </td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-[#0A2A2E] font-poppins-custom">
-                        {syndicate.allocated}
-                      </div>
-                    </td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-[#0A2A2E] font-poppins-custom">
-                        {syndicate.raised}
-                      </div>
-                    </td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-[#0A2A2E] font-poppins-custom">
-                        {syndicate.target}
-                      </div>
-                    </td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-[#0A2A2E] font-poppins-custom">
-                        {syndicate.minInvestment}
-                      </div>
-                    </td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-black font-poppins-custom">
-                        {syndicate.trackRecord}
-                      </div>
-                    </td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="flex-1 h-2.5 bg-gray-200 rounded-full overflow-hidden min-w-[60px] sm:min-w-[100px]">
-                          <div className="h-full flex">
-                            <div className="bg-[#22C55E] h-full" style={{width: `${syndicate.status}%`}}></div>
-                            <div className="bg-[#CEC6FF] h-full" style={{width: `${100 - syndicate.status}%`}}></div>
-                          </div>
+                    <tr key={index} className="hover:bg-gray-50 border-b border-[#E2E2FB]">
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-[#0A2A2E] font-poppins-custom">
+                          {syndicate.name}
                         </div>
-                        <span className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom whitespace-nowrap">{syndicate.status}%</span>
-                      </div>
-                    </td>
-                    <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-center relative">
-                      <div className="relative inline-block">
-                        <button
-                          ref={el => {
-                            actionButtonRefs.current[index] = el;
-                          }}
-                          onClick={(e) => toggleActionsDropdown(index, e)}
-                          className="p-1.5 sm:p-2 text-[#0A2A2E] hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 sm:w-6 sm:h-6">
-                            <rect x="0.25" y="0.25" width="25.5" height="25.5" rx="5.75" fill="#F4F6F5"/>
-                            <rect x="0.25" y="0.25" width="25.5" height="25.5" rx="5.75" stroke="#E8EAED" strokeWidth="0.5"/>
-                            <path d="M12.4163 13.0013C12.4163 13.3235 12.6775 13.5846 12.9997 13.5846C13.3218 13.5846 13.583 13.3235 13.583 13.0013C13.583 12.6791 13.3218 12.418 12.9997 12.418C12.6775 12.418 12.4163 12.6791 12.4163 13.0013Z" fill="#01373D" stroke="#01373D" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M12.4163 17.0833C12.4163 17.4055 12.6775 17.6667 12.9997 17.6667C13.3218 17.6667 13.583 17.4055 13.583 17.0833C13.583 16.7612 13.3218 16.5 12.9997 16.5C12.6775 16.5 12.4163 16.7612 12.4163 17.0833Z" fill="#01373D" stroke="#01373D" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M12.4163 8.91536C12.4163 9.23753 12.6775 9.4987 12.9997 9.4987C13.3218 9.4987 13.583 9.23753 13.583 8.91536C13.583 8.5932 13.3218 8.33203 12.9997 8.33203C12.6775 8.33203 12.4163 8.5932 12.4163 8.91536Z" fill="#01373D" stroke="#01373D" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </button>
-
-                        {/* Actions Dropdown Menu - Fixed positioning */}
-                        {showActionsDropdown === index && (
-                          <div 
-                            ref={el => {
-                              actionsDropdownRefs.current[index] = el;
-                            }}
-                            className="flex flex-col fixed bg-white border border-gray-200 rounded-lg shadow-xl z-[9999] min-w-[180px]"
-                            style={{
-                              top: dropdownPosition.top || 'auto',
-                              bottom: dropdownPosition.bottom || 'auto',
-                              right: dropdownPosition.right || 'auto',
-                              left: dropdownPosition.left || 'auto'
-                            }}
-                          >
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowActionsDropdown(null);
-                                // Navigate to investment detail page
-                                const syndicateId = syndicate.id || syndicate.syndicateLeadId || '1';
-                                navigate(`/investor-panel/tax-documents/${syndicateId}`, {
-                                  state: {
-                                    document: {
-                                      id: syndicateId,
-                                      investmentName: syndicate.name,
-                                      company: syndicate.name,
-                                      taxYear: new Date().getFullYear().toString(),
-                                      issueDate: syndicate.joinedDate || new Date().toLocaleDateString('en-GB'),
-                                      status: syndicate.rawData?.status || "Available",
-                                      stage: syndicate.sector || "Seed",
-                                      valuation: syndicate.target,
-                                      expectedReturns: syndicate.trackRecord,
-                                      timeline: "5-7 Years",
-                                      fundingProgress: syndicate.status,
-                                      fundingRaised: syndicate.raised,
-                                      fundingTarget: syndicate.target,
-                                      documentTitle: `${syndicate.name} Investment Document`,
-                                      size: "2.5 MB",
-                                      rawData: syndicate.rawData || syndicate
-                                    }
-                                  }
-                                });
-                              }}
-                              className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] rounded-t-lg hover:bg-[#00F0C3] transition-colors"
-                            >
-                              Invest Now
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowActionsDropdown(null);
-                              }}
-                              className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] hover:bg-gray-50 transition-colors"
-                            >
-                              View Details
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowActionsDropdown(null);
-                              }}
-                              className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] hover:bg-gray-50 transition-colors"
-                            >
-                              Request Invite
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowActionsDropdown(null);
-                              }}
-                              className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] rounded-b-lg hover:bg-gray-50 transition-colors"
-                            >
-                              Add To Wishlist
-                            </button>
+                      </td>
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-[#748A91] font-poppins-custom">
+                          {syndicate.sector}
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-[#0A2A2E] font-poppins-custom">
+                          {syndicate.allocated}
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-[#0A2A2E] font-poppins-custom">
+                          {syndicate.raised}
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-[#0A2A2E] font-poppins-custom">
+                          {syndicate.target}
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-[#0A2A2E] font-poppins-custom">
+                          {syndicate.minInvestment}
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-black font-poppins-custom">
+                          {syndicate.trackRecord}
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <div className="flex-1 h-2.5 bg-gray-200 rounded-full overflow-hidden min-w-[60px] sm:min-w-[100px]">
+                            <div className="h-full flex">
+                              <div className="bg-[#22C55E] h-full" style={{ width: `${syndicate.status}%` }}></div>
+                              <div className="bg-[#CEC6FF] h-full" style={{ width: `${100 - syndicate.status}%` }}></div>
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+                          <span className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom whitespace-nowrap">{syndicate.status}%</span>
+                        </div>
+                      </td>
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-center relative">
+                        <div className="relative inline-block">
+                          <button
+                            ref={el => {
+                              actionButtonRefs.current[index] = el;
+                            }}
+                            onClick={(e) => toggleActionsDropdown(index, e)}
+                            className="p-1.5 sm:p-2 text-[#0A2A2E] hover:bg-gray-100 rounded-lg transition-colors"
+                          >
+                            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 sm:w-6 sm:h-6">
+                              <rect x="0.25" y="0.25" width="25.5" height="25.5" rx="5.75" fill="#F4F6F5" />
+                              <rect x="0.25" y="0.25" width="25.5" height="25.5" rx="5.75" stroke="#E8EAED" strokeWidth="0.5" />
+                              <path d="M12.4163 13.0013C12.4163 13.3235 12.6775 13.5846 12.9997 13.5846C13.3218 13.5846 13.583 13.3235 13.583 13.0013C13.583 12.6791 13.3218 12.418 12.9997 12.418C12.6775 12.418 12.4163 12.6791 12.4163 13.0013Z" fill="#01373D" stroke="#01373D" strokeLinecap="round" strokeLinejoin="round" />
+                              <path d="M12.4163 17.0833C12.4163 17.4055 12.6775 17.6667 12.9997 17.6667C13.3218 17.6667 13.583 17.4055 13.583 17.0833C13.583 16.7612 13.3218 16.5 12.9997 16.5C12.6775 16.5 12.4163 16.7612 12.4163 17.0833Z" fill="#01373D" stroke="#01373D" strokeLinecap="round" strokeLinejoin="round" />
+                              <path d="M12.4163 8.91536C12.4163 9.23753 12.6775 9.4987 12.9997 9.4987C13.3218 9.4987 13.583 9.23753 13.583 8.91536C13.583 8.5932 13.3218 8.33203 12.9997 8.33203C12.6775 8.33203 12.4163 8.5932 12.4163 8.91536Z" fill="#01373D" stroke="#01373D" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </button>
+
+                          {/* Actions Dropdown Menu - Fixed positioning */}
+                          {showActionsDropdown === index && (
+                            <div
+                              ref={el => {
+                                actionsDropdownRefs.current[index] = el;
+                              }}
+                              className="flex flex-col fixed bg-white border border-gray-200 rounded-lg shadow-xl z-[9999] min-w-[180px]"
+                              style={{
+                                top: dropdownPosition.top || 'auto',
+                                bottom: dropdownPosition.bottom || 'auto',
+                                right: dropdownPosition.right || 'auto',
+                                left: dropdownPosition.left || 'auto'
+                              }}
+                            >
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowActionsDropdown(null);
+                                  // Navigate to investment detail page
+                                  const syndicateId = syndicate.id || syndicate.syndicateLeadId || '1';
+                                  navigate(`/investor-panel/tax-documents/${syndicateId}`, {
+                                    state: {
+                                      document: {
+                                        id: syndicateId,
+                                        investmentName: syndicate.name,
+                                        company: syndicate.name,
+                                        taxYear: new Date().getFullYear().toString(),
+                                        issueDate: syndicate.joinedDate || new Date().toLocaleDateString('en-GB'),
+                                        status: syndicate.rawData?.status || "Available",
+                                        stage: syndicate.sector || "Seed",
+                                        valuation: syndicate.target,
+                                        expectedReturns: syndicate.trackRecord,
+                                        timeline: "5-7 Years",
+                                        fundingProgress: syndicate.status,
+                                        fundingRaised: syndicate.raised,
+                                        fundingTarget: syndicate.target,
+                                        documentTitle: `${syndicate.name} Investment Document`,
+                                        size: "2.5 MB",
+                                        rawData: syndicate.rawData || syndicate
+                                      }
+                                    }
+                                  });
+                                }}
+                                className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] rounded-t-lg hover:bg-[#00F0C3] transition-colors"
+                              >
+                                Invest Now
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowActionsDropdown(null);
+                                }}
+                                className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] hover:bg-gray-50 transition-colors"
+                              >
+                                View Details
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowActionsDropdown(null);
+                                }}
+                                className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] hover:bg-gray-50 transition-colors"
+                              >
+                                Request Invite
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowActionsDropdown(null);
+                                }}
+                                className="w-full text-left px-4 py-3 text-sm font-poppins-custom text-[#0A2A2E] rounded-b-lg hover:bg-gray-50 transition-colors"
+                              >
+                                Add To Wishlist
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
                   ))
                 )}
               </tbody>

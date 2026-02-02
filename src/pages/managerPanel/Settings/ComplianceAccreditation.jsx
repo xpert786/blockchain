@@ -77,8 +77,8 @@ const PdfIcon = () => (
 
 const ComplianceAccreditation = () => {
   // --- Configuration ---
-  const API_URL = "http://168.231.121.7/blockchain-backend/api/compliance-documents/";
-  
+  const API_URL = "http://72.61.251.114/blockchain-backend/api/compliance-documents/";
+
   // Updated Token from your specific Curl command
   const TEST_AUTH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY0MzI5Njg3LCJpYXQiOjE3NjQzMTE2ODcsImp0aSI6Ijk5NzA1NzUyNGY5ZjQ2OTU5MTIzOTQyMWEwOWI1YjY4IiwidXNlcl9pZCI6IjY0In0.gt2lL5WVEjTHsEudojWQhP0APayBtG8CfwWgLpH6bA0";
 
@@ -97,7 +97,7 @@ const ComplianceAccreditation = () => {
   });
 
   // --- Effects ---
-  
+
   // Fetch documents and options on component mount
   useEffect(() => {
     fetchDocuments();
@@ -149,7 +149,7 @@ const ComplianceAccreditation = () => {
       }
 
       const data = await response.json();
-      
+
       if (data.success && Array.isArray(data.documents)) {
         setDocuments(data.documents);
       }
@@ -200,7 +200,7 @@ const ComplianceAccreditation = () => {
   // Only adds file to state, does NOT upload
   const handleFileUpload = (e) => {
     const files = Array.from(e.target.files);
-    
+
     const newFiles = files.map(file => ({
       id: Date.now() + Math.random(),
       name: file.name,
@@ -221,7 +221,7 @@ const ComplianceAccreditation = () => {
     }
 
     // Update status to uploading
-    setUploadedFiles(prev => prev.map(f => 
+    setUploadedFiles(prev => prev.map(f =>
       f.id === fileItem.id ? { ...f, status: "uploading" } : f
     ));
 
@@ -235,7 +235,7 @@ const ComplianceAccreditation = () => {
     try {
       // Simulate progress
       const progressInterval = setInterval(() => {
-        setUploadedFiles(prev => prev.map(f => 
+        setUploadedFiles(prev => prev.map(f =>
           f.id === fileItem.id && f.progress < 90 ? { ...f, progress: f.progress + 10 } : f
         ));
       }, 100);
@@ -256,15 +256,15 @@ const ComplianceAccreditation = () => {
       }
 
       // Success
-      setUploadedFiles(prev => prev.map(f => 
+      setUploadedFiles(prev => prev.map(f =>
         f.id === fileItem.id ? { ...f, progress: 100, status: "complete" } : f
       ));
-      
+
       return true; // Indicate success
 
     } catch (error) {
       console.error("Upload Failed for file:", fileItem.name, error);
-      setUploadedFiles(prev => prev.map(f => 
+      setUploadedFiles(prev => prev.map(f =>
         f.id === fileItem.id ? { ...f, status: "error" } : f
       ));
       return false; // Indicate failure
@@ -304,7 +304,7 @@ const ComplianceAccreditation = () => {
 
   const getStatusIcon = (status) => {
     const normalizedStatus = status?.toLowerCase();
-    
+
     if (normalizedStatus === 'approved' || normalizedStatus === 'ok') {
       return <CheckIcon className="w-4 h-4 text-green-500" />;
     } else if (normalizedStatus === 'expired' || normalizedStatus === 'rejected') {
@@ -326,7 +326,7 @@ const ComplianceAccreditation = () => {
   return (
     <div className="w-full max-w-full p-2 sm:p-4 overflow-x-hidden font-sans text-slate-800 box-border">
       <div className="bg-white rounded-lg p-3 sm:p-4 space-y-4 shadow-sm border border-slate-100 w-full">
-        
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 space-y-3 sm:space-y-0">
           <ComsIcon />
@@ -341,7 +341,7 @@ const ComplianceAccreditation = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">Type</label>
-              <select 
+              <select
                 name="document_type"
                 value={formData.document_type}
                 onChange={handleInputChange}
@@ -378,7 +378,7 @@ const ComplianceAccreditation = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">Expiry Date</label>
-              <input 
+              <input
                 type="date"
                 name="expiry_date"
                 value={formData.expiry_date}
@@ -391,7 +391,7 @@ const ComplianceAccreditation = () => {
 
         {/* Upload Area + Progress */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 w-full">
-          
+
           {/* Upload Drop Zone */}
           <div className="w-full">
             <label className="block text-sm font-medium text-gray-700 mb-2">Upload Document File</label>
@@ -436,11 +436,10 @@ const ComplianceAccreditation = () => {
                   {uploadedFiles.map((file, index) => (
                     <div
                       key={file.id}
-                      className={`flex items-center gap-2 p-2 rounded-lg border ${
-                        file.status === 'error' ? 'bg-red-50 border-red-200' : 
-                        file.status === 'complete' ? 'bg-green-50 border-green-200' :
-                        'bg-[#F9F8FF] border-violet-100'
-                      }`}
+                      className={`flex items-center gap-2 p-2 rounded-lg border ${file.status === 'error' ? 'bg-red-50 border-red-200' :
+                          file.status === 'complete' ? 'bg-green-50 border-green-200' :
+                            'bg-[#F9F8FF] border-violet-100'
+                        }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <PdfIcon />
@@ -448,16 +447,16 @@ const ComplianceAccreditation = () => {
                           {file.name}
                         </span>
                       </div>
-                      
+
                       <div className="flex items-center gap-2 flex-1 justify-end">
                         {/* Status Logic */}
                         {file.status === 'ready' && (
                           <div className="flex items-center gap-1 text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded whitespace-nowrap">
-                             <ClockIcon className="w-3 h-3" />
-                             <span className="hidden sm:inline">Pending</span>
+                            <ClockIcon className="w-3 h-3" />
+                            <span className="hidden sm:inline">Pending</span>
                           </div>
                         )}
-                        
+
                         {file.status === 'uploading' && (
                           <div className="flex items-center gap-2 flex-1 max-w-[80px]">
                             <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
@@ -477,7 +476,7 @@ const ComplianceAccreditation = () => {
                           <span className="text-[10px] text-red-600 font-medium px-1">Err</span>
                         )}
 
-                        <button 
+                        <button
                           onClick={() => removePendingFile(file.id)}
                           className="text-gray-400 hover:text-gray-600 shrink-0 p-1"
                           title="Remove from queue"
@@ -554,7 +553,7 @@ const ComplianceAccreditation = () => {
                           </div>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                          <button 
+                          <button
                             onClick={() => deleteDocument(doc.id)}
                             className="text-gray-400 hover:text-red-600 transition-colors p-1.5 rounded-full hover:bg-gray-100"
                             title="Delete Document"

@@ -40,8 +40,8 @@ const SPVStep2 = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-        
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
+
         let step2Data = null;
         let currentSpvId = null;
 
@@ -82,7 +82,7 @@ const SPVStep2 = () => {
         // Try to get step2 data with SPV ID or default to 1
         const testSpvId = currentSpvId || 1;
         const step2Url = `${API_URL.replace(/\/$/, "")}/spv/${testSpvId}/update_step2/`;
-        
+
         try {
           console.log("🔍 Fetching step2 data from:", step2Url);
           const step2Response = await axios.get(step2Url, {
@@ -124,7 +124,7 @@ const SPVStep2 = () => {
         // If we got step2 data, populate the form
         if (step2Data) {
           const responseData = step2Data.step_data || step2Data.data || step2Data;
-          
+
           console.log("✅ Step2 data found:", responseData);
           console.log("📋 Raw step2 response:", step2Data);
 
@@ -169,8 +169,8 @@ const SPVStep2 = () => {
 
           const mappedData = {
             transactionType: responseData.transaction_type || "",
-            instrumentType: typeof responseData.instrument_type === 'number' 
-              ? instrumentIdToString(responseData.instrument_type) 
+            instrumentType: typeof responseData.instrument_type === 'number'
+              ? instrumentIdToString(responseData.instrument_type)
               : (responseData.instrument_type || ""),
             instrumentTypeId: typeof responseData.instrument_type === 'number' ? responseData.instrument_type : null,
             valuation: valuationTypeMap[responseData.valuation_type] || responseData.valuation_type || "",
@@ -221,11 +221,11 @@ const SPVStep2 = () => {
         throw new Error("No access token found. Please login again.");
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
 
       // Get SPV ID from state, localStorage, or fetch it
       let currentSpvId = spvId || localStorage.getItem("currentSpvId");
-      
+
       // Parse if it's a string from localStorage
       if (currentSpvId && typeof currentSpvId === 'string' && !isNaN(currentSpvId)) {
         currentSpvId = parseInt(currentSpvId, 10);
@@ -326,7 +326,7 @@ const SPVStep2 = () => {
       // Prepare data for API
       // Only include round if we have a valid ID (only ID 1 exists in backend)
       const roundValue = formData.roundId || (formData.round ? roundStringToId(formData.round) : null);
-      
+
       const dataToSend = {
         transaction_type: formData.transactionType || null,
         instrument_type: formData.instrumentTypeId || (formData.instrumentType ? instrumentStringToId(formData.instrumentType) : null),
@@ -394,16 +394,16 @@ const SPVStep2 = () => {
       }
 
       // Navigate to next step on success
-    navigate("/syndicate-creation/spv-creation/step3");
+      navigate("/syndicate-creation/spv-creation/step3");
     } catch (err) {
       console.error("SPV step2 error:", err);
       const backendData = err.response?.data;
-      
+
       if (backendData) {
         if (typeof backendData === "object") {
           // Handle specific field errors
           let errorMessages = [];
-          
+
           // Check for round field error specifically
           if (backendData.round && Array.isArray(backendData.round)) {
             const roundError = backendData.round[0];
@@ -413,7 +413,7 @@ const SPVStep2 = () => {
               errorMessages.push(...backendData.round);
             }
           }
-          
+
           // Check for other field errors (share_class, instrument_type, etc.)
           Object.keys(backendData).forEach(key => {
             if (key !== "round" && Array.isArray(backendData[key])) {
@@ -429,7 +429,7 @@ const SPVStep2 = () => {
               errorMessages.push(`${key}: ${backendData[key]}`);
             }
           });
-          
+
           if (errorMessages.length > 0) {
             setError(errorMessages.join(" "));
           } else {
@@ -590,7 +590,7 @@ const SPVStep2 = () => {
 
         {/* Your Allocation */}
         <div>
-            <h2 className="text-lg font-medium text-gray-800 mb-2">Your Allocation</h2>
+          <h2 className="text-lg font-medium text-gray-800 mb-2">Your Allocation</h2>
           <input
             type="number"
             value={formData.yourAllocation}
@@ -626,10 +626,10 @@ const SPVStep2 = () => {
             </>
           ) : (
             <>
-          Next
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+              Next
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </>
           )}
         </button>

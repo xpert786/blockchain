@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import {LeadIcon, RightsIcon} from "../../components/Icons";
+import { LeadIcon, RightsIcon } from "../../components/Icons";
 
 const EntityProfile = () => {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ const EntityProfile = () => {
   const [showGeographyDropdown, setShowGeographyDropdown] = useState(false);
   const sectorDropdownRef = useRef(null);
   const geographyDropdownRef = useRef(null);
-  
+
   const [sectors, setSectors] = useState([
     { id: 1, name: "AI / Machine Learning" },
     { id: 2, name: "Fintech" },
@@ -100,7 +100,7 @@ const EntityProfile = () => {
         ...prev,
         logo: file
       }));
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -169,19 +169,19 @@ const EntityProfile = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const step2Url = `${API_URL.replace(/\/$/, "")}/syndicate/step2/`;
 
         console.log("=== Fetching Step2 Data ===");
         console.log("API URL:", step2Url);
 
         const response = await axios.get(step2Url, {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            }
-          });
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
 
         console.log("Step2 response:", response.data);
 
@@ -189,7 +189,7 @@ const EntityProfile = () => {
           const data = response.data;
           const profile = data.profile || {};
           const stepData = data.step_data || {};
-          
+
           // Use step_data if available, otherwise use profile
           const sourceData = Object.keys(stepData).length > 0 ? stepData : profile;
 
@@ -201,14 +201,14 @@ const EntityProfile = () => {
             sectorFocus: sourceData.sector_ids || sourceData.sectors?.map(s => s.id || s) || prev.sectorFocus,
             geographyFocus: sourceData.geography_ids || sourceData.geographies?.map(g => g.id || g) || prev.geographyFocus,
             existingLpNetwork: sourceData.existing_lp_count ? "Yes" : prev.existingLpNetwork,
-            enablePlatformLpAccess: sourceData.enable_platform_lp_access !== undefined 
-              ? sourceData.enable_platform_lp_access 
+            enablePlatformLpAccess: sourceData.enable_platform_lp_access !== undefined
+              ? sourceData.enable_platform_lp_access
               : prev.enablePlatformLpAccess
           }));
 
           // Handle logo if available
           if (sourceData.logo) {
-                let logoUrl;
+            let logoUrl;
             if (sourceData.logo.startsWith('http://') || sourceData.logo.startsWith('https://')) {
               logoUrl = sourceData.logo;
             } else if (sourceData.logo.startsWith('/blockchain-backend/')) {
@@ -216,30 +216,30 @@ const EntityProfile = () => {
               logoUrl = `http://168.231.121.7${sourceData.logo}`;
             } else if (sourceData.logo.startsWith('/media/')) {
               // If it starts with /media/, prepend the base URL (no duplicate blockchain-backend)
-              logoUrl = `http://168.231.121.7/blockchain-backend${sourceData.logo}`;
+              logoUrl = `http://72.61.251.114/blockchain-backend${sourceData.logo}`;
             } else if (sourceData.logo.startsWith('media/')) {
               // If it starts with media/ (no leading slash), add the slash
-              logoUrl = `http://168.231.121.7/blockchain-backend/${sourceData.logo}`;
-                  } else {
+              logoUrl = `http://72.61.251.114/blockchain-backend/${sourceData.logo}`;
+            } else {
               // For other paths, construct properly
               const cleanPath = sourceData.logo.startsWith('/') ? sourceData.logo : `/${sourceData.logo}`;
               // Check if path already contains blockchain-backend
               if (cleanPath.includes('/blockchain-backend/')) {
                 logoUrl = `http://168.231.121.7${cleanPath}`;
-                } else {
-                logoUrl = `http://168.231.121.7/blockchain-backend${cleanPath}`;
-                }
-            }
-                setLogoPreview(logoUrl);
+              } else {
+                logoUrl = `http://72.61.251.114/blockchain-backend${cleanPath}`;
               }
-              
-          console.log("✅ Form populated with existing Step2 data");
             }
+            setLogoPreview(logoUrl);
+          }
+
+          console.log("✅ Form populated with existing Step2 data");
+        }
       } catch (err) {
         // If 404, no existing data - that's fine
         if (err.response?.status === 404) {
           console.log("No existing Step2 data found - will create new");
-          } else {
+        } else {
           console.error("Error fetching existing Step2 data:", err);
         }
       }
@@ -258,7 +258,7 @@ const EntityProfile = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const teamManagementUrl = `${API_URL.replace(/\/$/, "")}/syndicate/settings/team-management/`;
 
         console.log("=== Fetching Team Members ===");
@@ -279,7 +279,7 @@ const EntityProfile = () => {
           // API response structure: { success: true, data: { team_members: [...], team_members_count: 3 } }
           const responseData = response.data;
           let membersList = [];
-          
+
           // Check different possible response structures
           if (Array.isArray(responseData)) {
             membersList = responseData;
@@ -296,7 +296,7 @@ const EntityProfile = () => {
             // Structure: { data: [...] }
             membersList = responseData.data;
           }
-          
+
           console.log("✅ Team members loaded:", membersList.length, "members");
           console.log("Team members data:", membersList);
           setTeamMembers(membersList);
@@ -305,7 +305,7 @@ const EntityProfile = () => {
         if (err.response?.status === 404) {
           console.log("No team members found (404)");
           setTeamMembers([]);
-                } else {
+        } else {
           console.error("Error fetching team members:", err);
           console.error("Error response:", err.response?.data);
           setTeamMembers([]);
@@ -326,7 +326,7 @@ const EntityProfile = () => {
             return;
           }
 
-          const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+          const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
           const teamManagementUrl = `${API_URL.replace(/\/$/, "")}/syndicate/settings/team-management/`;
 
           const response = await axios.get(teamManagementUrl, {
@@ -340,7 +340,7 @@ const EntityProfile = () => {
           if (response.data && response.status === 200) {
             const responseData = response.data;
             let membersList = [];
-            
+
             // Check different possible response structures
             if (Array.isArray(responseData)) {
               membersList = responseData;
@@ -353,14 +353,14 @@ const EntityProfile = () => {
             } else if (responseData.data && Array.isArray(responseData.data)) {
               membersList = responseData.data;
             }
-            
+
             setTeamMembers(membersList);
             console.log("✅ Team members refreshed after modal close:", membersList.length);
-        }
-      } catch (err) {
+          }
+        } catch (err) {
           console.error("Error refreshing team members:", err);
-      }
-    };
+        }
+      };
 
       fetchTeamMembers();
     }
@@ -369,7 +369,7 @@ const EntityProfile = () => {
   const handleNext = async () => {
     setError("");
     setLoading(true);
-    
+
     // Validation
     if (!formData.firmName.trim()) {
       setError("Firm / Syndicate Name is required.");
@@ -383,12 +383,12 @@ const EntityProfile = () => {
         throw new Error("No access token found. Please login again.");
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const step2Url = `${API_URL.replace(/\/$/, "")}/syndicate/step2/`;
 
       // Create FormData for file upload
       const formDataToSend = new FormData();
-      
+
       // Add text fields
       formDataToSend.append("firm_name", formData.firmName);
       formDataToSend.append("description", formData.description || "");
@@ -422,9 +422,9 @@ const EntityProfile = () => {
       });
 
       const response = await axios.patch(step2Url, formDataToSend, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Accept': 'application/json'
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/json'
           // Note: Don't set Content-Type header - axios will set it automatically with boundary for FormData
         }
       });
@@ -499,7 +499,7 @@ const EntityProfile = () => {
         throw new Error("No access token found. Please login again.");
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const teamManagementUrl = `${API_URL.replace(/\/$/, "")}/syndicate/settings/team-management/`;
 
       // Convert role to snake_case format
@@ -568,7 +568,7 @@ const EntityProfile = () => {
       });
       const membersData = membersResponse.data;
       let membersList = [];
-      
+
       // Check different possible response structures
       if (Array.isArray(membersData)) {
         membersList = membersData;
@@ -581,22 +581,22 @@ const EntityProfile = () => {
       } else if (membersData.data && Array.isArray(membersData.data)) {
         membersList = membersData.data;
       }
-      
+
       setTeamMembers(membersList);
 
       // Close modal and reset form on success
-    setShowTeamModal(false);
-    setTeamData({
-      name: "",
-      email: "",
-      role: "",
+      setShowTeamModal(false);
+      setTeamData({
+        name: "",
+        email: "",
+        role: "",
         leadPartner: "",
         coLeadDealPartner: "",
         operationsManager: "",
         complianceOfficer: "",
         analystDealScout: "",
         viewer: "Read-Only",
-      permissions: {
+        permissions: {
           createSPVs: false,
           uploadDealMaterials: false,
           publishSPVs: false,
@@ -615,9 +615,9 @@ const EntityProfile = () => {
           accessAuditLogs: false,
           addRemoveTeamMembers: false,
           editRolesPermissions: false
-      },
-      enableRoleBasedAccess: false
-    });
+        },
+        enableRoleBasedAccess: false
+      });
     } catch (err) {
       console.error("Error adding team member:", err);
       const backendData = err.response?.data;
@@ -690,16 +690,16 @@ const EntityProfile = () => {
             {/* Logo Preview */}
             <div className="w-24 h-24 bg-[#F4F6F5] rounded-lg flex items-center justify-center overflow-hidden">
               {logoPreview ? (
-                <img 
-                  src={logoPreview} 
-                  alt="Logo preview" 
+                <img
+                  src={logoPreview}
+                  alt="Logo preview"
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <LeadIcon/>
+                <LeadIcon />
               )}
             </div>
-            
+
             {/* File Input */}
             <div className="relative">
               <input
@@ -766,13 +766,13 @@ const EntityProfile = () => {
                             </span>
                           )}
                         </p>
-                        {(member.can_create_spvs || member.can_publish_spvs || member.can_upload_deal_materials || 
-                          member.can_edit_deal_terms || member.can_invite_lps || member.can_view_lp_list || 
-                          member.can_view_lp_commitments || member.can_communicate_with_lps || 
-                          member.can_manage_capital_calls || member.can_update_payment_statuses || 
-                          member.can_manage_bank_accounts || member.can_send_tax_documents || 
-                          member.can_review_kyc_kyb || member.can_approve_reject_investors || 
-                          member.can_view_jurisdiction_flags || member.can_access_audit_logs || 
+                        {(member.can_create_spvs || member.can_publish_spvs || member.can_upload_deal_materials ||
+                          member.can_edit_deal_terms || member.can_invite_lps || member.can_view_lp_list ||
+                          member.can_view_lp_commitments || member.can_communicate_with_lps ||
+                          member.can_manage_capital_calls || member.can_update_payment_statuses ||
+                          member.can_manage_bank_accounts || member.can_send_tax_documents ||
+                          member.can_review_kyc_kyb || member.can_approve_reject_investors ||
+                          member.can_view_jurisdiction_flags || member.can_access_audit_logs ||
                           member.can_add_remove_team_members || member.can_edit_roles_permissions) ? (
                           <div className="mt-2">
                             <span className="text-xs font-medium text-gray-600">Permissions: </span>
@@ -914,11 +914,10 @@ const EntityProfile = () => {
                             handleGeographyAdd(geography.id);
                           }
                         }}
-                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                          isSelected
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${isSelected
                             ? 'bg-[#0A3A38] text-white'
                             : 'bg-white text-[#0A2A2E] border border-gray-200 hover:bg-gray-50'
-                        }`}
+                          }`}
                       >
                         <div className="font-medium">{geography.name}</div>
                         {geography.region && (
@@ -987,11 +986,10 @@ const EntityProfile = () => {
                             handleSectorAdd(sector.id);
                           }
                         }}
-                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                          isSelected
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${isSelected
                             ? 'bg-[#0A3A38] text-white'
                             : 'bg-white text-[#0A2A2E] border border-gray-200 hover:bg-gray-50'
-                        }`}
+                          }`}
                       >
                         <div className="font-medium">{sector.name}</div>
                       </button>
@@ -1056,321 +1054,321 @@ const EntityProfile = () => {
         <div className="fixed inset-0 bg-[#01373DB2] bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-lg w-full max-w-3xl mx-4 h-auto max-h-[90vh] flex flex-col overflow-hidden">
             <div className="overflow-y-auto flex-1 p-7">
-            {/* Modal Header */}
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Team & Roles</h2>
-                <p className="text-gray-600 text-sm">Add team members and configure their roles and permissions.</p>
-              </div>
-              <button
-                onClick={() => setShowTeamModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="0.25" y="0.25" width="22.5" height="22.5" rx="5.75" fill="#F4F6F5"/>
-                <rect x="0.25" y="0.25" width="22.5" height="22.5" rx="5.75" stroke="#E8EAED" stroke-width="0.5"/>
-                <path d="M15 8L8 15M8 8L15 15" stroke="#01373D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-
-              </button>
-            </div>
-
-            {/* Error Message */}
-            {teamModalError && (
-              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-600 text-sm">{teamModalError}</p>
-              </div>
-            )}
-
-            {/* Form Fields */}
-            <div className="space-y-6">
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
-                <input
-                  type="text"
-                  value={teamData.name}
-                  onChange={(e) => handleTeamInputChange("name", e.target.value)}
-                  className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Enter name"
-                  required
-                />
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                <input
-                  type="email"
-                  value={teamData.email}
-                  onChange={(e) => handleTeamInputChange("email", e.target.value)}
-                  className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Enter email Address"
-                  required
-                />
-              </div>
-
-              {/* Role */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Role *</label>
-                <div className="relative">
-                <select
-                  value={teamData.role}
-                  onChange={(e) => handleTeamInputChange("role", e.target.value)}
-                    className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none pr-10"
+              {/* Modal Header */}
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Team & Roles</h2>
+                  <p className="text-gray-600 text-sm">Add team members and configure their roles and permissions.</p>
+                </div>
+                <button
+                  onClick={() => setShowTeamModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
                 >
-                  <option value="">Select Role</option>
-                    <option value="lead-partner">Lead Partner</option>
-                    <option value="co-lead">Co-Lead / Deal Partner</option>
-                    <option value="operations-manager">Operations Manager</option>
-                    <option value="compliance-officer">Compliance Officer</option>
-                    <option value="analyst">Analyst / Deal Scout</option>
-                    <option value="viewer">Viewer</option>
-                </select>
-                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0.25" y="0.25" width="22.5" height="22.5" rx="5.75" fill="#F4F6F5" />
+                    <rect x="0.25" y="0.25" width="22.5" height="22.5" rx="5.75" stroke="#E8EAED" stroke-width="0.5" />
+                    <path d="M15 8L8 15M8 8L15 15" stroke="#01373D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                   </svg>
+
+                </button>
+              </div>
+
+              {/* Error Message */}
+              {teamModalError && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-600 text-sm">{teamModalError}</p>
                 </div>
-              </div>
+              )}
 
-              {/* Role-specific Fields */}
-              <div className="space-y-4"> 
-              </div>
-
-              {/* Permissions Sections */}
+              {/* Form Fields */}
               <div className="space-y-6">
-                {/* Deal Permissions */}
-              <div>
-                  <h3 className="text-sm font-bold text-gray-700 mb-3">Deal Permissions</h3>
-                  <div className="space-y-2 grid grid-cols-2 gap-2">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                        checked={teamData.permissions.createSPVs}
-                        onChange={(e) => handlePermissionChange("createSPVs", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">Create SPVs</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                        checked={teamData.permissions.uploadDealMaterials}
-                        onChange={(e) => handlePermissionChange("uploadDealMaterials", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">Upload deal materials</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                        checked={teamData.permissions.publishSPVs}
-                        onChange={(e) => handlePermissionChange("publishSPVs", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">Publish SPVs</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                        checked={teamData.permissions.editDealTerms}
-                        onChange={(e) => handlePermissionChange("editDealTerms", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">Edit deal terms</span>
-                  </label>
-                  </div>
-                </div>
-
-                {/* Investor Permissions */}
+                {/* Name */}
                 <div>
-                  <h3 className="text-sm font-bold text-gray-700 mb-3">Investor Permissions</h3>
-                  <div className="space-y-2 grid grid-cols-2 gap-2">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={teamData.permissions.inviteLPs}
-                        onChange={(e) => handlePermissionChange("inviteLPs", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">Invite LPs</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={teamData.permissions.viewLPCommitments}
-                        onChange={(e) => handlePermissionChange("viewLPCommitments", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">View LP commitments</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={teamData.permissions.viewLPList}
-                        onChange={(e) => handlePermissionChange("viewLPList", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">View LP list</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={teamData.permissions.communicateWithLPs}
-                        onChange={(e) => handlePermissionChange("communicateWithLPs", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">Communicate with LPs</span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Operations & Finance */}
-                <div>
-                  <h3 className="text-sm font-bold text-gray-700 mb-3">Operations & Finance</h3>
-                  <div className="space-y-2 grid grid-cols-2 gap-2">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={teamData.permissions.manageCapitalCalls}
-                        onChange={(e) => handlePermissionChange("manageCapitalCalls", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">Manage capital calls</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={teamData.permissions.manageBankAccounts}
-                        onChange={(e) => handlePermissionChange("manageBankAccounts", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">Manage bank accounts</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={teamData.permissions.sendTaxDocuments}
-                        onChange={(e) => handlePermissionChange("sendTaxDocuments", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">Send tax documents</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={teamData.permissions.updatePaymentStatuses}
-                        onChange={(e) => handlePermissionChange("updatePaymentStatuses", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">Update payment statuses</span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Compliance */}
-              <div>
-                  <h3 className="text-sm font-bold text-gray-700 mb-3">Compliance</h3>
-                  <div className="space-y-2 grid grid-cols-2 gap-2">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={teamData.permissions.reviewKYCKYB}
-                        onChange={(e) => handlePermissionChange("reviewKYCKYB", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">Review KYC/KYB</span>
-                    </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                        checked={teamData.permissions.viewJurisdictionEligibilityFlags}
-                        onChange={(e) => handlePermissionChange("viewJurisdictionEligibilityFlags", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">View jurisdiction/eligibility flags</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                        checked={teamData.permissions.approveRejectInvestors}
-                        onChange={(e) => handlePermissionChange("approveRejectInvestors", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">Approve/reject investors</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                        checked={teamData.permissions.accessAuditLogs}
-                        onChange={(e) => handlePermissionChange("accessAuditLogs", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">Access audit logs</span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Team Management */}
-                <div>
-                  <h3 className="text-sm font-bold text-gray-700 mb-3">Team Management</h3>
-                  <div className="space-y-2 grid grid-cols-2 gap-2  ">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={teamData.permissions.addRemoveTeamMembers}
-                        onChange={(e) => handlePermissionChange("addRemoveTeamMembers", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">Add/remove team members</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                        checked={teamData.permissions.editRolesPermissions}
-                        onChange={(e) => handlePermissionChange("editRolesPermissions", e.target.checked)}
-                        className="mr-2 h-4 w-4 text-purple-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">Edit roles & permissions</span>
-                  </label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Role-based Access Controls */}
-              <div>
-                <label className="flex items-start">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
                   <input
-                    type="checkbox"
-                    checked={teamData.enableRoleBasedAccess}
-                    onChange={(e) => handleTeamInputChange("enableRoleBasedAccess", e.target.checked)}
-                    className="mr-2 mt-1 h-4 w-4 text-purple-600 rounded"
+                    type="text"
+                    value={teamData.name}
+                    onChange={(e) => handleTeamInputChange("name", e.target.value)}
+                    className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Enter name"
+                    required
                   />
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">Enable Role-based Access Controls</span>
-                    <p className="text-xs text-gray-500 mt-1">
-                      When enabled, permissions will be automatically assigned based on team member roles and can be overridden individually.
-                    </p>
-                  </div>
-                </label>
-              </div>
-            </div>
+                </div>
 
-            {/* Send Invitation Button */}
-            <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
-              <button
-                onClick={handleSendInvitation}
-                disabled={teamModalLoading}
-                className="bg-[#00F0C3] hover:bg-teal-600 text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {teamModalLoading ? "Sending..." : "Send Invitation"}
-                {!teamModalLoading && (
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M13.4547 0.172306C13.3745 0.0928875 13.2733 0.0379113 13.163 0.0137808C13.0526 -0.0103498 12.9378 -0.00264136 12.8317 0.0360083L0.0973069 4.70731L0.000109537 5.81828L4.95802 8.32283L7.80995 13.6812L8.92115 13.7785L13.595 0.794602C13.633 0.688247 13.64 0.573284 13.6151 0.463108C13.5903 0.352932 13.5347 0.252081 13.4547 0.172306ZM8.32779 12.6588L5.87643 8.05292L10.653 3.66008L10.0185 2.97003L5.20447 7.39711L1.11666 5.33208L12.4633 1.16967L8.32779 12.6588Z" fill="#001D21"/>
-                  </svg>
-                )}
-              </button>
-            </div>
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                  <input
+                    type="email"
+                    value={teamData.email}
+                    onChange={(e) => handleTeamInputChange("email", e.target.value)}
+                    className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Enter email Address"
+                    required
+                  />
+                </div>
+
+                {/* Role */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Role *</label>
+                  <div className="relative">
+                    <select
+                      value={teamData.role}
+                      onChange={(e) => handleTeamInputChange("role", e.target.value)}
+                      className="w-full border border-[#0A2A2E] rounded-lg p-3 bg-[#F4F6F5] focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none pr-10"
+                    >
+                      <option value="">Select Role</option>
+                      <option value="lead-partner">Lead Partner</option>
+                      <option value="co-lead">Co-Lead / Deal Partner</option>
+                      <option value="operations-manager">Operations Manager</option>
+                      <option value="compliance-officer">Compliance Officer</option>
+                      <option value="analyst">Analyst / Deal Scout</option>
+                      <option value="viewer">Viewer</option>
+                    </select>
+                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Role-specific Fields */}
+                <div className="space-y-4">
+                </div>
+
+                {/* Permissions Sections */}
+                <div className="space-y-6">
+                  {/* Deal Permissions */}
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-700 mb-3">Deal Permissions</h3>
+                    <div className="space-y-2 grid grid-cols-2 gap-2">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.createSPVs}
+                          onChange={(e) => handlePermissionChange("createSPVs", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Create SPVs</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.uploadDealMaterials}
+                          onChange={(e) => handlePermissionChange("uploadDealMaterials", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Upload deal materials</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.publishSPVs}
+                          onChange={(e) => handlePermissionChange("publishSPVs", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Publish SPVs</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.editDealTerms}
+                          onChange={(e) => handlePermissionChange("editDealTerms", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Edit deal terms</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Investor Permissions */}
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-700 mb-3">Investor Permissions</h3>
+                    <div className="space-y-2 grid grid-cols-2 gap-2">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.inviteLPs}
+                          onChange={(e) => handlePermissionChange("inviteLPs", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Invite LPs</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.viewLPCommitments}
+                          onChange={(e) => handlePermissionChange("viewLPCommitments", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">View LP commitments</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.viewLPList}
+                          onChange={(e) => handlePermissionChange("viewLPList", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">View LP list</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.communicateWithLPs}
+                          onChange={(e) => handlePermissionChange("communicateWithLPs", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Communicate with LPs</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Operations & Finance */}
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-700 mb-3">Operations & Finance</h3>
+                    <div className="space-y-2 grid grid-cols-2 gap-2">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.manageCapitalCalls}
+                          onChange={(e) => handlePermissionChange("manageCapitalCalls", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Manage capital calls</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.manageBankAccounts}
+                          onChange={(e) => handlePermissionChange("manageBankAccounts", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Manage bank accounts</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.sendTaxDocuments}
+                          onChange={(e) => handlePermissionChange("sendTaxDocuments", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Send tax documents</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.updatePaymentStatuses}
+                          onChange={(e) => handlePermissionChange("updatePaymentStatuses", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Update payment statuses</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Compliance */}
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-700 mb-3">Compliance</h3>
+                    <div className="space-y-2 grid grid-cols-2 gap-2">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.reviewKYCKYB}
+                          onChange={(e) => handlePermissionChange("reviewKYCKYB", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Review KYC/KYB</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.viewJurisdictionEligibilityFlags}
+                          onChange={(e) => handlePermissionChange("viewJurisdictionEligibilityFlags", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">View jurisdiction/eligibility flags</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.approveRejectInvestors}
+                          onChange={(e) => handlePermissionChange("approveRejectInvestors", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Approve/reject investors</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.accessAuditLogs}
+                          onChange={(e) => handlePermissionChange("accessAuditLogs", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Access audit logs</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Team Management */}
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-700 mb-3">Team Management</h3>
+                    <div className="space-y-2 grid grid-cols-2 gap-2  ">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.addRemoveTeamMembers}
+                          onChange={(e) => handlePermissionChange("addRemoveTeamMembers", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Add/remove team members</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamData.permissions.editRolesPermissions}
+                          onChange={(e) => handlePermissionChange("editRolesPermissions", e.target.checked)}
+                          className="mr-2 h-4 w-4 text-purple-600 rounded"
+                        />
+                        <span className="text-sm text-gray-700">Edit roles & permissions</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Role-based Access Controls */}
+                <div>
+                  <label className="flex items-start">
+                    <input
+                      type="checkbox"
+                      checked={teamData.enableRoleBasedAccess}
+                      onChange={(e) => handleTeamInputChange("enableRoleBasedAccess", e.target.checked)}
+                      className="mr-2 mt-1 h-4 w-4 text-purple-600 rounded"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">Enable Role-based Access Controls</span>
+                      <p className="text-xs text-gray-500 mt-1">
+                        When enabled, permissions will be automatically assigned based on team member roles and can be overridden individually.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Send Invitation Button */}
+              <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
+                <button
+                  onClick={handleSendInvitation}
+                  disabled={teamModalLoading}
+                  className="bg-[#00F0C3] hover:bg-teal-600 text-black px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {teamModalLoading ? "Sending..." : "Send Invitation"}
+                  {!teamModalLoading && (
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M13.4547 0.172306C13.3745 0.0928875 13.2733 0.0379113 13.163 0.0137808C13.0526 -0.0103498 12.9378 -0.00264136 12.8317 0.0360083L0.0973069 4.70731L0.000109537 5.81828L4.95802 8.32283L7.80995 13.6812L8.92115 13.7785L13.595 0.794602C13.633 0.688247 13.64 0.573284 13.6151 0.463108C13.5903 0.352932 13.5347 0.252081 13.4547 0.172306ZM8.32779 12.6588L5.87643 8.05292L10.653 3.66008L10.0185 2.97003L5.20447 7.39711L1.11666 5.33208L12.4633 1.16967L8.32779 12.6588Z" fill="#001D21" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

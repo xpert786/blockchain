@@ -38,9 +38,9 @@ const ComplianceAttestation = () => {
   // Helper function to construct file URL from API response
   const constructFileUrl = (filePath) => {
     if (!filePath) return null;
-    
+
     const baseDomain = "http://168.231.121.7";
-    
+
     if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
       return filePath;
     } else if (filePath.startsWith('/')) {
@@ -68,7 +68,7 @@ const ComplianceAttestation = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const step3Url = `${API_URL.replace(/\/$/, "")}/syndicate/step3/`;
 
         console.log("=== Fetching Step3 Data ===");
@@ -87,35 +87,35 @@ const ComplianceAttestation = () => {
 
           if (step3Response.data && step3Response.status === 200) {
             const responseData = step3Response.data;
-            
+
             console.log("📦 Full Step3 response structure:", JSON.stringify(responseData, null, 2));
-            
+
             // Get step_data and profile (same structure as step1/step2)
             const stepData = responseData.step_data || {};
             const profile = responseData.profile || {};
-            
+
             console.log("✅ step_data:", stepData);
             console.log("✅ profile:", profile);
-            
+
             // Get compliance data from step_data, profile, or root level
             const nestedData = responseData.data || {};
-            const riskRegulatoryAttestation = nestedData.risk_regulatory_attestation || 
-                                             stepData.risk_regulatory_attestation || 
-                                             profile.risk_regulatory_attestation || 
-                                             responseData.risk_regulatory_attestation || 
-                                             false;
-            const additionalPoliciesPath = nestedData.additional_compliance_policies || 
-                                          stepData.additional_compliance_policies || 
-                                          profile.additional_compliance_policies ||
-                                          responseData.additional_compliance_policies;
-            
+            const riskRegulatoryAttestation = nestedData.risk_regulatory_attestation ||
+              stepData.risk_regulatory_attestation ||
+              profile.risk_regulatory_attestation ||
+              responseData.risk_regulatory_attestation ||
+              false;
+            const additionalPoliciesPath = nestedData.additional_compliance_policies ||
+              stepData.additional_compliance_policies ||
+              profile.additional_compliance_policies ||
+              responseData.additional_compliance_policies;
+
             console.log("✅ Risk Regulatory Attestation:", riskRegulatoryAttestation);
             console.log("✅ Additional Policies Path:", additionalPoliciesPath);
-            
+
             // Check if we have any data
             if (riskRegulatoryAttestation || additionalPoliciesPath) {
               setHasExistingData(true);
-              
+
               // Populate form with existing data
               setFormData({
                 regulatoryCompliance: riskRegulatoryAttestation || false,
@@ -124,7 +124,7 @@ const ComplianceAttestation = () => {
                 privacyPolicy: false,
                 riskDisclosure: false
               });
-              
+
               // If additional policies file exists as URL, set it for display
               if (additionalPoliciesPath) {
                 const fileUrl = constructFileUrl(additionalPoliciesPath);
@@ -132,7 +132,7 @@ const ComplianceAttestation = () => {
                 console.log("✅ Additional policies file URL set:", fileUrl);
                 console.log("✅ Original additional policies value from API:", additionalPoliciesPath);
               }
-              
+
               console.log("✅ Form populated with existing Step3 data");
             } else {
               setHasExistingData(false);
@@ -179,7 +179,7 @@ const ComplianceAttestation = () => {
       }
 
       // Get API URL
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const finalUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step3/`;
 
       console.log("=== Compliance Attestation API Call ===");
@@ -200,7 +200,7 @@ const ComplianceAttestation = () => {
         const formDataToSend = new FormData();
         formDataToSend.append("risk_regulatory_attestation", formData.regulatoryCompliance);
         formDataToSend.append("additional_compliance_policies", additionalPolicies);
-        
+
         console.log("🔄 Sending with FormData (file included)");
         response = await axios.patch(finalUrl, formDataToSend, {
           headers: {
@@ -213,7 +213,7 @@ const ComplianceAttestation = () => {
         const requestData = {
           risk_regulatory_attestation: formData.regulatoryCompliance
         };
-        
+
         console.log("🔄 Sending with JSON (no file)");
         response = await axios.patch(finalUrl, requestData, {
           headers: {
@@ -223,7 +223,7 @@ const ComplianceAttestation = () => {
           }
         });
       }
-      
+
       console.log("Compliance attestation saved successfully:", response.data);
       // Mark that data now exists for future updates
       setHasExistingData(true);
@@ -271,7 +271,7 @@ const ComplianceAttestation = () => {
 
       {/* Form Fields */}
       <div className="space-y-8">
-      
+
 
         {/* Risk & Regulatory Attestation Warning */}
         <div>
@@ -282,7 +282,7 @@ const ComplianceAttestation = () => {
             <span className="font-medium text-gray-800">Risk & Regulatory Attestation</span>
           </div>
           <p className="text-gray-600 mb-4">Based on your home jurisdiction (United States), the following restrictions apply:</p>
-          
+
           <div className="p-4 bg-[#FDECEC] !border border-red-200 rounded-lg">
             <h3 className="font-semibold text-gray-800 mb-3">United States Requirements</h3>
             <ul className="text-gray-700 space-y-1 text-sm">
@@ -292,7 +292,7 @@ const ComplianceAttestation = () => {
               <li>• Cannot engage in general solicitation or advertising</li>
             </ul>
           </div>
-          
+
           <label className="flex items-start gap-3 mt-4">
             <input
               type="checkbox"
@@ -309,7 +309,7 @@ const ComplianceAttestation = () => {
         <div>
           <h2 className="text-xl font-medium  text-[#0A2A2E] text-gray-800 mb-2">Additional Policies (Optional)</h2>
           <p className="text-gray-600 mb-4">Upload any additional compliance policies, procedures, or documentation you'd like to include.</p>
-          
+
           <label htmlFor="additionalPolicies" className="cursor-pointer">
             <div className="border bordaper-[#0A2A2E] bg-[#F4F6F5] rounded-lg p-8 text-center hover:bg-[#F0F2F1] transition-colors">
               <input
@@ -329,9 +329,9 @@ const ComplianceAttestation = () => {
               {additionalPoliciesUrl && !additionalPolicies && (
                 <div className="mt-2">
                   <p className="text-blue-600 text-sm">✓ File loaded from server</p>
-                  <a 
-                    href={additionalPoliciesUrl} 
-                    target="_blank" 
+                  <a
+                    href={additionalPoliciesUrl}
+                    target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
                     className="text-blue-500 text-xs underline mt-1 inline-block"
@@ -364,21 +364,21 @@ const ComplianceAttestation = () => {
             <p className="text-xs text-gray-500 mt-2">Current file loaded from server</p>
           )}
         </div>
-        
+
         <div className="p-4 bg-[#FDECEC] !border border-red-200 rounded-lg flex flex-row gap-5 items-center">
-        <div>
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18.1083 14.9999L11.4417 3.3332C11.2963 3.0767 11.0855 2.86335 10.8308 2.71492C10.576 2.56649 10.2865 2.48828 9.99167 2.48828C9.69685 2.48828 9.4073 2.56649 9.15257 2.71492C8.89783 2.86335 8.68703 3.0767 8.54167 3.3332L1.875 14.9999C1.72807 15.2543 1.65103 15.5431 1.65168 15.837C1.65233 16.1308 1.73065 16.4192 1.87871 16.673C2.02676 16.9269 2.23929 17.137 2.49475 17.2822C2.7502 17.4274 3.03951 17.5025 3.33334 17.4999H16.6667C16.9591 17.4996 17.2463 17.4223 17.4994 17.2759C17.7525 17.1295 17.9627 16.9191 18.1088 16.6658C18.2548 16.4125 18.3317 16.1252 18.3316 15.8328C18.3316 15.5404 18.2545 15.2531 18.1083 14.9999Z" stroke="#ED1C24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M10 7.5V10.8333" stroke="#ED1C24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M10 14.167H10.01" stroke="#ED1C24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div>
-        <h3 className="font-medium text-gray-800 ">Compliance</h3>
-           <p className="text-[#748A91] mb-3 text-sm font-thin">KYB verification is still pending. You can continue, but KYB must be approved before publishing SPVs or accepting LP capital.</p>
+          <div>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18.1083 14.9999L11.4417 3.3332C11.2963 3.0767 11.0855 2.86335 10.8308 2.71492C10.576 2.56649 10.2865 2.48828 9.99167 2.48828C9.69685 2.48828 9.4073 2.56649 9.15257 2.71492C8.89783 2.86335 8.68703 3.0767 8.54167 3.3332L1.875 14.9999C1.72807 15.2543 1.65103 15.5431 1.65168 15.837C1.65233 16.1308 1.73065 16.4192 1.87871 16.673C2.02676 16.9269 2.23929 17.137 2.49475 17.2822C2.7502 17.4274 3.03951 17.5025 3.33334 17.4999H16.6667C16.9591 17.4996 17.2463 17.4223 17.4994 17.2759C17.7525 17.1295 17.9627 16.9191 18.1088 16.6658C18.2548 16.4125 18.3317 16.1252 18.3316 15.8328C18.3316 15.5404 18.2545 15.2531 18.1083 14.9999Z" stroke="#ED1C24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M10 7.5V10.8333" stroke="#ED1C24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M10 14.167H10.01" stroke="#ED1C24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="font-medium text-gray-800 ">Compliance</h3>
+            <p className="text-[#748A91] mb-3 text-sm font-thin">KYB verification is still pending. You can continue, but KYB must be approved before publishing SPVs or accepting LP capital.</p>
           </div>
         </div>
-           
+
       </div>
 
       {/* Navigation Buttons */}

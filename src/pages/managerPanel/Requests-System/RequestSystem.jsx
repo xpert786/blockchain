@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { RighIcon, GreenIcon,  CrossesIcon, View1Icon, View2Icon, View3Icon, WatchsIcon, SecondFilesIcon, RightssIcon, UpdateSpvIcon, UpdateContactIcon,Users2Icon,Spv2Icon,EyessIcon,RejecIcon,AlertsIcon } from "../../../components/Icons";
+import { RighIcon, GreenIcon, CrossesIcon, View1Icon, View2Icon, View3Icon, WatchsIcon, SecondFilesIcon, RightssIcon, UpdateSpvIcon, UpdateContactIcon, Users2Icon, Spv2Icon, EyessIcon, RejecIcon, AlertsIcon } from "../../../components/Icons";
 
 const RequestSystem = () => {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ const RequestSystem = () => {
     setError(null);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
 
       if (!token) {
@@ -53,7 +53,7 @@ const RequestSystem = () => {
       if (response.ok) {
         const data = await response.json();
         console.log("Investment requests API response:", data);
-        
+
         // Update stats
         if (data.stats) {
           setStats({
@@ -159,7 +159,7 @@ const RequestSystem = () => {
     setSuccessMessage(null);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
 
       if (!token) {
@@ -233,7 +233,7 @@ const RequestSystem = () => {
     setSuccessMessage(null);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
 
       if (!token) {
@@ -318,75 +318,75 @@ const RequestSystem = () => {
     <div className="min-h-screen bg-[#F4F6F5] px-4 py-6 sm:px-6 lg:px-0 lg:mt-10 space-y-6">
       {/* Header */}
       <div className="bg-white rounded-lg p-4 sm:p-6">
-      <div className="mb-6">
-        <h3 className="text-xl sm:text-2xl font-medium text-gray-900 mb-2 text-center sm:text-left">
-          <span className="text-[#9889FF]">Request</span> & Approval System
-        </h3>
-        <p className="text-sm sm:text-base text-gray-600 text-center sm:text-left">Manage approval workflows and requests</p>
-      </div>
+        <div className="mb-6">
+          <h3 className="text-xl sm:text-2xl font-medium text-gray-900 mb-2 text-center sm:text-left">
+            <span className="text-[#9889FF]">Request</span> & Approval System
+          </h3>
+          <p className="text-sm sm:text-base text-gray-600 text-center sm:text-left">Manage approval workflows and requests</p>
+        </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-[#CAE6FF] rounded-2xl p-5 sm:p-6">
-          <div className="flex items-center justify-between h-full">
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm text-gray-600">Pending Requests</p>
-                <WatchsIcon />
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-[#CAE6FF] rounded-2xl p-5 sm:p-6">
+            <div className="flex items-center justify-between h-full">
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm text-gray-600">Pending Requests</p>
+                  <WatchsIcon />
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-2xl font-bold text-gray-900">{isLoading ? "..." : stats.pending_requests}</p>
+
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <p className="text-2xl font-bold text-gray-900">{isLoading ? "..." : stats.pending_requests}</p>
-               
+            </div>
+          </div>
+
+          <div className="bg-[#D7F8F0] rounded-2xl p-5 sm:p-6">
+            <div className="flex items-center justify-between h-full">
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm text-gray-600">Approved Today</p>
+                  <GreenIcon />
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-2xl font-bold text-gray-900">{isLoading ? "..." : stats.approved_today}</p>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#E2E2FB] rounded-2xl p-5 sm:p-6">
+            <div className="flex items-center justify-between h-full">
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm text-gray-600">Rejected</p>
+                  <RejecIcon />
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-2xl font-bold text-gray-900">{isLoading ? "..." : stats.rejected}</p>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#FFEFE8] rounded-2xl p-5 sm:p-6">
+            <div className="flex items-center justify-between h-full">
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm text-gray-600">High Priority</p>
+                  <AlertsIcon />
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-2xl font-bold text-gray-900">{isLoading ? "..." : stats.high_priority}</p>
+
+                </div>
               </div>
             </div>
           </div>
         </div>
-
-        <div className="bg-[#D7F8F0] rounded-2xl p-5 sm:p-6">
-          <div className="flex items-center justify-between h-full">
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm text-gray-600">Approved Today</p>
-                <GreenIcon />
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-2xl font-bold text-gray-900">{isLoading ? "..." : stats.approved_today}</p>
-                
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-[#E2E2FB] rounded-2xl p-5 sm:p-6">
-          <div className="flex items-center justify-between h-full">
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm text-gray-600">Rejected</p>
-                <RejecIcon />
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-2xl font-bold text-gray-900">{isLoading ? "..." : stats.rejected}</p>
-                
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-[#FFEFE8] rounded-2xl p-5 sm:p-6">
-          <div className="flex items-center justify-between h-full">
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm text-gray-600">High Priority</p>
-                <AlertsIcon />
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-2xl font-bold text-gray-900">{isLoading ? "..." : stats.high_priority}</p>
-              
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
       </div>
 
       {/* Filter Tabs */}
@@ -396,11 +396,10 @@ const RequestSystem = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === tab.id
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === tab.id
                   ? "bg-[#00F0C3] text-black"
                   : "bg-[#F4F6F5] text-gray-700 hover:bg-gray-300"
-              }`}
+                }`}
             >
               {tab.label} ({tab.count})
             </button>
@@ -408,8 +407,8 @@ const RequestSystem = () => {
         </div>
       </div>
 
-    {/* Search Bar and Icons */}
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      {/* Search Bar and Icons */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div className="relative w-full md:max-w-md">
           <input
             type="text"
@@ -430,12 +429,12 @@ const RequestSystem = () => {
           <button className="p-2 text-gray-600 hover:text-gray-800 transition-colors">
             <View1Icon />
           </button>
-          
+
           {/* View2Icon - Inactive */}
           <button className="p-2 text-gray-600 hover:text-gray-800 transition-colors ">
             <View2Icon />
           </button>
-          
+
           {/* View3Icon - Active */}
           <button className="p-2 bg-[#01373D] text-white rounded-lg">
             <View3Icon />
@@ -542,8 +541,8 @@ const RequestSystem = () => {
                           </>
                         ) : (
                           <>
-                        <RighIcon />
-                        <span>Approve Request</span>
+                            <RighIcon />
+                            <span>Approve Request</span>
                           </>
                         )}
                       </button>
@@ -598,7 +597,7 @@ const RequestSystem = () => {
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between mb-1">
                 <h2 className="text-lg font-semibold text-gray-900">Reject Request</h2>
-                
+
                 <button
                   onClick={() => setShowRejectModal(false)}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -616,7 +615,7 @@ const RequestSystem = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Reason for Rejection</label>
-                  <select 
+                  <select
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
                     className="w-full px-3 py-2 !border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00F0C3] bg-white"
@@ -669,12 +668,12 @@ const RequestSystem = () => {
                   </>
                 ) : (
                   <>
-                <div className="w-5 h-5 border border-white rounded-full flex items-center justify-center">
-                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </div>
-                <span>Confirm Rejection</span>
+                    <div className="w-5 h-5 border border-white rounded-full flex items-center justify-center">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                    <span>Confirm Rejection</span>
                   </>
                 )}
               </button>

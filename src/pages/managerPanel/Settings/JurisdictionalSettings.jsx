@@ -19,20 +19,20 @@ const SaveIcon = () => (
 
 const JusIcon = ({ className }) => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#001D21" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M3 21h18"/>
-    <path d="M5 21V7l8-4 8 4v14"/>
-    <path d="M9 10a2 2 0 1 1-4 0v11"/>
-    <path d="M19 21v-8a2 2 0 0 0-4 0v8"/>
+    <path d="M3 21h18" />
+    <path d="M5 21V7l8-4 8 4v14" />
+    <path d="M9 10a2 2 0 1 1-4 0v11" />
+    <path d="M19 21v-8a2 2 0 0 0-4 0v8" />
   </svg>
 );
 
 const JurisdictionalSettings = () => {
   // --- Configuration ---
   // Base URL for the jurisdictional settings
-  const BASE_API_URL = "http://168.231.121.7/blockchain-backend/api/syndicate/settings/jurisdictional/";
-  
+  const BASE_API_URL = "http://72.61.251.114/blockchain-backend/api/syndicate/settings/jurisdictional/";
+
   // Specific ID used for GET requests as per your curl
-  const SETTING_ID = "1"; 
+  const SETTING_ID = "1";
 
   const TEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY0MzIyMjg0LCJpYXQiOjE3NjQzMDQyODQsImp0aSI6IjkyMDRhMGY3ODhjNDRlMDQ5MWE4NjkzZWY3NzlmYTljIiwidXNlcl9pZCI6IjIifQ.6h81mnprtOjPpn2-_mkasbrXSwKwbr7wHkhEC-j6_ag";
 
@@ -90,7 +90,7 @@ const JurisdictionalSettings = () => {
 
         // Extract geographies from the response data structure you provided
         const fetchedOptions = listData.geographies || listData.available_geographies || listData.jurisdictions;
-        
+
         if (Array.isArray(fetchedOptions) && fetchedOptions.length > 0) {
           setJurisdictionOptions(fetchedOptions);
         }
@@ -138,7 +138,7 @@ const JurisdictionalSettings = () => {
 
   const handleSave = async () => {
     if (!selectedJurisdiction) return;
-    
+
     setIsSaving(true);
     setError(null);
     const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || TEST_TOKEN;
@@ -169,9 +169,9 @@ const JurisdictionalSettings = () => {
         console.error("Failed to save settings", errorData);
         // Handle specific backend error messages if available
         if (errorData.error) {
-            setError(errorData.error);
+          setError(errorData.error);
         } else {
-            setError("Failed to save settings. Please try again.");
+          setError("Failed to save settings. Please try again.");
         }
       }
     } catch (error) {
@@ -211,10 +211,10 @@ const JurisdictionalSettings = () => {
       {/* Jurisdiction selection card */}
       <div className="bg-white rounded-xl shadow-sm px-5 md:px-6 py-6 w-full border border-gray-100">
         {error && (
-            <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                {error}
-            </div>
+          <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            {error}
+          </div>
         )}
 
         <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center gap-3">
@@ -231,8 +231,8 @@ const JurisdictionalSettings = () => {
                 <option value="" disabled>Select SPV Jurisdiction</option>
                 {jurisdictionOptions.length > 0 ? (
                   jurisdictionOptions.map((jurisdiction) => (
-                    <option 
-                      key={jurisdiction.id || jurisdiction.value} 
+                    <option
+                      key={jurisdiction.id || jurisdiction.value}
                       value={jurisdiction.id || jurisdiction.value}
                     >
                       {jurisdiction.name || jurisdiction.label}
@@ -250,7 +250,7 @@ const JurisdictionalSettings = () => {
                 </svg>
               </div>
             </div>
-            
+
             {/* Question mark button tightly after select */}
             <div className="flex items-center ml-4 sm:ml-6 relative">
               <button
@@ -265,7 +265,7 @@ const JurisdictionalSettings = () => {
               {showTooltip && (
                 <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-3 px-3 py-2 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-md shadow-lg z-10 min-w-[210px] whitespace-nowrap">
                   <div className="text-xs text-center leading-tight">
-                    More jurisdiction and legal <br/>customizations coming soon
+                    More jurisdiction and legal <br />customizations coming soon
                   </div>
                   <div className="absolute left-1/2 -translate-x-1/2 -top-2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-yellow-200"></div>
                 </div>

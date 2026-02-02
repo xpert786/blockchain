@@ -24,12 +24,12 @@ const OTPVerification = () => {
     const emailFromStorage = localStorage.getItem("resetPasswordEmail");
     const userEmail = emailFromState || emailFromStorage || "";
     setEmail(userEmail);
-    
+
     if (!userEmail) {
       // If no email found, redirect back to forgot password
       navigate("/forgot-password");
     }
-  }, [location.state, navigate]); 
+  }, [location.state, navigate]);
 
   const handleInputChange = (index, value) => {
     if (value.length <= 1 && /^\d*$/.test(value)) {
@@ -55,7 +55,7 @@ const OTPVerification = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const otpCode = otp.join("");
-    
+
     if (otpCode.length !== 4) {
       setError("Please enter the complete 4-digit OTP code.");
       return;
@@ -71,7 +71,7 @@ const OTPVerification = () => {
     setError("");
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const verifyOtpUrl = `${API_URL.replace(/\/$/, "")}/auth/verify_reset_otp/`;
 
       console.log("Verifying OTP:", verifyOtpUrl);
@@ -94,7 +94,7 @@ const OTPVerification = () => {
         // Store email and OTP for password reset
         localStorage.setItem("resetPasswordEmail", email);
         localStorage.setItem("resetPasswordOtp", otpCode);
-        
+
         // Navigate to Set New Password page
         navigate("/set-new-password", {
           state: { email: email, otp: otpCode }
@@ -103,14 +103,14 @@ const OTPVerification = () => {
     } catch (err) {
       console.error("OTP verification error:", err);
       const backendData = err.response?.data;
-      
+
       if (backendData) {
         if (typeof backendData === "object") {
-          const errorMsg = backendData.error || 
-                          backendData.detail || 
-                          backendData.message ||
-                          backendData.otp?.[0] ||
-                          JSON.stringify(backendData);
+          const errorMsg = backendData.error ||
+            backendData.detail ||
+            backendData.message ||
+            backendData.otp?.[0] ||
+            JSON.stringify(backendData);
           setError(errorMsg);
         } else {
           setError(String(backendData));
@@ -118,7 +118,7 @@ const OTPVerification = () => {
       } else {
         setError(err.message || "Invalid OTP code. Please try again.");
       }
-      
+
       // Clear OTP on error
       setOtp(["", "", "", ""]);
       // Focus first input
@@ -140,7 +140,7 @@ const OTPVerification = () => {
     setError("");
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const forgotPasswordUrl = `${API_URL.replace(/\/$/, "")}/auth/forgot_password/`;
 
       const response = await axios.post(forgotPasswordUrl, {
@@ -153,26 +153,26 @@ const OTPVerification = () => {
       });
 
       console.log("Resend code response:", response.data);
-      
+
       // Clear OTP inputs
       setOtp(["", "", "", ""]);
-      
+
       // Show success message
       alert("Verification code has been resent to your email.");
-      
+
       // Focus first input
       const firstInput = document.getElementById("otp-0");
       if (firstInput) firstInput.focus();
     } catch (err) {
       console.error("Resend code error:", err);
       const backendData = err.response?.data;
-      
+
       if (backendData) {
         if (typeof backendData === "object") {
-          const errorMsg = backendData.error || 
-                          backendData.detail || 
-                          backendData.message ||
-                          JSON.stringify(backendData);
+          const errorMsg = backendData.error ||
+            backendData.detail ||
+            backendData.message ||
+            JSON.stringify(backendData);
           setError(errorMsg);
         } else {
           setError(String(backendData));
@@ -193,18 +193,18 @@ const OTPVerification = () => {
         <div className="w-full md:w-1/2 flex relative p-6 md:p-4 h-64 md:h-full">
           {/* Purple background and content layout */}
           <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col justify-between relative overflow-hidden p-8">
-            
+
             {/* Logo/Branding (Top) */}
             <img src={logo} alt="Login Logo" className="w-1/3 max-w-[150px] h-auto object-contain" />
-            
+
             {/* Main Text Content (Middle - Takes up remaining space) */}
             <div className="flex flex-col items-center justify-center flex-grow ">
-                <h1 className="text-[30px] font-semibold text-white font-poppins-custom">Invest Globally. <br />
+              <h1 className="text-[30px] font-semibold text-white font-poppins-custom">Invest Globally. <br />
                 Compliantly. Confidently.</h1>
-                <p className="text-white font-poppins-custom leading-tight mr-16 mt-2">Built for global accredited investors and <br />
+              <p className="text-white font-poppins-custom leading-tight mr-16 mt-2">Built for global accredited investors and <br />
                 syndicate leads.</p>
             </div>
-            
+
 
             {/* Image Content (Bottom - MOVED HERE) */}
             <div className="flex justify-start items-end w-full space-x-3 mt-7">
@@ -212,7 +212,7 @@ const OTPVerification = () => {
               <img src={loginimg2} alt="Login Asset 2" className="w-1/3 max-w-[50px] h-auto object-contain" />
               <img src={loginimg3} alt="Login Asset 3" className="w-1/3 max-w-[50px] h-auto object-contain" />
             </div>
-            
+
           </div>
         </div>
 

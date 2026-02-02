@@ -46,7 +46,7 @@ const ManagerLayout = () => {
 
       const role = parsedUser?.role?.toLowerCase() || "";
       console.log("ManagerLayout: User role:", role);
-      
+
       if (!role || !role.includes("syndicate")) {
         console.warn("ManagerLayout: User role does not include 'syndicate', redirecting to lead-info");
         navigate("/syndicate-creation/lead-info", { replace: true });
@@ -61,7 +61,7 @@ const ManagerLayout = () => {
 
       if (!isCompleted) {
         try {
-          const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+          const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
           const finalUrl = `${API_URL.replace(/\/$/, "")}/syndicate/step4/`;
 
           const response = await fetch(finalUrl, {
@@ -85,8 +85,8 @@ const ManagerLayout = () => {
             const data = await response.json();
             const latestStatus = normalizeStatus(
               data?.application_status ||
-                data?.profile?.application_status ||
-                data?.step_data?.application_status
+              data?.profile?.application_status ||
+              data?.step_data?.application_status
             );
 
             if (latestStatus) {
@@ -192,88 +192,88 @@ const ManagerLayout = () => {
 
   const getIcon = (iconName) => {
     const iconProps = { className: "w-5 h-5", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24" };
-    
+
     switch (iconName) {
       case "dashboard":
         return (
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M7.8125 9.10158C7.9078 9.04564 7.9868 8.96573 8.04162 8.86978C8.09645 8.77384 8.1252 8.66521 8.125 8.5547V2.9297C8.12588 2.82902 8.10241 2.72962 8.05661 2.63996C8.01081 2.5503 7.94403 2.47303 7.86195 2.41472C7.77986 2.35642 7.68491 2.31881 7.58516 2.3051C7.48542 2.29138 7.38384 2.30197 7.28906 2.33595C5.70674 2.89961 4.33727 3.93851 3.36811 5.31044C2.39895 6.68237 1.87745 8.32029 1.875 10C1.87585 10.4977 1.92029 10.9944 2.00781 11.4844C2.02659 11.5823 2.06822 11.6743 2.12931 11.7531C2.19041 11.8318 2.26923 11.895 2.35938 11.9375C2.44256 11.9767 2.53306 11.998 2.625 12C2.73491 11.9993 2.8427 11.9697 2.9375 11.9141L7.8125 9.10158ZM6.875 3.87501V8.19533L3.13281 10.3594C3.125 10.2344 3.125 10.1172 3.125 10C3.1274 8.73318 3.4786 7.49146 4.14008 6.41103C4.80157 5.33061 5.7478 4.4532 6.875 3.87501Z" fill="#00F0C3"/>
-            <path d="M17.0547 5.96875C17.0466 5.96003 17.0412 5.94919 17.0391 5.9375L17.0078 5.89844C16.2928 4.67422 15.2696 3.65862 14.0401 2.95272C12.8107 2.24682 11.4177 1.87526 10 1.875C9.83424 1.875 9.67527 1.94085 9.55805 2.05806C9.44085 2.17527 9.375 2.33424 9.375 2.5V9.64063L3.19531 13.2109C3.12328 13.2507 3.05994 13.3045 3.00901 13.3692C2.95808 13.4338 2.9206 13.508 2.89876 13.5874C2.87692 13.6667 2.87117 13.7496 2.88185 13.8312C2.89253 13.9128 2.91942 13.9914 2.96093 14.0625V14.0781L2.98437 14.1172C3.88558 15.6599 5.27016 16.8626 6.92381 17.539C8.57746 18.2154 10.408 18.328 12.132 17.8591C13.8561 17.3903 15.3775 16.3663 16.4609 14.9456C17.5443 13.5249 18.1291 11.7867 18.125 10C18.1269 8.58577 17.7578 7.19578 17.0547 5.96875Z" fill="#00F0C3"/>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.8125 9.10158C7.9078 9.04564 7.9868 8.96573 8.04162 8.86978C8.09645 8.77384 8.1252 8.66521 8.125 8.5547V2.9297C8.12588 2.82902 8.10241 2.72962 8.05661 2.63996C8.01081 2.5503 7.94403 2.47303 7.86195 2.41472C7.77986 2.35642 7.68491 2.31881 7.58516 2.3051C7.48542 2.29138 7.38384 2.30197 7.28906 2.33595C5.70674 2.89961 4.33727 3.93851 3.36811 5.31044C2.39895 6.68237 1.87745 8.32029 1.875 10C1.87585 10.4977 1.92029 10.9944 2.00781 11.4844C2.02659 11.5823 2.06822 11.6743 2.12931 11.7531C2.19041 11.8318 2.26923 11.895 2.35938 11.9375C2.44256 11.9767 2.53306 11.998 2.625 12C2.73491 11.9993 2.8427 11.9697 2.9375 11.9141L7.8125 9.10158ZM6.875 3.87501V8.19533L3.13281 10.3594C3.125 10.2344 3.125 10.1172 3.125 10C3.1274 8.73318 3.4786 7.49146 4.14008 6.41103C4.80157 5.33061 5.7478 4.4532 6.875 3.87501Z" fill="#00F0C3" />
+            <path d="M17.0547 5.96875C17.0466 5.96003 17.0412 5.94919 17.0391 5.9375L17.0078 5.89844C16.2928 4.67422 15.2696 3.65862 14.0401 2.95272C12.8107 2.24682 11.4177 1.87526 10 1.875C9.83424 1.875 9.67527 1.94085 9.55805 2.05806C9.44085 2.17527 9.375 2.33424 9.375 2.5V9.64063L3.19531 13.2109C3.12328 13.2507 3.05994 13.3045 3.00901 13.3692C2.95808 13.4338 2.9206 13.508 2.89876 13.5874C2.87692 13.6667 2.87117 13.7496 2.88185 13.8312C2.89253 13.9128 2.91942 13.9914 2.96093 14.0625V14.0781L2.98437 14.1172C3.88558 15.6599 5.27016 16.8626 6.92381 17.539C8.57746 18.2154 10.408 18.328 12.132 17.8591C13.8561 17.3903 15.3775 16.3663 16.4609 14.9456C17.5443 13.5249 18.1291 11.7867 18.125 10C18.1269 8.58577 17.7578 7.19578 17.0547 5.96875Z" fill="#00F0C3" />
           </svg>
-            
+
         );
       case "plus":
         return (
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12.9167 10H10M10 10H7.08333M10 10V7.08333M10 10V12.9167M2.5 7.83333C2.5 5.96667 2.5 5.03333 2.86333 4.32C3.18291 3.69282 3.69282 3.18291 4.32 2.86333C5.03333 2.5 5.96667 2.5 7.83333 2.5H12.1667C14.0333 2.5 14.9667 2.5 15.68 2.86333C16.3072 3.18291 16.8171 3.69282 17.1367 4.32C17.5 5.03333 17.5 5.96667 17.5 7.83333V12.1667C17.5 14.0333 17.5 14.9667 17.1367 15.68C16.8171 16.3072 16.3072 16.8171 15.68 17.1367C14.9667 17.5 14.0333 17.5 12.1667 17.5H7.83333C5.96667 17.5 5.03333 17.5 4.32 17.1367C3.69282 16.8171 3.18291 16.3072 2.86333 15.68C2.5 14.9667 2.5 14.0333 2.5 12.1667V7.83333Z" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.9167 10H10M10 10H7.08333M10 10V7.08333M10 10V12.9167M2.5 7.83333C2.5 5.96667 2.5 5.03333 2.86333 4.32C3.18291 3.69282 3.69282 3.18291 4.32 2.86333C5.03333 2.5 5.96667 2.5 7.83333 2.5H12.1667C14.0333 2.5 14.9667 2.5 15.68 2.86333C16.3072 3.18291 16.8171 3.69282 17.1367 4.32C17.5 5.03333 17.5 5.96667 17.5 7.83333V12.1667C17.5 14.0333 17.5 14.9667 17.1367 15.68C16.8171 16.3072 16.3072 16.8171 15.68 17.1367C14.9667 17.5 14.0333 17.5 12.1667 17.5H7.83333C5.96667 17.5 5.03333 17.5 4.32 17.1367C3.69282 16.8171 3.18291 16.3072 2.86333 15.68C2.5 14.9667 2.5 14.0333 2.5 12.1667V7.83333Z" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-            
+
         );
       case "document":
         return (
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <g clip-path="url(#clip0_149_119)">
-            <path d="M5 18.3337V3.33366C5 2.89163 5.17559 2.46771 5.48816 2.15515C5.80072 1.84259 6.22464 1.66699 6.66667 1.66699H13.3333C13.7754 1.66699 14.1993 1.84259 14.5118 2.15515C14.8244 2.46771 15 2.89163 15 3.33366V18.3337H5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M4.99984 10H3.33317C2.89114 10 2.46722 10.1756 2.15466 10.4882C1.8421 10.8007 1.6665 11.2246 1.6665 11.6667V16.6667C1.6665 17.1087 1.8421 17.5326 2.15466 17.8452C2.46722 18.1577 2.89114 18.3333 3.33317 18.3333H4.99984" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M15 7.5H16.6667C17.1087 7.5 17.5326 7.6756 17.8452 7.98816C18.1577 8.30072 18.3333 8.72464 18.3333 9.16667V16.6667C18.3333 17.1087 18.1577 17.5326 17.8452 17.8452C17.5326 18.1577 17.1087 18.3333 16.6667 18.3333H15" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M8.3335 5H11.6668" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M8.3335 8.33301H11.6668" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M8.3335 11.667H11.6668" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M8.3335 15H11.6668" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M5 18.3337V3.33366C5 2.89163 5.17559 2.46771 5.48816 2.15515C5.80072 1.84259 6.22464 1.66699 6.66667 1.66699H13.3333C13.7754 1.66699 14.1993 1.84259 14.5118 2.15515C14.8244 2.46771 15 2.89163 15 3.33366V18.3337H5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M4.99984 10H3.33317C2.89114 10 2.46722 10.1756 2.15466 10.4882C1.8421 10.8007 1.6665 11.2246 1.6665 11.6667V16.6667C1.6665 17.1087 1.8421 17.5326 2.15466 17.8452C2.46722 18.1577 2.89114 18.3333 3.33317 18.3333H4.99984" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M15 7.5H16.6667C17.1087 7.5 17.5326 7.6756 17.8452 7.98816C18.1577 8.30072 18.3333 8.72464 18.3333 9.16667V16.6667C18.3333 17.1087 18.1577 17.5326 17.8452 17.8452C17.5326 18.1577 17.1087 18.3333 16.6667 18.3333H15" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M8.3335 5H11.6668" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M8.3335 8.33301H11.6668" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M8.3335 11.667H11.6668" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M8.3335 15H11.6668" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
             </g>
             <defs>
-            <clipPath id="clip0_149_119">
-            <rect width="20" height="20" fill="white"/>
-            </clipPath>
+              <clipPath id="clip0_149_119">
+                <rect width="20" height="20" fill="white" />
+              </clipPath>
             </defs>
           </svg>
-            
+
         );
       case "documents":
         return (
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11.6668 1.66699V5.00033C11.6668 5.44235 11.8424 5.86628 12.155 6.17884C12.4675 6.4914 12.8915 6.66699 13.3335 6.66699H16.6668M8.3335 7.50033H6.66683M13.3335 10.8337H6.66683M13.3335 14.167H6.66683M12.5002 1.66699H5.00016C4.55814 1.66699 4.13421 1.84259 3.82165 2.15515C3.50909 2.46771 3.3335 2.89163 3.3335 3.33366V16.667C3.3335 17.109 3.50909 17.5329 3.82165 17.8455C4.13421 18.1581 4.55814 18.3337 5.00016 18.3337H15.0002C15.4422 18.3337 15.8661 18.1581 16.1787 17.8455C16.4912 17.5329 16.6668 17.109 16.6668 16.667V5.83366L12.5002 1.66699Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11.6668 1.66699V5.00033C11.6668 5.44235 11.8424 5.86628 12.155 6.17884C12.4675 6.4914 12.8915 6.66699 13.3335 6.66699H16.6668M8.3335 7.50033H6.66683M13.3335 10.8337H6.66683M13.3335 14.167H6.66683M12.5002 1.66699H5.00016C4.55814 1.66699 4.13421 1.84259 3.82165 2.15515C3.50909 2.46771 3.3335 2.89163 3.3335 3.33366V16.667C3.3335 17.109 3.50909 17.5329 3.82165 17.8455C4.13421 18.1581 4.55814 18.3337 5.00016 18.3337H15.0002C15.4422 18.3337 15.8661 18.1581 16.1787 17.8455C16.4912 17.5329 16.6668 17.109 16.6668 16.667V5.83366L12.5002 1.66699Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-            
+
         );
       case "transfers":
         return (
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1.6665 8.33366H18.3332M3.33317 4.16699H16.6665C17.587 4.16699 18.3332 4.91318 18.3332 5.83366V14.167C18.3332 15.0875 17.587 15.8337 16.6665 15.8337H3.33317C2.4127 15.8337 1.6665 15.0875 1.6665 14.167V5.83366C1.6665 4.91318 2.4127 4.16699 3.33317 4.16699Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1.6665 8.33366H18.3332M3.33317 4.16699H16.6665C17.587 4.16699 18.3332 4.91318 18.3332 5.83366V14.167C18.3332 15.0875 17.587 15.8337 16.6665 15.8337H3.33317C2.4127 15.8337 1.6665 15.0875 1.6665 14.167V5.83366C1.6665 4.91318 2.4127 4.16699 3.33317 4.16699Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-            
+
         );
       case "requests":
         return (
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M17.5 12.5C17.5 12.942 17.3244 13.366 17.0118 13.6785C16.6993 13.9911 16.2754 14.1667 15.8333 14.1667H5.83333L2.5 17.5V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H15.8333C16.2754 2.5 16.6993 2.67559 17.0118 2.98816C17.3244 3.30072 17.5 3.72464 17.5 4.16667V12.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.5 12.5C17.5 12.942 17.3244 13.366 17.0118 13.6785C16.6993 13.9911 16.2754 14.1667 15.8333 14.1667H5.83333L2.5 17.5V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H15.8333C16.2754 2.5 16.6993 2.67559 17.0118 2.98816C17.3244 3.30072 17.5 3.72464 17.5 4.16667V12.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-            
+
         );
       case "messages":
         return (
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M17.5 12.5C17.5 12.942 17.3244 13.366 17.0118 13.6785C16.6993 13.9911 16.2754 14.1667 15.8333 14.1667H5.83333L2.5 17.5V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H15.8333C16.2754 2.5 16.6993 2.67559 17.0118 2.98816C17.3244 3.30072 17.5 3.72464 17.5 4.16667V12.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.5 12.5C17.5 12.942 17.3244 13.366 17.0118 13.6785C16.6993 13.9911 16.2754 14.1667 15.8333 14.1667H5.83333L2.5 17.5V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H15.8333C16.2754 2.5 16.6993 2.67559 17.0118 2.98816C17.3244 3.30072 17.5 3.72464 17.5 4.16667V12.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-            
+
         );
       case "analytics":
         return (
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M2.5 2.5V17.5H17.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M15 14.1667V7.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10.8335 14.167V4.16699" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M6.6665 14.167V11.667" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2.5 2.5V17.5H17.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M15 14.1667V7.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M10.8335 14.167V4.16699" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M6.6665 14.167V11.667" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-            
+
         );
       case "settings":
         return (
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10.1833 1.66699H9.81667C9.37464 1.66699 8.95072 1.84259 8.63816 2.15515C8.3256 2.46771 8.15 2.89163 8.15 3.33366V3.48366C8.1497 3.77593 8.07255 4.06298 7.92628 4.31602C7.78002 4.56906 7.56978 4.77919 7.31667 4.92533L6.95834 5.13366C6.70497 5.27994 6.41756 5.35695 6.125 5.35695C5.83244 5.35695 5.54503 5.27994 5.29167 5.13366L5.16667 5.06699C4.78422 4.84638 4.32987 4.78653 3.90334 4.90058C3.47681 5.01464 3.11296 5.29327 2.89167 5.67533L2.70833 5.99199C2.48772 6.37444 2.42787 6.82879 2.54192 7.25532C2.65598 7.68185 2.93461 8.0457 3.31667 8.26699L3.44167 8.35033C3.69356 8.49575 3.90302 8.70457 4.04921 8.95602C4.1954 9.20747 4.27325 9.4928 4.275 9.78366V10.2087C4.27617 10.5023 4.19971 10.7911 4.05337 11.0457C3.90703 11.3004 3.69601 11.5118 3.44167 11.6587L3.31667 11.7337C2.93461 11.955 2.65598 12.3188 2.54192 12.7453C2.42787 13.1719 2.48772 13.6262 2.70833 14.0087L2.89167 14.3253C3.11296 14.7074 3.47681 14.986 3.90334 15.1001C4.32987 15.2141 4.78422 15.1543 5.16667 14.9337L5.29167 14.867C5.54503 14.7207 5.83244 14.6437 6.125 14.6437C6.41756 14.6437 6.70497 14.7207 6.95834 14.867L7.31667 15.0753C7.56978 15.2215 7.78002 15.4316 7.92628 15.6846C8.07255 15.9377 8.1497 16.2247 8.15 16.517V16.667C8.15 17.109 8.3256 17.5329 8.63816 17.8455C8.95072 18.1581 9.37464 18.3337 9.81667 18.3337H10.1833C10.6254 18.3337 11.0493 18.1581 11.3618 17.8455C11.6744 17.5329 11.85 17.109 11.85 16.667V16.517C11.8503 16.2247 11.9275 15.9377 12.0737 15.6846C12.22 15.4316 12.4302 15.2215 12.6833 15.0753L13.0417 14.867C13.295 14.7207 13.5824 14.6437 13.875 14.6437C14.1676 14.6437 14.455 14.7207 14.7083 14.867L14.8333 14.9337C15.2158 15.1543 15.6701 15.2141 16.0967 15.1001C16.5232 14.986 16.887 14.7074 17.1083 14.3253L17.2917 14.0003C17.5123 13.6179 17.5721 13.1635 17.4581 12.737C17.344 12.3105 17.0654 11.9466 16.6833 11.7253L16.5583 11.6587C16.304 11.5118 16.093 11.3004 15.9466 11.0457C15.8003 10.7911 15.7238 10.5023 15.725 10.2087V9.79199C15.7238 9.49831 15.8003 9.20953 15.9466 8.9549C16.093 8.70027 16.304 8.48883 16.5583 8.34199L16.6833 8.26699C17.0654 8.0457 17.344 7.68185 17.4581 7.25532C17.5721 6.82879 17.5123 6.37444 17.2917 5.99199L17.1083 5.67533C16.887 5.29327 16.5232 5.01464 16.0967 4.90058C15.6701 4.78653 15.2158 4.84638 14.8333 5.06699L14.7083 5.13366C14.455 5.27994 14.1676 5.35695 13.875 5.35695C13.5824 5.35695 13.295 5.27994 13.0417 5.13366L12.6833 4.92533C12.4302 4.77919 12.22 4.56906 12.0737 4.31602C11.9275 4.06298 11.8503 3.77593 11.85 3.48366V3.33366C11.85 2.89163 11.6744 2.46771 11.3618 2.15515C11.0493 1.84259 10.6254 1.66699 10.1833 1.66699Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10 12.5C11.3807 12.5 12.5 11.3807 12.5 10C12.5 8.61929 11.3807 7.5 10 7.5C8.61929 7.5 7.5 8.61929 7.5 10C7.5 11.3807 8.61929 12.5 10 12.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10.1833 1.66699H9.81667C9.37464 1.66699 8.95072 1.84259 8.63816 2.15515C8.3256 2.46771 8.15 2.89163 8.15 3.33366V3.48366C8.1497 3.77593 8.07255 4.06298 7.92628 4.31602C7.78002 4.56906 7.56978 4.77919 7.31667 4.92533L6.95834 5.13366C6.70497 5.27994 6.41756 5.35695 6.125 5.35695C5.83244 5.35695 5.54503 5.27994 5.29167 5.13366L5.16667 5.06699C4.78422 4.84638 4.32987 4.78653 3.90334 4.90058C3.47681 5.01464 3.11296 5.29327 2.89167 5.67533L2.70833 5.99199C2.48772 6.37444 2.42787 6.82879 2.54192 7.25532C2.65598 7.68185 2.93461 8.0457 3.31667 8.26699L3.44167 8.35033C3.69356 8.49575 3.90302 8.70457 4.04921 8.95602C4.1954 9.20747 4.27325 9.4928 4.275 9.78366V10.2087C4.27617 10.5023 4.19971 10.7911 4.05337 11.0457C3.90703 11.3004 3.69601 11.5118 3.44167 11.6587L3.31667 11.7337C2.93461 11.955 2.65598 12.3188 2.54192 12.7453C2.42787 13.1719 2.48772 13.6262 2.70833 14.0087L2.89167 14.3253C3.11296 14.7074 3.47681 14.986 3.90334 15.1001C4.32987 15.2141 4.78422 15.1543 5.16667 14.9337L5.29167 14.867C5.54503 14.7207 5.83244 14.6437 6.125 14.6437C6.41756 14.6437 6.70497 14.7207 6.95834 14.867L7.31667 15.0753C7.56978 15.2215 7.78002 15.4316 7.92628 15.6846C8.07255 15.9377 8.1497 16.2247 8.15 16.517V16.667C8.15 17.109 8.3256 17.5329 8.63816 17.8455C8.95072 18.1581 9.37464 18.3337 9.81667 18.3337H10.1833C10.6254 18.3337 11.0493 18.1581 11.3618 17.8455C11.6744 17.5329 11.85 17.109 11.85 16.667V16.517C11.8503 16.2247 11.9275 15.9377 12.0737 15.6846C12.22 15.4316 12.4302 15.2215 12.6833 15.0753L13.0417 14.867C13.295 14.7207 13.5824 14.6437 13.875 14.6437C14.1676 14.6437 14.455 14.7207 14.7083 14.867L14.8333 14.9337C15.2158 15.1543 15.6701 15.2141 16.0967 15.1001C16.5232 14.986 16.887 14.7074 17.1083 14.3253L17.2917 14.0003C17.5123 13.6179 17.5721 13.1635 17.4581 12.737C17.344 12.3105 17.0654 11.9466 16.6833 11.7253L16.5583 11.6587C16.304 11.5118 16.093 11.3004 15.9466 11.0457C15.8003 10.7911 15.7238 10.5023 15.725 10.2087V9.79199C15.7238 9.49831 15.8003 9.20953 15.9466 8.9549C16.093 8.70027 16.304 8.48883 16.5583 8.34199L16.6833 8.26699C17.0654 8.0457 17.344 7.68185 17.4581 7.25532C17.5721 6.82879 17.5123 6.37444 17.2917 5.99199L17.1083 5.67533C16.887 5.29327 16.5232 5.01464 16.0967 4.90058C15.6701 4.78653 15.2158 4.84638 14.8333 5.06699L14.7083 5.13366C14.455 5.27994 14.1676 5.35695 13.875 5.35695C13.5824 5.35695 13.295 5.27994 13.0417 5.13366L12.6833 4.92533C12.4302 4.77919 12.22 4.56906 12.0737 4.31602C11.9275 4.06298 11.8503 3.77593 11.85 3.48366V3.33366C11.85 2.89163 11.6744 2.46771 11.3618 2.15515C11.0493 1.84259 10.6254 1.66699 10.1833 1.66699Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M10 12.5C11.3807 12.5 12.5 11.3807 12.5 10C12.5 8.61929 11.3807 7.5 10 7.5C8.61929 7.5 7.5 8.61929 7.5 10C7.5 11.3807 8.61929 12.5 10 12.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-            
+
         );
       default:
         return null;
@@ -327,7 +327,7 @@ const ManagerLayout = () => {
                 try {
                   const accessToken = localStorage.getItem("accessToken");
                   const userData = localStorage.getItem("userData");
-                  
+
                   // Check if user is authenticated
                   if (!accessToken || !userData) {
                     console.warn("No access token or user data found, redirecting to login");
@@ -349,8 +349,8 @@ const ManagerLayout = () => {
                     return;
                   }
 
-                  const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-                  
+                  const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
+
                   // Get user's SPVs to check status
                   try {
                     const spvListUrl = `${API_URL.replace(/\/$/, "")}/spv/`;
@@ -428,8 +428,8 @@ const ManagerLayout = () => {
                         if (normalizedStatus === 'draft') {
                           // Status is draft - navigate to existing SPV
                           console.log("✅ Found draft SPV, loading existing:", mostRecentSpv.id);
-                          navigate("/syndicate-creation/spv-creation/step1", { 
-                            state: { spvId: mostRecentSpv.id } 
+                          navigate("/syndicate-creation/spv-creation/step1", {
+                            state: { spvId: mostRecentSpv.id }
                           });
                           return;
                         } else {
@@ -444,8 +444,8 @@ const ManagerLayout = () => {
                           const listStatus = (mostRecentSpv.status || "").toLowerCase();
                           if (listStatus === 'draft') {
                             console.log("✅ Found draft SPV in list, loading existing:", mostRecentSpv.id);
-                            navigate("/syndicate-creation/spv-creation/step1", { 
-                              state: { spvId: mostRecentSpv.id } 
+                            navigate("/syndicate-creation/spv-creation/step1", {
+                              state: { spvId: mostRecentSpv.id }
                             });
                             return;
                           }
@@ -544,9 +544,8 @@ const ManagerLayout = () => {
                   <li key={item.id}>
                     <button
                       onClick={() => handleMenuClick(item)}
-                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                        activeMenu === item.id ? "bg-[#FFFFFF1A] text-white" : "text-gray-300 hover:text-white hover:bg-gray-700"
-                      }`}
+                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeMenu === item.id ? "bg-[#FFFFFF1A] text-white" : "text-gray-300 hover:text-white hover:bg-gray-700"
+                        }`}
                     >
                       {getIcon(item.icon)}
                       <span className="font-medium">{item.name}</span>
@@ -584,9 +583,8 @@ const ManagerLayout = () => {
               <button
                 key={item.id}
                 onClick={() => handleMenuClick(item)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  activeMenu === item.id ? "bg-[#FFFFFF1A] text-white" : "text-gray-300 hover:text-white hover:bg-gray-700"
-                }`}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeMenu === item.id ? "bg-[#FFFFFF1A] text-white" : "text-gray-300 hover:text-white hover:bg-gray-700"
+                  }`}
               >
                 {getIcon(item.icon)}
                 <span className="font-medium">{item.name}</span>

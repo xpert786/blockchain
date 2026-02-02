@@ -83,7 +83,7 @@ const AccreditationOnboarding = () => {
     const file = e.target.files[0];
     if (file) {
       console.log("File selected:", file.name, "Size:", file.size, "Type:", file.type);
-      
+
       // Validate file size (max 5MB)
       const maxSize = 5 * 1024 * 1024; // 5MB in bytes
       if (file.size > maxSize) {
@@ -103,7 +103,7 @@ const AccreditationOnboarding = () => {
 
       // Clear any previous errors
       setError("");
-      
+
       // Update form data with file
       handleInputChange("proofFile", file);
       console.log("File stored in formData:", file.name);
@@ -116,11 +116,11 @@ const AccreditationOnboarding = () => {
   useEffect(() => {
     const fetchChoices = async (accessToken) => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const choicesUrl = `${API_URL.replace(/\/$/, "")}/profiles/choices/`;
-        
+
         console.log("Fetching choices from:", choicesUrl);
-        
+
         const choicesResponse = await axios.get(choicesUrl, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -128,9 +128,9 @@ const AccreditationOnboarding = () => {
             Accept: "application/json",
           },
         });
-        
+
         console.log("Choices fetched:", choicesResponse.data);
-        
+
         if (choicesResponse.data) {
           setChoices({
             investor_types: choicesResponse.data.investor_types || [],
@@ -157,7 +157,7 @@ const AccreditationOnboarding = () => {
         await fetchChoices(accessToken);
 
         // Get API URL from environment variable
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const finalUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
 
         console.log("Fetching profile data from:", finalUrl);
@@ -207,7 +207,7 @@ const AccreditationOnboarding = () => {
           // Only update form data if we have actual values from API
           // Don't overwrite with empty strings if data doesn't exist
           const updates = {};
-          
+
           // Investment Type (map from API string value to form value)
           if (profileData.investor_type !== undefined && profileData.investor_type !== null) {
             const mappedValue = mapInvestmentTypeFromAPI(profileData.investor_type);
@@ -220,21 +220,21 @@ const AccreditationOnboarding = () => {
               updates.investmentType = mappedValue;
             }
           }
-          
+
           // Full Name
           if (profileData.full_legal_name) {
             updates.fullName = profileData.full_legal_name;
           } else if (profileData.fullName) {
             updates.fullName = profileData.fullName;
           }
-          
+
           // Residence
           if (profileData.legal_place_of_residence) {
             updates.residence = profileData.legal_place_of_residence;
           } else if (profileData.residence) {
             updates.residence = profileData.residence;
           }
-          
+
           // Accreditation Method (map from API string value to form value)
           if (profileData.accreditation_method !== undefined && profileData.accreditation_method !== null) {
             const mappedValue = mapAccreditationMethodFromAPI(profileData.accreditation_method);
@@ -268,7 +268,7 @@ const AccreditationOnboarding = () => {
         console.error("Error response:", err.response);
         console.error("Error status:", err.response?.status);
         console.error("Error data:", err.response?.data);
-        
+
         // If profile doesn't exist (404), that's okay - just don't populate
         if (err.response?.status === 404) {
           console.log("Profile not found (404), starting with empty form");
@@ -313,7 +313,7 @@ const AccreditationOnboarding = () => {
       let currentProfileId = profileId;
       if (!currentProfileId) {
         // Fetch profile to get ID
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const profilesUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
         const profileResponse = await axios.get(profilesUrl, {
           headers: {
@@ -322,7 +322,7 @@ const AccreditationOnboarding = () => {
             Accept: "application/json",
           },
         });
-        
+
         if (profileResponse.data?.results?.length > 0) {
           currentProfileId = profileResponse.data.results[0].id;
           setProfileId(currentProfileId);
@@ -335,15 +335,15 @@ const AccreditationOnboarding = () => {
 
       // Prepare FormData for multipart/form-data request
       const formDataToSend = new FormData();
-      
+
       // Map form values to API format
       // is_accredited_investor: true if accreditation is not "not-accredited"
       const isAccredited = formData.accreditation && formData.accreditation !== "not-accredited";
       formDataToSend.append("is_accredited_investor", String(isAccredited));
-      
+
       // meets_local_investment_thresholds: true (can be based on residence or always true)
       formDataToSend.append("meets_local_investment_thresholds", "true");
-      
+
       // investor_type: map form value to API string value
       if (formData.investmentType) {
         const investorTypeValue = mapInvestmentTypeToAPI(formData.investmentType);
@@ -351,17 +351,17 @@ const AccreditationOnboarding = () => {
           formDataToSend.append("investor_type", investorTypeValue);
         }
       }
-      
+
       // full_legal_name
       if (formData.fullName) {
         formDataToSend.append("full_legal_name", formData.fullName.trim());
       }
-      
+
       // legal_place_of_residence
       if (formData.residence) {
         formDataToSend.append("legal_place_of_residence", formData.residence);
       }
-      
+
       // accreditation_method: map form value to API string value
       if (formData.accreditation) {
         const accreditationMethodValue = mapAccreditationMethodToAPI(formData.accreditation);
@@ -369,7 +369,7 @@ const AccreditationOnboarding = () => {
           formDataToSend.append("accreditation_method", accreditationMethodValue);
         }
       }
-      
+
       // Only append file if a new one is selected
       if (formData.proofFile) {
         console.log("File to upload:", formData.proofFile.name, "Size:", formData.proofFile.size, "Type:", formData.proofFile.type);
@@ -387,7 +387,7 @@ const AccreditationOnboarding = () => {
       }
 
       // Get API URL from environment variable
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const finalUrl = `${API_URL.replace(/\/$/, "")}/profiles/${currentProfileId}/update_step4/`;
 
       console.log("Sending accreditation data to:", finalUrl);
@@ -416,10 +416,10 @@ const AccreditationOnboarding = () => {
         if (typeof backendData === "object") {
           // Check if error is about proof of income/net worth being required
           const errorMessage = backendData.non_field_errors?.[0] || "";
-          const isProofRequiredError = typeof errorMessage === "string" && 
-            errorMessage.toLowerCase().includes("proof") && 
+          const isProofRequiredError = typeof errorMessage === "string" &&
+            errorMessage.toLowerCase().includes("proof") &&
             errorMessage.toLowerCase().includes("required");
-          
+
           // If error is about proof being required but we have an existing file, show a helpful message
           // The backend requires the file field in the request, so user needs to re-upload
           if (isProofRequiredError && existingProofFile) {
@@ -432,7 +432,7 @@ const AccreditationOnboarding = () => {
             // For now, we suppress the error so it doesn't confuse the user
             return;
           }
-          
+
           // Handle specific field errors
           if (backendData.non_field_errors) {
             setError(backendData.non_field_errors[0]);
@@ -472,7 +472,7 @@ const AccreditationOnboarding = () => {
 
       let currentProfileId = profileId;
       if (!currentProfileId) {
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const profilesUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
         const profileResponse = await axios.get(profilesUrl, {
           headers: {
@@ -481,7 +481,7 @@ const AccreditationOnboarding = () => {
             Accept: "application/json",
           },
         });
-        
+
         if (profileResponse.data?.results?.length > 0) {
           currentProfileId = profileResponse.data.results[0].id;
         }
@@ -507,7 +507,7 @@ const AccreditationOnboarding = () => {
           formDataToSend.append("legal_place_of_residence", formData.residence);
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const finalUrl = `${API_URL.replace(/\/$/, "")}/profiles/${currentProfileId}/update_step4/`;
 
         await axios.patch(finalUrl, formDataToSend, {
@@ -609,9 +609,8 @@ const AccreditationOnboarding = () => {
                 <button
                   key={step}
                   type="button"
-                  className={`w-full rounded-lg px-4 py-3 transition-colors flex items-center gap-2 font-poppins-custom ${
-                    isActive ? "bg-[#FFFFFF] text-[#001D21]" : "text-[#001D21] hover:bg-[#ffffff]/70"
-                  }`}
+                  className={`w-full rounded-lg px-4 py-3 transition-colors flex items-center gap-2 font-poppins-custom ${isActive ? "bg-[#FFFFFF] text-[#001D21]" : "text-[#001D21] hover:bg-[#ffffff]/70"
+                    }`}
                   onClick={() => handleStepClick(step)}
                 >
                   {isCompleted && (
@@ -632,7 +631,7 @@ const AccreditationOnboarding = () => {
           <div className="px-2 sm:px-6 lg:px-10 mx-auto">
             {/* Title */}
             <h1 className="text-3xl text-[#0A2A2E] mb-2 font-poppins-custom">Step 4: Accreditation</h1>
-            
+
             {/* Subtitle */}
             <p className="text-sm text-[#748A91] mb-8 font-poppins-custom">
               Depending on your country, we may need to verify your investor accreditation status.
@@ -768,7 +767,7 @@ const AccreditationOnboarding = () => {
                       onChange={(e) => handleInputChange("accreditation", e.target.value)}
                       className="w-4 h-4 accent-black border-gray-300"
                     />
-                        <span className="ml-3 text-[#748A91] font-poppins-custom">I have between $1M and $2.2M in assets</span>
+                    <span className="ml-3 text-[#748A91] font-poppins-custom">I have between $1M and $2.2M in assets</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -816,20 +815,19 @@ const AccreditationOnboarding = () => {
                   <label className="block text-base font-medium text-[#0A2A2E] mb-2 font-poppins-custom">
                     Upload Proof of Income/Net Worth <span className="text-red-500">*</span>
                   </label>
-                  <div 
-                    className={`border-2 rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                      formData.proofFile 
-                        ? "bg-green-50 border-green-400" 
+                  <div
+                    className={`border-2 rounded-lg p-8 text-center cursor-pointer transition-colors ${formData.proofFile
+                        ? "bg-green-50 border-green-400"
                         : existingProofFile
-                        ? "bg-blue-50 border-blue-400"
-                        : "bg-[#F4F6F5] hover:border-[#9889FF]"
-                    }`}
-                    style={{ 
-                      border: formData.proofFile 
-                        ? "2px solid #10B981" 
+                          ? "bg-blue-50 border-blue-400"
+                          : "bg-[#F4F6F5] hover:border-[#9889FF]"
+                      }`}
+                    style={{
+                      border: formData.proofFile
+                        ? "2px solid #10B981"
                         : existingProofFile
-                        ? "2px solid #3B82F6"
-                        : "0.5px solid #0A2A2E" 
+                          ? "2px solid #3B82F6"
+                          : "0.5px solid #0A2A2E"
                     }}
                   >
                     <input
@@ -843,19 +841,19 @@ const AccreditationOnboarding = () => {
                       <div className="mb-4 flex justify-center">
                         {formData.proofFile ? (
                           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="12" cy="12" r="10" stroke="#10B981" strokeWidth="2" fill="none"/>
-                            <path d="M8 12L11 15L16 9" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <circle cx="12" cy="12" r="10" stroke="#10B981" strokeWidth="2" fill="none" />
+                            <path d="M8 12L11 15L16 9" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         ) : existingProofFile ? (
                           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M9 12L11 14L15 10" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#3B82F6" strokeWidth="2"/>
+                            <path d="M9 12L11 14L15 10" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#3B82F6" strokeWidth="2" />
                           </svg>
                         ) : (
                           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M17 8L12 3L7 8" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            <path d="M12 3V15" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M17 8L12 3L7 8" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M12 3V15" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         )}
                       </div>
@@ -880,14 +878,14 @@ const AccreditationOnboarding = () => {
                             ✓ Proof of Income/Net Worth Already Uploaded
                           </p>
                           <p className="text-[#0A2A2E] font-poppins-custom mb-2 font-medium">
-                            {typeof existingProofFile === 'string' && existingProofFile.includes('/') 
-                              ? existingProofFile.split('/').pop() 
+                            {typeof existingProofFile === 'string' && existingProofFile.includes('/')
+                              ? existingProofFile.split('/').pop()
                               : 'Proof of Income/Net Worth File'}
                           </p>
                           {typeof existingProofFile === 'string' && (existingProofFile.startsWith('http://') || existingProofFile.startsWith('https://')) && (
-                            <a 
-                              href={existingProofFile} 
-                              target="_blank" 
+                            <a
+                              href={existingProofFile}
+                              target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-600 hover:text-blue-800 underline text-sm font-poppins-custom mb-2 inline-block"
                               onClick={(e) => e.stopPropagation()}
@@ -947,9 +945,8 @@ const AccreditationOnboarding = () => {
 
       {/* Mobile Sidebar Drawer */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-full transform bg-white transition-transform duration-300 ease-in-out lg:hidden ${
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-full transform bg-white transition-transform duration-300 ease-in-out lg:hidden ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
           <h4 className="text-lg font-semibold text-[#01373D]">Onboarding Steps</h4>
@@ -974,9 +971,8 @@ const AccreditationOnboarding = () => {
                 key={step}
                 type="button"
                 onClick={() => handleStepClick(step)}
-                className={`w-full text-left rounded-lg px-4 py-3 transition-colors flex items-center gap-2 font-poppins-custom ${
-                  isActive ? "bg-[#00F0C3]/20 text-[#001D21]" : "text-[#001D21] hover:bg-[#F4F6F5]"
-                }`}
+                className={`w-full text-left rounded-lg px-4 py-3 transition-colors flex items-center gap-2 font-poppins-custom ${isActive ? "bg-[#00F0C3]/20 text-[#001D21]" : "text-[#001D21] hover:bg-[#F4F6F5]"
+                  }`}
               >
                 {isCompleted && (
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

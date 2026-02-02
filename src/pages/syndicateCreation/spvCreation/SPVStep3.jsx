@@ -35,8 +35,8 @@ const SPVStep3 = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-        
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
+
         let step3Data = null;
         let currentSpvId = null;
 
@@ -76,7 +76,7 @@ const SPVStep3 = () => {
         // Try to get step3 data with SPV ID or default to 1
         const testSpvId = currentSpvId || 1;
         const step3Url = `${API_URL.replace(/\/$/, "")}/spv/${testSpvId}/update_step3/`;
-        
+
         try {
           console.log("🔍 Fetching step3 data from:", step3Url);
           const step3Response = await axios.get(step3Url, {
@@ -118,7 +118,7 @@ const SPVStep3 = () => {
         // If we got step3 data, populate the form
         if (step3Data) {
           const responseData = step3Data.step_data || step3Data.data || step3Data;
-          
+
           console.log("✅ Step3 data found:", responseData);
           console.log("📋 Raw step3 response:", step3Data);
 
@@ -199,11 +199,11 @@ const SPVStep3 = () => {
         throw new Error("No access token found. Please login again.");
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
 
       // Get SPV ID from state, localStorage, or fetch it
       let currentSpvId = spvId || localStorage.getItem("currentSpvId");
-      
+
       // Parse if it's a string from localStorage
       if (currentSpvId && typeof currentSpvId === 'string' && !isNaN(currentSpvId)) {
         currentSpvId = parseInt(currentSpvId, 10);
@@ -292,7 +292,7 @@ const SPVStep3 = () => {
       // Prepare data for API
       // Always send adviser_entity (it has a default value)
       const dataToSend = {};
-      
+
       // Adviser entity - always send (has default)
       if (formData.adviserEntity) {
         const mappedAdviser = adviserEntityMap[formData.adviserEntity] || formData.adviserEntity;
@@ -302,14 +302,14 @@ const SPVStep3 = () => {
       }
 
       // Master partnership entity - only send if valid ID
-      const masterPartnershipValue = formData.masterPartnershipEntityId || 
+      const masterPartnershipValue = formData.masterPartnershipEntityId ||
         (formData.masterPartnershipEntity ? masterPartnershipStringToId(formData.masterPartnershipEntity) : null);
       if (masterPartnershipValue !== null && masterPartnershipValue !== undefined) {
         dataToSend.master_partnership_entity = masterPartnershipValue;
       }
 
       // Fund lead - only send if valid ID
-      const fundLeadValue = formData.fundLeadId || 
+      const fundLeadValue = formData.fundLeadId ||
         (formData.fundLead ? fundLeadStringToId(formData.fundLead) : null);
       if (fundLeadValue !== null && fundLeadValue !== undefined) {
         dataToSend.fund_lead = fundLeadValue;
@@ -352,7 +352,7 @@ const SPVStep3 = () => {
         console.log("📋 POST response:", response);
         console.log("📋 POST response status:", response.status);
         console.log("📋 POST response data:", response.data);
-        
+
         if (response?.data?.id || response?.data?.spv_id) {
           const newSpvId = response.data.id || response.data.spv_id;
           setSpvId(newSpvId);
@@ -374,14 +374,14 @@ const SPVStep3 = () => {
       console.error("Error response:", err.response);
       console.error("Error status:", err.response?.status);
       console.error("Error data:", err.response?.data);
-      
+
       const backendData = err.response?.data;
-      
+
       if (backendData) {
         if (typeof backendData === "object") {
           // Handle specific field errors
           let errorMessages = [];
-          
+
           // Check for field errors
           Object.keys(backendData).forEach(key => {
             if (Array.isArray(backendData[key])) {
@@ -403,7 +403,7 @@ const SPVStep3 = () => {
               errorMessages.push(`${key}: ${backendData[key]}`);
             }
           });
-          
+
           if (errorMessages.length > 0) {
             setError(errorMessages.join(" "));
           } else {
@@ -455,11 +455,10 @@ const SPVStep3 = () => {
           <h2 className="text-lg font-medium text-gray-800 mb-4">Adviser Entity</h2>
           <div className="flex flex-col sm:flex-row sm:space-x-4 gap-4">
             <div
-              className={`flex-1 border rounded-lg p-4 cursor-pointer ${
-                formData.adviserEntity === "Platform Advisers LLC"
+              className={`flex-1 border rounded-lg p-4 cursor-pointer ${formData.adviserEntity === "Platform Advisers LLC"
                   ? "border-blue-500 ring-1 ring-blue-500"
                   : "border-gray-300 hover:border-gray-400"
-              }`}
+                }`}
               onClick={() => handleInputChange("adviserEntity", "Platform Advisers LLC")}
             >
               <div className="flex items-center justify-between">
@@ -479,11 +478,10 @@ const SPVStep3 = () => {
             </div>
 
             <div
-              className={`flex-1 border rounded-lg p-4 cursor-pointer ${
-                formData.adviserEntity === "Self-Advised Entity"
+              className={`flex-1 border rounded-lg p-4 cursor-pointer ${formData.adviserEntity === "Self-Advised Entity"
                   ? "border-blue-500 ring-1 ring-blue-500"
                   : "border-gray-300 hover:border-gray-400"
-              }`}
+                }`}
               onClick={() => handleInputChange("adviserEntity", "Self-Advised Entity")}
             >
               <div className="flex items-center justify-between">
@@ -522,7 +520,7 @@ const SPVStep3 = () => {
 
         {/* Fund Lead */}
         <div>
-                <h2 className="text-lg font-medium text-gray-800 mb-2">Fund Lead</h2>
+          <h2 className="text-lg font-medium text-gray-800 mb-2">Fund Lead</h2>
           <p className="text-sm text-gray-600 mb-4">This person will be designated in fund documentation</p>
           <select
             value={formData.fundLead}
@@ -563,10 +561,10 @@ const SPVStep3 = () => {
             </>
           ) : (
             <>
-          Next
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+              Next
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </>
           )}
         </button>

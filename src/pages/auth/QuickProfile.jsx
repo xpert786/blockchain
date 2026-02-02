@@ -11,12 +11,12 @@ import loginimg3 from "/src/assets/img/loginimg3.svg";
 
 const QuickProfile = () => {
   const navigate = useNavigate();
-  
+
   // Check user role on mount - redirect syndicate users
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData") || "{}");
     const userRole = (userData?.role || "").toLowerCase();
-    
+
     if (userRole === "syndicate" || userRole.includes("syndicate")) {
       // Syndicate users should not see quick profile - redirect to syndicate creation
       console.log("Syndicate user detected, redirecting to syndicate creation");
@@ -24,7 +24,7 @@ const QuickProfile = () => {
       return;
     }
   }, [navigate]);
-  
+
   const [formData, setFormData] = useState({
     country: "",
     taxResidency: "",
@@ -152,7 +152,7 @@ const QuickProfile = () => {
 
     setSaving(true);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const finalUrl = `${API_URL.replace(/\/$/, "")}/profile/quick-setup/`;
       const token = localStorage.getItem("accessToken");
       const payload = {
@@ -180,7 +180,7 @@ const QuickProfile = () => {
     }
   };
 
-  
+
 
   const taxResidencies = [...countries, "Other"];
 
@@ -199,18 +199,18 @@ const QuickProfile = () => {
         <div className="w-full md:w-1/2 flex relative p-6 md:p-4 h-64 md:h-full overflow-hidden">
           {/* Purple background and content layout */}
           <div className="bg-[#CEC6FF] w-full h-full rounded-2xl flex flex-col justify-between relative overflow-hidden p-8">
-            
+
             {/* Logo/Branding (Top) */}
             <img src={logo} alt="Login Logo" className="w-1/3 max-w-[150px] h-auto object-contain" />
-            
+
             {/* Main Text Content (Middle - Takes up remaining space) */}
             <div className="flex flex-col items-center justify-center flex-grow ">
-                <h1 className="text-[30px] font-semibold text-white font-poppins-custom">Invest Globally. <br />
+              <h1 className="text-[30px] font-semibold text-white font-poppins-custom">Invest Globally. <br />
                 Compliantly. Confidently.</h1>
-                <p className="text-white font-poppins-custom leading-tight mr-16 mt-2">Built for global accredited investors and <br />
+              <p className="text-white font-poppins-custom leading-tight mr-16 mt-2">Built for global accredited investors and <br />
                 syndicate leads.</p>
             </div>
-            
+
 
             {/* Image Content (Bottom - MOVED HERE) */}
             <div className="flex justify-start items-end w-full space-x-3 mt-7">
@@ -218,7 +218,7 @@ const QuickProfile = () => {
               <img src={loginimg2} alt="Login Asset 2" className="w-1/3 max-w-[50px] h-auto object-contain" />
               <img src={loginimg3} alt="Login Asset 3" className="w-1/3 max-w-[50px] h-auto object-contain" />
             </div>
-            
+
           </div>
         </div>
 
@@ -229,7 +229,7 @@ const QuickProfile = () => {
               <h1 className="text-3xl text-[#001D21] font-medium mb-2">Quick Profile Setup</h1>
               <p className="text-[#6B8A8D] font-poppins-custom text-sm">Tell us about yourself.</p>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="space-y-6 pb-40">
               {/* Country of Residence */}
               <div className="relative">
@@ -243,9 +243,9 @@ const QuickProfile = () => {
                     className="w-full px-4 py-3 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg outline-none text-[#0A2A2E] font-poppins-custom cursor-pointer flex items-center justify-between"
                   >
                     <span>{formData.country || (loadingCountries ? 'Detecting country...' : "Enter your Country")}</span>
-                    <svg 
+                    <svg
                       className={`w-4 h-4 transition-transform ${openDropdown === 'country' ? 'rotate-180' : ''}`}
-                      fill="#0A2A2E" 
+                      fill="#0A2A2E"
                       viewBox="0 0 20 20"
                     >
                       <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -260,11 +260,10 @@ const QuickProfile = () => {
                           key={country}
                           type="button"
                           onClick={() => handleCountrySelect(country)}
-                          className={`w-full px-4 py-3 text-left font-poppins-custom transition-colors whitespace-normal ${
-                            formData.country === country
+                          className={`w-full px-4 py-3 text-left font-poppins-custom transition-colors whitespace-normal ${formData.country === country
                               ? 'bg-[#001D21] text-white font-medium'
                               : 'bg-white text-[#0A2A2E] hover:bg-[#F4F6F5]'
-                          } ${index !== countries.length - 1 ? 'border-b border-[#E0E0E0]' : ''}`}
+                            } ${index !== countries.length - 1 ? 'border-b border-[#E0E0E0]' : ''}`}
                         >
                           {country}
                         </button>
@@ -286,9 +285,9 @@ const QuickProfile = () => {
                     className="w-full px-4 py-3 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg outline-none text-[#0A2A2E] font-poppins-custom cursor-pointer flex items-center justify-between"
                   >
                     <span>{formData.taxResidency || "Tax Residency"}</span>
-                    <svg 
+                    <svg
                       className={`w-4 h-4 transition-transform ${openDropdown === 'taxResidency' ? 'rotate-180' : ''}`}
-                      fill="#0A2A2E" 
+                      fill="#0A2A2E"
                       viewBox="0 0 20 20"
                     >
                       <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -303,11 +302,10 @@ const QuickProfile = () => {
                           key={residency}
                           type="button"
                           onClick={() => handleTaxResidencySelect(residency)}
-                          className={`w-full px-4 py-3 text-left font-poppins-custom transition-colors whitespace-normal ${
-                            formData.taxResidency === residency
+                          className={`w-full px-4 py-3 text-left font-poppins-custom transition-colors whitespace-normal ${formData.taxResidency === residency
                               ? 'bg-[#001D21] text-white font-medium'
                               : 'bg-white text-[#0A2A2E] hover:bg-[#F4F6F5]'
-                          } ${index !== taxResidencies.length - 1 ? 'border-b border-[#E0E0E0]' : ''}`}
+                            } ${index !== taxResidencies.length - 1 ? 'border-b border-[#E0E0E0]' : ''}`}
                         >
                           {residency}
                         </button>
@@ -329,9 +327,9 @@ const QuickProfile = () => {
                     className="w-full px-4 py-3 border border-[#0A2A2E] bg-[#F4F6F5] rounded-lg outline-none text-black font-poppins-custom appearance-none cursor-pointer flex items-center justify-between"
                   >
                     <span>{investorCategories.find((c) => c.value === formData.investorCategory)?.label || 'Select Category'}</span>
-                    <svg 
+                    <svg
                       className={`w-4 h-4 transition-transform ${openDropdown === 'category' ? 'rotate-180' : ''}`}
-                      fill="black" 
+                      fill="black"
                       viewBox="0 0 20 20"
                     >
                       <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -346,11 +344,10 @@ const QuickProfile = () => {
                           key={category.value}
                           type="button"
                           onClick={() => handleCategorySelect(category.value)}
-                          className={`w-full px-4 py-3 text-left font-poppins-custom transition-colors whitespace-normal ${
-                            formData.investorCategory === category.value
+                          className={`w-full px-4 py-3 text-left font-poppins-custom transition-colors whitespace-normal ${formData.investorCategory === category.value
                               ? 'bg-[#001D21] text-white font-medium'
                               : 'bg-white text-[#0A2A2E] hover:bg-[#F4F6F5]'
-                          } ${index !== investorCategories.length - 1 ? 'border-b border-[#E0E0E0]' : ''}`}
+                            } ${index !== investorCategories.length - 1 ? 'border-b border-[#E0E0E0]' : ''}`}
                         >
                           {category.label}
                         </button>
@@ -376,11 +373,10 @@ const QuickProfile = () => {
               <button
                 type="submit"
                 disabled={showComplianceAlert || saving}
-                className={`w-full py-3 px-4 rounded-lg font-semibold font-poppins-custom transition-colors duration-200 cursor-pointer ${
-                  showComplianceAlert
+                className={`w-full py-3 px-4 rounded-lg font-semibold font-poppins-custom transition-colors duration-200 cursor-pointer ${showComplianceAlert
                     ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                     : "bg-[#00866B] text-white hover:bg-[#006B54]"
-                }`}
+                  }`}
               >
                 {saving ? 'Saving...' : 'Continue'}
               </button>

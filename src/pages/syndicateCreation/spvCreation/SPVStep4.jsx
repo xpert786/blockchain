@@ -40,8 +40,8 @@ const SPVStep4 = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-        
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
+
         let step4Data = null;
         let currentSpvId = null;
 
@@ -81,7 +81,7 @@ const SPVStep4 = () => {
         // Try to get step4 data with SPV ID or default to 1
         const testSpvId = currentSpvId || 1;
         const step4Url = `${API_URL.replace(/\/$/, "")}/spv/${testSpvId}/update_step4/`;
-        
+
         try {
           console.log("🔍 Fetching step4 data from:", step4Url);
           const step4Response = await axios.get(step4Url, {
@@ -123,7 +123,7 @@ const SPVStep4 = () => {
         // If we got step4 data, populate the form
         if (step4Data) {
           const responseData = step4Data.step_data || step4Data.data || step4Data;
-          
+
           console.log("✅ Step4 data found:", responseData);
           console.log("📋 Raw step4 response:", step4Data);
 
@@ -231,11 +231,11 @@ const SPVStep4 = () => {
         throw new Error("No access token found. Please login again.");
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
 
       // Get SPV ID from state, localStorage, or fetch it
       let currentSpvId = spvId || localStorage.getItem("currentSpvId");
-      
+
       // Parse if it's a string from localStorage
       if (currentSpvId && typeof currentSpvId === 'string' && !isNaN(currentSpvId)) {
         currentSpvId = parseInt(currentSpvId, 10);
@@ -321,13 +321,13 @@ const SPVStep4 = () => {
 
       // Jurisdiction - capitalize first letter
       if (formData.jurisdiction) {
-        dataToSend.jurisdiction = jurisdictionMap[formData.jurisdiction] || 
+        dataToSend.jurisdiction = jurisdictionMap[formData.jurisdiction] ||
           formData.jurisdiction.charAt(0).toUpperCase() + formData.jurisdiction.slice(1).toLowerCase();
       }
 
       // Entity type - uppercase
       if (formData.entityType) {
-        dataToSend.entity_type = entityTypeMap[formData.entityType] || 
+        dataToSend.entity_type = entityTypeMap[formData.entityType] ||
           formData.entityType.toUpperCase();
       }
 
@@ -417,7 +417,7 @@ const SPVStep4 = () => {
         console.log("📋 POST response:", response);
         console.log("📋 POST response status:", response.status);
         console.log("📋 POST response data:", response.data);
-        
+
         if (response?.data?.id || response?.data?.spv_id) {
           const newSpvId = response.data.id || response.data.spv_id;
           setSpvId(newSpvId);
@@ -429,7 +429,7 @@ const SPVStep4 = () => {
       // Navigate to next step on success
       if (response && response.status >= 200 && response.status < 300) {
         console.log("✅ Success! Navigating to step5");
-    navigate("/syndicate-creation/spv-creation/step5");
+        navigate("/syndicate-creation/spv-creation/step5");
       } else {
         console.log("⚠️ Unexpected response status:", response?.status);
         setError("Unexpected response from server. Please try again.");
@@ -439,14 +439,14 @@ const SPVStep4 = () => {
       console.error("Error response:", err.response);
       console.error("Error status:", err.response?.status);
       console.error("Error data:", err.response?.data);
-      
+
       const backendData = err.response?.data;
-      
+
       if (backendData) {
         if (typeof backendData === "object") {
           // Handle specific field errors
           let errorMessages = [];
-          
+
           // Check for field errors
           Object.keys(backendData).forEach(key => {
             if (Array.isArray(backendData[key])) {
@@ -462,7 +462,7 @@ const SPVStep4 = () => {
               errorMessages.push(`${key}: ${backendData[key]}`);
             }
           });
-          
+
           if (errorMessages.length > 0) {
             setError(errorMessages.join(" "));
           } else {
@@ -656,21 +656,20 @@ const SPVStep4 = () => {
 
         {/* Access Mode */}
         <div>
-            <label className="block text-lg font-medium text-gray-800 mb-4">Access Mode</label>
+          <label className="block text-lg font-medium text-gray-800 mb-4">Access Mode</label>
           <div className="flex flex-col sm:flex-row sm:space-x-4 gap-4">
             <div
-              className={`flex-1 border rounded-lg p-4 cursor-pointer ${
-                formData.accessMode === "private"
+              className={`flex-1 border rounded-lg p-4 cursor-pointer ${formData.accessMode === "private"
                   ? "border-blue-500 ring-1 ring-blue-500"
                   : "border-gray-300 hover:border-gray-400"
-              }`}
+                }`}
               onClick={() => handleInputChange("accessMode", "private")}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M7.41 7.41C7.18894 7.61599 7.01163 7.86439 6.88866 8.14039C6.76568 8.41638 6.69955 8.71432 6.69422 9.01643C6.68889 9.31854 6.74447 9.61863 6.85763 9.89879C6.97079 10.179 7.13923 10.4335 7.35288 10.6471C7.56654 10.8608 7.82104 11.0292 8.10121 11.1424C8.38137 11.2555 8.68146 11.3111 8.98357 11.3058C9.28568 11.3004 9.58362 11.2343 9.85961 11.1113C10.1356 10.9884 10.384 10.8111 10.59 10.59M8.0475 3.81C8.36348 3.77063 8.68157 3.75059 9 3.75C14.25 3.75 16.5 9 16.5 9C16.1647 9.71784 15.7442 10.3927 15.2475 11.01M4.9575 4.9575C3.46594 5.97347 2.2724 7.36894 1.5 9C1.5 9 3.75 14.25 9 14.25C10.4369 14.2539 11.8431 13.8338 13.0425 13.0425M1.5 1.5L16.5 16.5" stroke="#01373D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7.41 7.41C7.18894 7.61599 7.01163 7.86439 6.88866 8.14039C6.76568 8.41638 6.69955 8.71432 6.69422 9.01643C6.68889 9.31854 6.74447 9.61863 6.85763 9.89879C6.97079 10.179 7.13923 10.4335 7.35288 10.6471C7.56654 10.8608 7.82104 11.0292 8.10121 11.1424C8.38137 11.2555 8.68146 11.3111 8.98357 11.3058C9.28568 11.3004 9.58362 11.2343 9.85961 11.1113C10.1356 10.9884 10.384 10.8111 10.59 10.59M8.0475 3.81C8.36348 3.77063 8.68157 3.75059 9 3.75C14.25 3.75 16.5 9 16.5 9C16.1647 9.71784 15.7442 10.3927 15.2475 11.01M4.9575 4.9575C3.46594 5.97347 2.2724 7.36894 1.5 9C1.5 9 3.75 14.25 9 14.25C10.4369 14.2539 11.8431 13.8338 13.0425 13.0425M1.5 1.5L16.5 16.5" stroke="#01373D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
 
                   <div>
                     <p className="font-medium text-gray-900">Private</p>
@@ -689,19 +688,18 @@ const SPVStep4 = () => {
             </div>
 
             <div
-              className={`flex-1 border rounded-lg p-4 cursor-pointer ${
-                formData.accessMode === "public"
+              className={`flex-1 border rounded-lg p-4 cursor-pointer ${formData.accessMode === "public"
                   ? "border-blue-500 ring-1 ring-blue-500"
                   : "border-gray-300 hover:border-gray-400"
-              }`}
+                }`}
               onClick={() => handleInputChange("accessMode", "public")}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1.5 9C1.5 9 3.75 3.75 9 3.75C14.25 3.75 16.5 9 16.5 9C16.5 9 14.25 14.25 9 14.25C3.75 14.25 1.5 9 1.5 9Z" stroke="#01373D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M9 11.25C10.2426 11.25 11.25 10.2426 11.25 9C11.25 7.75736 10.2426 6.75 9 6.75C7.75736 6.75 6.75 7.75736 6.75 9C6.75 10.2426 7.75736 11.25 9 11.25Z" stroke="#01373D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1.5 9C1.5 9 3.75 3.75 9 3.75C14.25 3.75 16.5 9 16.5 9C16.5 9 14.25 14.25 9 14.25C3.75 14.25 1.5 9 1.5 9Z" stroke="#01373D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M9 11.25C10.2426 11.25 11.25 10.2426 11.25 9C11.25 7.75736 10.2426 6.75 9 6.75C7.75736 6.75 6.75 7.75736 6.75 9C6.75 10.2426 7.75736 11.25 9 11.25Z" stroke="#01373D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
 
                   <div>
                     <p className="font-medium text-gray-900">Visible to all</p>

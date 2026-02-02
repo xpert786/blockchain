@@ -4,16 +4,16 @@ import axios from "axios";
 
 const ShareIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M15 10.8333C15.9205 10.8333 16.6667 10.0872 16.6667 9.16667C16.6667 8.24619 15.9205 7.5 15 7.5C14.0795 7.5 13.3333 8.24619 13.3333 9.16667C13.3333 10.0872 14.0795 10.8333 15 10.8333Z" stroke="#748A91" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M5 7.5C5.92047 7.5 6.66667 6.75381 6.66667 5.83333C6.66667 4.91286 5.92047 4.16667 5 4.16667C4.07953 4.16667 3.33333 4.91286 3.33333 5.83333C3.33333 6.75381 4.07953 7.5 5 7.5Z" stroke="#748A91" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M5 15.8333C5.92047 15.8333 6.66667 15.0871 6.66667 14.1667C6.66667 13.2462 5.92047 12.5 5 12.5C4.07953 12.5 3.33333 13.2462 3.33333 14.1667C3.33333 15.0871 4.07953 15.8333 5 15.8333Z" stroke="#748A91" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M7.08333 6.04167L12.9167 8.125M7.08333 13.4583L12.9167 11.375" stroke="#748A91" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M15 10.8333C15.9205 10.8333 16.6667 10.0872 16.6667 9.16667C16.6667 8.24619 15.9205 7.5 15 7.5C14.0795 7.5 13.3333 8.24619 13.3333 9.16667C13.3333 10.0872 14.0795 10.8333 15 10.8333Z" stroke="#748A91" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M5 7.5C5.92047 7.5 6.66667 6.75381 6.66667 5.83333C6.66667 4.91286 5.92047 4.16667 5 4.16667C4.07953 4.16667 3.33333 4.91286 3.33333 5.83333C3.33333 6.75381 4.07953 7.5 5 7.5Z" stroke="#748A91" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M5 15.8333C5.92047 15.8333 6.66667 15.0871 6.66667 14.1667C6.66667 13.2462 5.92047 12.5 5 12.5C4.07953 12.5 3.33333 13.2462 3.33333 14.1667C3.33333 15.0871 4.07953 15.8333 5 15.8333Z" stroke="#748A91" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M7.08333 6.04167L12.9167 8.125M7.08333 13.4583L12.9167 11.375" stroke="#748A91" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 const SendIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="#00F0C3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="#00F0C3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -31,7 +31,7 @@ const formatTime = (dateString) => {
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
-  
+
   return date.toLocaleDateString();
 };
 
@@ -85,13 +85,13 @@ const Messages = () => {
 
   // Get API URL
   const getApiUrl = () => {
-    const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+    const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
     return `${API_URL.replace(/\/$/, "")}`;
   };
 
   // Get WebSocket URL
   const getWebSocketUrl = (conversationId) => {
-    const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+    const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
     const baseUrl = API_URL.replace(/\/$/, "");
     // Convert http to ws or https to wss
     const wsProtocol = baseUrl.startsWith("https") ? "wss" : "ws";
@@ -147,15 +147,15 @@ const Messages = () => {
       // Temporarily disable smooth scroll
       const originalScrollBehavior = container.style.scrollBehavior;
       container.style.scrollBehavior = 'auto';
-      
+
       // Force scroll multiple times
       container.scrollTop = container.scrollHeight;
-      
+
       // Use multiple methods to ensure scroll
       setTimeout(() => {
         container.scrollTop = container.scrollHeight;
       }, 0);
-      
+
       requestAnimationFrame(() => {
         container.scrollTop = container.scrollHeight;
         requestAnimationFrame(() => {
@@ -179,7 +179,7 @@ const Messages = () => {
       }
 
       const API_BASE = getApiUrl();
-      const url = search 
+      const url = search
         ? `${API_BASE}/conversations/?search=${encodeURIComponent(search)}`
         : `${API_BASE}/conversations/`;
 
@@ -193,7 +193,7 @@ const Messages = () => {
 
       const conversationsData = Array.isArray(response.data) ? response.data : response.data.results || [];
       setConversations(conversationsData);
-      
+
       // DON'T auto-select here - it causes infinite loops
       // Auto-selection is handled separately in useEffect
     } catch (err) {
@@ -359,7 +359,7 @@ const Messages = () => {
         if (replyingTo?.id) {
           formData.append("parent_message", replyingTo.id);
         }
-        
+
         // Append all files
         selectedFiles.forEach((file) => {
           formData.append("attachment_files", file);
@@ -386,7 +386,7 @@ const Messages = () => {
 
         // Update local conversation's last message
         fetchUnreadCount();
-        
+
         setConversations(prev => prev.map(conv => {
           if (conv.id === conversationId) {
             return {
@@ -428,7 +428,7 @@ const Messages = () => {
       try {
         setSending(true);
         setError("");
-        
+
         // Send via WebSocket
         wsRef.current.send(JSON.stringify({
           type: "chat_message",
@@ -529,7 +529,7 @@ const Messages = () => {
 
         // Update local conversation's last message
         fetchUnreadCount();
-        
+
         setConversations(prev => prev.map(conv => {
           if (conv.id === conversationId) {
             return {
@@ -579,7 +579,7 @@ const Messages = () => {
   // Handle typing in input
   const handleTyping = () => {
     if (!selectedConversation) return;
-    
+
     sendTypingIndicator(true);
 
     // Clear previous timeout
@@ -731,12 +731,12 @@ const Messages = () => {
       setError("Invalid conversation. Please try again.");
       return;
     }
-    
+
     setSelectedConversation(conversation);
     setShowMessageView(true);
     // Fetch messages without polling flag (initial load)
     fetchMessages(conversationId, false);
-    
+
     // Focus on input after a short delay to allow UI to update
     setTimeout(() => {
       messageInputRef.current?.focus();
@@ -747,12 +747,12 @@ const Messages = () => {
   const handleSearch = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-    
+
     // Clear previous timeout
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
-    
+
     // Debounce search to avoid too many API calls
     // Skip auto-select when searching
     searchTimeoutRef.current = setTimeout(() => {
@@ -775,7 +775,7 @@ const Messages = () => {
 
     const conversationId = selectedConversation.id;
     const token = getAccessToken();
-    
+
     if (!token) {
       console.error("No access token found for WebSocket connection");
       return;
@@ -820,7 +820,7 @@ const Messages = () => {
       wsRef.current.onclose = () => {
         console.log("WebSocket disconnected");
         setIsConnected(false);
-        
+
         // Attempt to reconnect (max 5 attempts)
         if (reconnectAttempts.current < 5 && selectedConversation?.id === conversationId) {
           reconnectAttempts.current += 1;
@@ -866,7 +866,7 @@ const Messages = () => {
           }
           return filtered;
         });
-        
+
         // Update conversations list
         setConversations(prev => prev.map(conv => {
           if (conv.id === selectedConversation?.id) {
@@ -880,7 +880,7 @@ const Messages = () => {
           }
           return conv;
         }));
-        
+
         // Scroll to bottom when new message arrives (smooth scroll for new messages)
         setTimeout(() => scrollToBottom(false), 200);
         break;
@@ -891,7 +891,7 @@ const Messages = () => {
             ...prev,
             [data.user_id]: data.user_name || "Someone"
           }));
-          
+
           // Clear typing after 3 seconds
           setTimeout(() => {
             setTypingUsers(prev => {
@@ -1002,17 +1002,17 @@ const Messages = () => {
   useEffect(() => {
     if (messages.length > 0 && selectedConversation && !loadingMessages && messagesContainerRef.current) {
       const container = messagesContainerRef.current;
-      
+
       // Reset the flag when conversation changes
       if (!hasScrolledInitialRef.current) {
         container.style.scrollBehavior = 'auto';
         container.scrollTop = container.scrollHeight;
         hasScrolledInitialRef.current = true;
       }
-      
+
       // Force scroll multiple times with increasing delays
       const scrollAttempts = [0, 50, 100, 200, 300, 500];
-      const timeouts = scrollAttempts.map(delay => 
+      const timeouts = scrollAttempts.map(delay =>
         setTimeout(() => {
           if (container) {
             container.style.scrollBehavior = 'auto';
@@ -1028,7 +1028,7 @@ const Messages = () => {
           }
         }, delay)
       );
-      
+
       return () => {
         timeouts.forEach(clearTimeout);
       };
@@ -1089,7 +1089,7 @@ const Messages = () => {
             <span className="text-xs sm:text-sm font-poppins-custom break-words">{error}</span>
           </div>
         )}
-     
+
         <div className="flex flex-col lg:flex-row gap-2 sm:gap-3 lg:gap-6 w-full max-w-full">
           {/* Conversations List - Hidden on mobile when message view is shown */}
           <aside className={`bg-white border border-[#E5E7EB] rounded-xl sm:rounded-2xl lg:rounded-3xl p-2 sm:p-3 lg:p-6 w-full lg:w-1/3 max-w-full overflow-hidden ${showMessageView ? "hidden lg:block" : "block"}`}>
@@ -1119,7 +1119,7 @@ const Messages = () => {
                 />
               )}
             </div>
-            
+
             {loading ? (
               <div className="flex items-center justify-center py-6 sm:py-8">
                 <div className="text-xs sm:text-sm text-[#748A91] font-poppins-custom">Loading conversations...</div>
@@ -1136,7 +1136,7 @@ const Messages = () => {
                   if (!conversationId) {
                     console.error("Conversation missing ID:", conversation);
                   }
-                  
+
                   const isActive = selectedConversation?.id === conversationId;
                   const participantInfo = conversation.participant_info || conversation.other_participant || {};
                   const name = participantInfo.name || participantInfo.first_name || "Unknown";
@@ -1147,9 +1147,8 @@ const Messages = () => {
                     <button
                       key={conversationId || `conv-${Math.random()}`}
                       onClick={() => handleConversationSelect(conversation)}
-                      className={`w-full max-w-full text-left border rounded-lg sm:rounded-xl lg:rounded-2xl px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 lg:py-3 transition-colors ${
-                        isActive ? "border-[#00F0C3] bg-[#F4FFFB]" : "border-[#E5E7EB] bg-white hover:bg-[#F9FAFB]"
-                      }`}
+                      className={`w-full max-w-full text-left border rounded-lg sm:rounded-xl lg:rounded-2xl px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 lg:py-3 transition-colors ${isActive ? "border-[#00F0C3] bg-[#F4FFFB]" : "border-[#E5E7EB] bg-white hover:bg-[#F9FAFB]"
+                        }`}
                     >
                       <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 min-w-0">
                         <div className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 flex-shrink-0 rounded-full bg-[#E5F1F0] flex items-center justify-center text-xs sm:text-sm font-medium text-[#0A2A2E]">
@@ -1236,217 +1235,215 @@ const Messages = () => {
                     </div>
                   ) : (
                     messages.map((message) => {
-                      const isOwn = message.sender?.id === currentUser?.user_id || 
-                                   (message.sender && currentUser && message.sender.id === currentUser.id);
-                      const senderName = message.sender_name || message.sender?.name || 
-                                        `${message.sender?.first_name || ""} ${message.sender?.last_name || ""}`.trim() || "Unknown";
+                      const isOwn = message.sender?.id === currentUser?.user_id ||
+                        (message.sender && currentUser && message.sender.id === currentUser.id);
+                      const senderName = message.sender_name || message.sender?.name ||
+                        `${message.sender?.first_name || ""} ${message.sender?.last_name || ""}`.trim() || "Unknown";
                       const displayContent = message.is_deleted ? "This message has been deleted" : (message.display_content || message.content);
                       const isEditing = editingMessage?.id === message.id;
-                      
-                return (
-                  <div key={message.id} className={`flex ${isOwn ? "justify-end" : "justify-start"} group w-full max-w-full`}>
-                    <div
-                      className={`relative max-w-[90%] sm:max-w-[85%] lg:max-w-lg rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-poppins-custom shadow-sm break-words overflow-wrap-anywhere ${
-                        isOwn ? "bg-[#D7F8F0] text-[#0A2A2E]" : "bg-[#F4F6F5] text-[#0A2A2E]"
-                      } ${message.is_deleted ? "opacity-60 italic" : ""}`}
-                      onMouseEnter={() => setSelectedMessage(message.id)}
-                      onMouseLeave={() => setSelectedMessage(null)}
-                    >
-                      {/* Reply Preview */}
-                      {message.parent_message_preview && (
-                        <div className="mb-2 pl-2 sm:pl-3 border-l-2 border-[#00F0C3] text-xs text-[#748A91] max-w-full overflow-hidden">
-                          <div className="font-semibold text-[#0A2A2E] truncate">
-                            Replying to {message.parent_message_preview.sender_name || "Message"}
-                          </div>
-                          <div className="truncate break-words">{message.parent_message_preview.content}</div>
-                        </div>
-                      )}
 
-                      {!isOwn && (
-                        <p className="text-xs font-semibold mb-1 text-[#0A2A2E]">{senderName}</p>
-                      )}
-
-                      {/* Message Content */}
-                      {isEditing ? (
-                        <div className="space-y-2 max-w-full">
-                          <textarea
-                            data-edit-id={message.id}
-                            defaultValue={message.content}
-                            className="w-full max-w-full p-2 border border-[#00F0C3] rounded-lg text-xs sm:text-sm resize-none"
-                            rows={3}
-                            ref={(el) => {
-                              if (el) {
-                                el.focus();
-                                el.select();
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" && e.ctrlKey) {
-                                editMessage(message.id, e.target.value);
-                              }
-                              if (e.key === "Escape") {
-                                setEditingMessage(null);
-                              }
-                            }}
-                          />
-                          <div className="flex gap-1.5 sm:gap-2 text-xs flex-wrap">
-                            <button
-                              onClick={(e) => {
-                                const textarea = e.target.closest('div').previousElementSibling;
-                                if (textarea) editMessage(message.id, textarea.value);
-                              }}
-                              className="px-2 sm:px-3 py-1 bg-[#00F0C3] text-[#0A2A2E] rounded-lg whitespace-nowrap"
-                            >
-                              Save (Ctrl+Enter)
-                            </button>
-                            <button
-                              onClick={() => setEditingMessage(null)}
-                              className="px-2 sm:px-3 py-1 bg-gray-200 text-gray-700 rounded-lg whitespace-nowrap"
-                            >
-                              Cancel (Esc)
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="mb-2 break-words overflow-wrap-anywhere max-w-full">
-                          {displayContent}
-                          {message.is_edited && !message.is_deleted && (
-                            <span className="ml-1 sm:ml-2 text-xs text-[#748A91] italic">(edited)</span>
-                          )}
-                        </p>
-                      )}
-
-                      {/* Attachments */}
-                      {message.attachments && message.attachments.length > 0 && (
-                        <div className="mt-2 space-y-2 max-w-full">
-                          {message.attachments.map((attachment) => (
-                            <a
-                              key={attachment.id}
-                              href={attachment.file_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-2 p-2 bg-white/50 rounded-lg hover:bg-white/80 transition-colors max-w-full overflow-hidden"
-                            >
-                              {attachment.file_type === "image" && attachment.thumbnail_url ? (
-                                <img
-                                  src={attachment.thumbnail_url}
-                                  alt={attachment.file_name}
-                                  className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded flex-shrink-0"
-                                />
-                              ) : (
-                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#E5F1F0] rounded-lg flex items-center justify-center flex-shrink-0">
-                                  <svg className="w-4 h-4 sm:w-6 sm:h-6 text-[#0A2A2E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                  </svg>
+                      return (
+                        <div key={message.id} className={`flex ${isOwn ? "justify-end" : "justify-start"} group w-full max-w-full`}>
+                          <div
+                            className={`relative max-w-[90%] sm:max-w-[85%] lg:max-w-lg rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-poppins-custom shadow-sm break-words overflow-wrap-anywhere ${isOwn ? "bg-[#D7F8F0] text-[#0A2A2E]" : "bg-[#F4F6F5] text-[#0A2A2E]"
+                              } ${message.is_deleted ? "opacity-60 italic" : ""}`}
+                            onMouseEnter={() => setSelectedMessage(message.id)}
+                            onMouseLeave={() => setSelectedMessage(null)}
+                          >
+                            {/* Reply Preview */}
+                            {message.parent_message_preview && (
+                              <div className="mb-2 pl-2 sm:pl-3 border-l-2 border-[#00F0C3] text-xs text-[#748A91] max-w-full overflow-hidden">
+                                <div className="font-semibold text-[#0A2A2E] truncate">
+                                  Replying to {message.parent_message_preview.sender_name || "Message"}
                                 </div>
-                              )}
-                              <div className="flex-1 min-w-0 overflow-hidden">
-                                <p className="text-xs font-medium text-[#0A2A2E] truncate">{attachment.file_name}</p>
-                                <p className="text-xs text-[#748A91] truncate">{attachment.file_type_display || attachment.file_type}</p>
+                                <div className="truncate break-words">{message.parent_message_preview.content}</div>
                               </div>
-                            </a>
-                          ))}
-                        </div>
-                      )}
+                            )}
 
-                      {/* Reactions */}
-                      {message.reactions_summary && message.reactions_summary.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1 max-w-full">
-                          {message.reactions_summary.map((reaction, idx) => {
-                            const hasReacted = reaction.users?.some(u => u.id === (currentUser?.user_id || currentUser?.id));
-                            return (
-                              <button
-                                key={idx}
-                                onClick={() => hasReacted ? removeReaction(message.id, reaction.emoji) : addReaction(message.id, reaction.emoji)}
-                                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs border flex-shrink-0 ${
-                                  hasReacted 
-                                    ? "bg-[#00F0C3] border-[#00F0C3]" 
-                                    : "bg-white/50 border-gray-300 hover:bg-white"
-                                }`}
-                              >
-                                <span className="mr-0.5 sm:mr-1">{reaction.emoji}</span>
-                                <span>{reaction.count}</span>
-                              </button>
-                            );
-                          })}
-                          <button
-                            onClick={() => setShowReactionPicker(showReactionPicker === message.id ? null : message.id)}
-                            className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs border bg-white/50 border-gray-300 hover:bg-white flex-shrink-0"
-                          >
-                            +
-                          </button>
-                        </div>
-                      )}
+                            {!isOwn && (
+                              <p className="text-xs font-semibold mb-1 text-[#0A2A2E]">{senderName}</p>
+                            )}
 
-                      {/* Reaction Picker */}
-                      {showReactionPicker === message.id && (
-                        <div className="reaction-picker-container absolute bottom-full left-0 mb-2 bg-white border border-gray-300 rounded-lg p-1.5 sm:p-2 shadow-lg z-10 flex gap-0.5 sm:gap-1 max-w-full overflow-hidden">
-                          {["👍", "❤️", "😂", "😮", "😢", "🙏"].map((emoji) => (
-                            <button
-                              key={emoji}
-                              onClick={() => {
-                                addReaction(message.id, emoji);
-                                setShowReactionPicker(null);
-                              }}
-                              className="text-lg sm:text-xl hover:scale-125 transition-transform p-0.5 sm:p-1 flex-shrink-0"
-                            >
-                              {emoji}
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                            {/* Message Content */}
+                            {isEditing ? (
+                              <div className="space-y-2 max-w-full">
+                                <textarea
+                                  data-edit-id={message.id}
+                                  defaultValue={message.content}
+                                  className="w-full max-w-full p-2 border border-[#00F0C3] rounded-lg text-xs sm:text-sm resize-none"
+                                  rows={3}
+                                  ref={(el) => {
+                                    if (el) {
+                                      el.focus();
+                                      el.select();
+                                    }
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" && e.ctrlKey) {
+                                      editMessage(message.id, e.target.value);
+                                    }
+                                    if (e.key === "Escape") {
+                                      setEditingMessage(null);
+                                    }
+                                  }}
+                                />
+                                <div className="flex gap-1.5 sm:gap-2 text-xs flex-wrap">
+                                  <button
+                                    onClick={(e) => {
+                                      const textarea = e.target.closest('div').previousElementSibling;
+                                      if (textarea) editMessage(message.id, textarea.value);
+                                    }}
+                                    className="px-2 sm:px-3 py-1 bg-[#00F0C3] text-[#0A2A2E] rounded-lg whitespace-nowrap"
+                                  >
+                                    Save (Ctrl+Enter)
+                                  </button>
+                                  <button
+                                    onClick={() => setEditingMessage(null)}
+                                    className="px-2 sm:px-3 py-1 bg-gray-200 text-gray-700 rounded-lg whitespace-nowrap"
+                                  >
+                                    Cancel (Esc)
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="mb-2 break-words overflow-wrap-anywhere max-w-full">
+                                {displayContent}
+                                {message.is_edited && !message.is_deleted && (
+                                  <span className="ml-1 sm:ml-2 text-xs text-[#748A91] italic">(edited)</span>
+                                )}
+                              </p>
+                            )}
 
-                      {/* Message Actions (Edit, Delete, Reply) */}
-                      {selectedMessage === message.id && !message.is_deleted && (
-                        <div className="absolute top-1 sm:top-2 right-1 sm:right-2 flex gap-0.5 sm:gap-1 bg-white/90 rounded-lg p-0.5 sm:p-1 shadow-md flex-shrink-0">
-                          {isOwn && (
-                            <>
-                              <button
-                                onClick={() => setEditingMessage(message)}
-                                className="p-1.5 hover:bg-gray-100 rounded transition-colors"
-                                title="Edit"
-                              >
-                                <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => deleteMessage(message.id)}
-                                className="p-1.5 hover:bg-red-50 rounded transition-colors"
-                                title="Delete"
-                              >
-                                <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
-                            </>
-                          )}
-                          <button
-                            onClick={() => setReplyingTo(message)}
-                            className="p-1.5 hover:bg-gray-100 rounded transition-colors"
-                            title="Reply"
-                          >
-                            <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                            </svg>
-                          </button>
-                        </div>
-                      )}
+                            {/* Attachments */}
+                            {message.attachments && message.attachments.length > 0 && (
+                              <div className="mt-2 space-y-2 max-w-full">
+                                {message.attachments.map((attachment) => (
+                                  <a
+                                    key={attachment.id}
+                                    href={attachment.file_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 p-2 bg-white/50 rounded-lg hover:bg-white/80 transition-colors max-w-full overflow-hidden"
+                                  >
+                                    {attachment.file_type === "image" && attachment.thumbnail_url ? (
+                                      <img
+                                        src={attachment.thumbnail_url}
+                                        alt={attachment.file_name}
+                                        className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded flex-shrink-0"
+                                      />
+                                    ) : (
+                                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#E5F1F0] rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <svg className="w-4 h-4 sm:w-6 sm:h-6 text-[#0A2A2E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                      </div>
+                                    )}
+                                    <div className="flex-1 min-w-0 overflow-hidden">
+                                      <p className="text-xs font-medium text-[#0A2A2E] truncate">{attachment.file_name}</p>
+                                      <p className="text-xs text-[#748A91] truncate">{attachment.file_type_display || attachment.file_type}</p>
+                                    </div>
+                                  </a>
+                                ))}
+                              </div>
+                            )}
 
-                      {/* Time and Read Receipts */}
-                      <div className="flex items-center gap-1 sm:gap-2 mt-1 flex-wrap">
-                        <span className="text-xs text-[#748A91] whitespace-nowrap">
-                          {message.time_ago || formatTime(message.created_at)}
-                        </span>
-                        {isOwn && message.read_by && message.read_by.length > 0 && (
-                          <span className="text-xs text-[#748A91] truncate">
-                            Read by {message.read_by.map(r => r.name).join(", ")}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
+                            {/* Reactions */}
+                            {message.reactions_summary && message.reactions_summary.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-1 max-w-full">
+                                {message.reactions_summary.map((reaction, idx) => {
+                                  const hasReacted = reaction.users?.some(u => u.id === (currentUser?.user_id || currentUser?.id));
+                                  return (
+                                    <button
+                                      key={idx}
+                                      onClick={() => hasReacted ? removeReaction(message.id, reaction.emoji) : addReaction(message.id, reaction.emoji)}
+                                      className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs border flex-shrink-0 ${hasReacted
+                                          ? "bg-[#00F0C3] border-[#00F0C3]"
+                                          : "bg-white/50 border-gray-300 hover:bg-white"
+                                        }`}
+                                    >
+                                      <span className="mr-0.5 sm:mr-1">{reaction.emoji}</span>
+                                      <span>{reaction.count}</span>
+                                    </button>
+                                  );
+                                })}
+                                <button
+                                  onClick={() => setShowReactionPicker(showReactionPicker === message.id ? null : message.id)}
+                                  className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs border bg-white/50 border-gray-300 hover:bg-white flex-shrink-0"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Reaction Picker */}
+                            {showReactionPicker === message.id && (
+                              <div className="reaction-picker-container absolute bottom-full left-0 mb-2 bg-white border border-gray-300 rounded-lg p-1.5 sm:p-2 shadow-lg z-10 flex gap-0.5 sm:gap-1 max-w-full overflow-hidden">
+                                {["👍", "❤️", "😂", "😮", "😢", "🙏"].map((emoji) => (
+                                  <button
+                                    key={emoji}
+                                    onClick={() => {
+                                      addReaction(message.id, emoji);
+                                      setShowReactionPicker(null);
+                                    }}
+                                    className="text-lg sm:text-xl hover:scale-125 transition-transform p-0.5 sm:p-1 flex-shrink-0"
+                                  >
+                                    {emoji}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Message Actions (Edit, Delete, Reply) */}
+                            {selectedMessage === message.id && !message.is_deleted && (
+                              <div className="absolute top-1 sm:top-2 right-1 sm:right-2 flex gap-0.5 sm:gap-1 bg-white/90 rounded-lg p-0.5 sm:p-1 shadow-md flex-shrink-0">
+                                {isOwn && (
+                                  <>
+                                    <button
+                                      onClick={() => setEditingMessage(message)}
+                                      className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                                      title="Edit"
+                                    >
+                                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      onClick={() => deleteMessage(message.id)}
+                                      className="p-1.5 hover:bg-red-50 rounded transition-colors"
+                                      title="Delete"
+                                    >
+                                      <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                    </button>
+                                  </>
+                                )}
+                                <button
+                                  onClick={() => setReplyingTo(message)}
+                                  className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                                  title="Reply"
+                                >
+                                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                  </svg>
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Time and Read Receipts */}
+                            <div className="flex items-center gap-1 sm:gap-2 mt-1 flex-wrap">
+                              <span className="text-xs text-[#748A91] whitespace-nowrap">
+                                {message.time_ago || formatTime(message.created_at)}
+                              </span>
+                              {isOwn && message.read_by && message.read_by.length > 0 && (
+                                <span className="text-xs text-[#748A91] truncate">
+                                  Read by {message.read_by.map(r => r.name).join(", ")}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
                     })
                   )}
                   <div ref={messagesEndRef} />
@@ -1541,9 +1538,9 @@ const Messages = () => {
                           title="Attach file"
                         >
                           <svg width="18" height="18" className="sm:w-5 sm:h-5 lg:w-6 lg:h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="0.5" y="0.5" width="23" height="23" rx="6.5" fill="#00F0C3"/>
-                            <rect x="0.5" y="0.5" width="23" height="23" rx="6.5" stroke="#00F0C3"/>
-                            <path d="M16.7201 11.5268L12.1251 16.1218C11.5622 16.6847 10.7987 17.001 10.0026 17.001C9.20655 17.001 8.44307 16.6847 7.88014 16.1218C7.31722 15.5589 7.00098 14.7954 7.00098 13.9993C7.00098 13.2032 7.31722 12.4397 7.88014 11.8768L12.1651 7.59179C12.5404 7.21584 13.0497 7.00438 13.5809 7.00391C14.1121 7.00344 14.6217 7.21401 14.9976 7.58929C15.3736 7.96457 15.5851 8.47382 15.5855 9.00502C15.586 9.53622 15.3754 10.0458 15.0001 10.4218L10.7051 14.7068C10.5175 14.8944 10.263 14.9998 9.99764 14.9998C9.73228 14.9998 9.47779 14.8944 9.29014 14.7068C9.1025 14.5191 8.99709 14.2647 8.99709 13.9993C8.99709 13.7339 9.1025 13.4794 9.29014 13.2918L13.5351 9.05179" stroke="#001D21" strokeLinecap="round" strokeLinejoin="round"/>
+                            <rect x="0.5" y="0.5" width="23" height="23" rx="6.5" fill="#00F0C3" />
+                            <rect x="0.5" y="0.5" width="23" height="23" rx="6.5" stroke="#00F0C3" />
+                            <path d="M16.7201 11.5268L12.1251 16.1218C11.5622 16.6847 10.7987 17.001 10.0026 17.001C9.20655 17.001 8.44307 16.6847 7.88014 16.1218C7.31722 15.5589 7.00098 14.7954 7.00098 13.9993C7.00098 13.2032 7.31722 12.4397 7.88014 11.8768L12.1651 7.59179C12.5404 7.21584 13.0497 7.00438 13.5809 7.00391C14.1121 7.00344 14.6217 7.21401 14.9976 7.58929C15.3736 7.96457 15.5851 8.47382 15.5855 9.00502C15.586 9.53622 15.3754 10.0458 15.0001 10.4218L10.7051 14.7068C10.5175 14.8944 10.263 14.9998 9.99764 14.9998C9.73228 14.9998 9.47779 14.8944 9.29014 14.7068C9.1025 14.5191 8.99709 14.2647 8.99709 13.9993C8.99709 13.7339 9.1025 13.4794 9.29014 13.2918L13.5351 9.05179" stroke="#001D21" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         </button>
                       </div>

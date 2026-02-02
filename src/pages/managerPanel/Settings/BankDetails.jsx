@@ -105,7 +105,7 @@ const SelectField = ({ label, name, value, onChange, options }) => (
 
 const BankDetails = () => {
   // --- Constants ---
-  const API_URL = "http://168.231.121.7/blockchain-backend/api/syndicate/settings/bank-details/";
+  const API_URL = "http://72.61.251.114/blockchain-backend/api/syndicate/settings/bank-details/";
   const TEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY0MzIyMjg0LCJpYXQiOjE3NjQzMDQyODQsImp0aSI6IjkyMDRhMGY3ODhjNDRlMDQ5MWE4NjkzZWY3NzlmYTljIiwidXNlcl9pZCI6IjIifQ.6h81mnprtOjPpn2-_mkasbrXSwKwbr7wHkhEC-j6_ag";
 
   // --- State ---
@@ -114,7 +114,7 @@ const BankDetails = () => {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  
+
   // Modals state
   const [modals, setModals] = useState({
     addCard: false,
@@ -137,7 +137,7 @@ const BankDetails = () => {
 
   // --- Helpers ---
   const toggleModal = (modalName, isOpen) => setModals((prev) => ({ ...prev, [modalName]: isOpen }));
-  
+
   const showNotification = (message, type = "success") => {
     setNotification({ show: true, message, type });
     setTimeout(() => setNotification({ show: false, message: "", type: "success" }), 3000);
@@ -194,9 +194,9 @@ const BankDetails = () => {
   const handleSave = async (url, method, payload, modalToClose, successMsg, resetFormSetter, resetData) => {
     setIsSubmitting(true);
     setError(null);
-    
+
     const { ok, data } = await apiCall(url, method, payload);
-    
+
     if (ok) {
       showNotification(successMsg);
       toggleModal(modalToClose, false);
@@ -239,7 +239,7 @@ const BankDetails = () => {
     // Optimistic UI
     setEditCardForm({ cardNumber: card.card_number, expiry: card.expiry_date, cvv: "***", holder: card.card_holder_name });
     toggleModal('editCard', true);
-    
+
     // Fetch fresh details
     const { ok, data } = await apiCall(`${API_URL}card/${card.id}/`);
     if (ok && data.data) {
@@ -320,11 +320,11 @@ const BankDetails = () => {
     const { type, id } = deleteData;
     const endpoint = type === 'card' ? `${API_URL}card/${id}/` : `${API_URL}account/${id}/`;
     const payload = { status: type === 'card' ? "suspended" : "inactive", is_primary: false };
-    
+
     // We reuse handleSave logic partially but simpler here
     setIsSubmitting(true);
     const { ok } = await apiCall(endpoint, 'DELETE', payload);
-    
+
     if (ok) {
       showNotification(`${type === 'card' ? 'Card' : 'Account'} deleted successfully!`);
       fetchDetails();
@@ -338,7 +338,7 @@ const BankDetails = () => {
   // --- Render ---
   return (
     <div className="bg-[#F4F6F5] min-h-screen px-4 py-6 sm:px-6 lg:px-8 space-y-6 font-sans relative">
-      
+
       {/* Notifications */}
       {notification.show && (
         <div className={`fixed top-6 right-6 z-[100] px-6 py-4 rounded-xl shadow-xl flex items-center gap-3 animate-slide-in ${notification.type === 'error' ? 'bg-white border-l-4 border-red-500 text-red-600' : 'bg-[#001D21] text-[#00F0C3]'}`}>
@@ -417,7 +417,7 @@ const BankDetails = () => {
                 </div>
                 {/* Actions Overlay */}
                 <div className="absolute inset-0 bg-[#001D21]/90 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-6">
-                  <button onClick={() => openBankDetailsModal(acc)} className="flex items-center gap-2 text-white hover:text-[#00F0C3] transition-colors text-sm font-medium"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/><path d="M20.71 7.04a1.003 1.003 0 000-1.42l-2.34-2.34a1.003 1.003 0 00-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/></svg> Details</button>
+                  <button onClick={() => openBankDetailsModal(acc)} className="flex items-center gap-2 text-white hover:text-[#00F0C3] transition-colors text-sm font-medium"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z" /><path d="M20.71 7.04a1.003 1.003 0 000-1.42l-2.34-2.34a1.003 1.003 0 00-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z" /></svg> Details</button>
                   <button onClick={() => openEditBankModal(acc)} className="flex items-center gap-2 text-white hover:text-[#00F0C3] transition-colors text-sm font-medium"><EditIcon /> Edit</button>
                   <button onClick={() => initiateDelete('bank', acc.id)} className="flex items-center gap-2 text-white hover:text-red-400 transition-colors text-sm font-medium"><TrashIcon /> Delete</button>
                 </div>
@@ -435,7 +435,7 @@ const BankDetails = () => {
       {/* --- Modals --- */}
 
       {/* Add Card */}
-      <Modal isOpen={modals.addCard} onClose={() => toggleModal('addCard', false)} title="Add New Card" 
+      <Modal isOpen={modals.addCard} onClose={() => toggleModal('addCard', false)} title="Add New Card"
         footer={
           <>
             <button onClick={() => toggleModal('addCard', false)} className="px-5 py-2.5 bg-gray-50 text-gray-700 rounded-lg border border-gray-200 hover:bg-gray-100 font-medium">Cancel</button>
@@ -445,7 +445,7 @@ const BankDetails = () => {
         {error && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">{error}</div>}
         <div className="flex gap-2 mb-2">
           {['debit', 'credit'].map(mode => (
-            <button key={mode} onClick={() => setCardForm(p => ({...p, mode}))} className={`px-4 py-1.5 rounded-lg text-sm capitalize font-medium transition-all ${cardForm.mode === mode ? 'bg-[#00F0C3] text-black shadow-sm' : 'bg-gray-100 text-gray-500'}`}>{mode} Card</button>
+            <button key={mode} onClick={() => setCardForm(p => ({ ...p, mode }))} className={`px-4 py-1.5 rounded-lg text-sm capitalize font-medium transition-all ${cardForm.mode === mode ? 'bg-[#00F0C3] text-black shadow-sm' : 'bg-gray-100 text-gray-500'}`}>{mode} Card</button>
           ))}
         </div>
         <InputField label="Card Type" name="cardType" value={cardForm.cardType} onChange={handleInputChange(setCardForm)} placeholder="Visa, Mastercard" />
@@ -482,12 +482,12 @@ const BankDetails = () => {
           </>
         }>
         {error && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">{error}</div>}
-        <SelectField label="Bank Name" name="bankName" value={bankForm.bankName} onChange={handleInputChange(setBankForm)} options={[{value: "Chase Bank", label: "Chase Bank"}, {value: "HDFC", label: "HDFC Bank"}, {value: "ICICI", label: "ICICI Bank"}, {value: "SBI", label: "SBI"}, {value: "BoA", label: "Bank of America"}]} />
-        <SelectField label="Account Type" name="accountType" value={bankForm.accountType} onChange={handleInputChange(setBankForm)} options={[{value: "Personal", label: "Personal"}, {value: "Business", label: "Business"}, {value: "Savings", label: "Savings"}, {value: "Checking", label: "Checking"}]} />
+        <SelectField label="Bank Name" name="bankName" value={bankForm.bankName} onChange={handleInputChange(setBankForm)} options={[{ value: "Chase Bank", label: "Chase Bank" }, { value: "HDFC", label: "HDFC Bank" }, { value: "ICICI", label: "ICICI Bank" }, { value: "SBI", label: "SBI" }, { value: "BoA", label: "Bank of America" }]} />
+        <SelectField label="Account Type" name="accountType" value={bankForm.accountType} onChange={handleInputChange(setBankForm)} options={[{ value: "Personal", label: "Personal" }, { value: "Business", label: "Business" }, { value: "Savings", label: "Savings" }, { value: "Checking", label: "Checking" }]} />
         <InputField label="Account Number" name="accountNumber" value={bankForm.accountNumber} onChange={handleInputChange(setBankForm)} placeholder="1234567890" />
         <InputField label="Routing Number" name="routingNumber" value={bankForm.routingNumber} onChange={handleInputChange(setBankForm)} placeholder="021000021" />
         <InputField label="Account Holder Name" name="accountName" value={bankForm.accountName} onChange={handleInputChange(setBankForm)} placeholder="e.g. John Doe" />
-        <SelectField label="Bank Country" name="bankCountry" value={bankForm.bankCountry} onChange={handleInputChange(setBankForm)} options={[{value: "U.S.A", label: "U.S.A"}, {value: "India", label: "India"}, {value: "UK", label: "United Kingdom"}, {value: "Singapore", label: "Singapore"}]} />
+        <SelectField label="Bank Country" name="bankCountry" value={bankForm.bankCountry} onChange={handleInputChange(setBankForm)} options={[{ value: "U.S.A", label: "U.S.A" }, { value: "India", label: "India" }, { value: "UK", label: "United Kingdom" }, { value: "Singapore", label: "Singapore" }]} />
       </Modal>
 
       {/* Edit Bank */}
@@ -499,12 +499,12 @@ const BankDetails = () => {
           </>
         }>
         {/* Reusing same form fields as Add Bank, could be extracted further if needed */}
-        <SelectField label="Bank Name" name="bankName" value={bankForm.bankName} onChange={handleInputChange(setBankForm)} options={[{value: "Chase Bank", label: "Chase Bank"}, {value: "HDFC", label: "HDFC Bank"}, {value: "ICICI", label: "ICICI Bank"}, {value: "SBI", label: "SBI"}, {value: "BoA", label: "Bank of America"}]} />
-        <SelectField label="Account Type" name="accountType" value={bankForm.accountType} onChange={handleInputChange(setBankForm)} options={[{value: "Personal", label: "Personal"}, {value: "Business", label: "Business"}, {value: "Savings", label: "Savings"}, {value: "Checking", label: "Checking"}]} />
+        <SelectField label="Bank Name" name="bankName" value={bankForm.bankName} onChange={handleInputChange(setBankForm)} options={[{ value: "Chase Bank", label: "Chase Bank" }, { value: "HDFC", label: "HDFC Bank" }, { value: "ICICI", label: "ICICI Bank" }, { value: "SBI", label: "SBI" }, { value: "BoA", label: "Bank of America" }]} />
+        <SelectField label="Account Type" name="accountType" value={bankForm.accountType} onChange={handleInputChange(setBankForm)} options={[{ value: "Personal", label: "Personal" }, { value: "Business", label: "Business" }, { value: "Savings", label: "Savings" }, { value: "Checking", label: "Checking" }]} />
         <InputField label="Account Number" name="accountNumber" value={bankForm.accountNumber} onChange={handleInputChange(setBankForm)} placeholder="1234567890" />
         <InputField label="Routing Number" name="routingNumber" value={bankForm.routingNumber} onChange={handleInputChange(setBankForm)} placeholder="021000021" />
         <InputField label="Account Holder Name" name="accountName" value={bankForm.accountName} onChange={handleInputChange(setBankForm)} placeholder="e.g. John Doe" />
-        <SelectField label="Bank Country" name="bankCountry" value={bankForm.bankCountry} onChange={handleInputChange(setBankForm)} options={[{value: "U.S.A", label: "U.S.A"}, {value: "India", label: "India"}, {value: "UK", label: "United Kingdom"}, {value: "Singapore", label: "Singapore"}]} />
+        <SelectField label="Bank Country" name="bankCountry" value={bankForm.bankCountry} onChange={handleInputChange(setBankForm)} options={[{ value: "U.S.A", label: "U.S.A" }, { value: "India", label: "India" }, { value: "UK", label: "United Kingdom" }, { value: "Singapore", label: "Singapore" }]} />
       </Modal>
 
       {/* Bank Details View */}

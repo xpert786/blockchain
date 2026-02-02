@@ -35,7 +35,7 @@ const KYCVerification = () => {
     const file = e.target.files[0];
     if (file) {
       console.log("File selected:", file.name, "Size:", file.size, "Type:", file.type);
-      
+
       // Validate file size (max 5MB)
       const maxSize = 5 * 1024 * 1024; // 5MB in bytes
       if (file.size > maxSize) {
@@ -55,7 +55,7 @@ const KYCVerification = () => {
 
       // Clear any previous errors
       setError("");
-      
+
       // Update form data with file
       handleInputChange("idFile", file);
       console.log("File stored in formData:", file.name);
@@ -77,7 +77,7 @@ const KYCVerification = () => {
         }
 
         // Get API URL from environment variable
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const finalUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
 
         console.log("Fetching profile data from:", finalUrl);
@@ -121,7 +121,7 @@ const KYCVerification = () => {
               birthYear = dateParts[0]; // "2001"
               birthMonth = dateParts[1]; // "09"
               birthDay = dateParts[2]; // "26"
-              
+
               // Convert month number to month name
               const monthNames = [
                 "January", "February", "March", "April", "May", "June",
@@ -170,13 +170,13 @@ const KYCVerification = () => {
 
   const handleContinue = async () => {
     // Validate form data
-   
+
     // Validate file: either new file selected OR existing file exists
     if (!formData.idFile && !existingGovernmentId) {
       setError("Please upload a government-issued ID");
       return;
     }
-    
+
     if (!formData.birthMonth || !formData.birthDay || !formData.birthYear) {
       setError("Date of birth is required");
       return;
@@ -218,7 +218,7 @@ const KYCVerification = () => {
       let currentProfileId = profileId;
       if (!currentProfileId) {
         // Fetch profile to get ID
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const profilesUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
         const profileResponse = await axios.get(profilesUrl, {
           headers: {
@@ -227,7 +227,7 @@ const KYCVerification = () => {
             Accept: "application/json",
           },
         });
-        
+
         if (profileResponse.data?.results?.length > 0) {
           currentProfileId = profileResponse.data.results[0].id;
           setProfileId(currentProfileId);
@@ -251,7 +251,7 @@ const KYCVerification = () => {
 
       // Prepare FormData for multipart/form-data request
       const formDataToSend = new FormData();
-      
+
       // Only append file if a new file is selected (user wants to update/replace existing file)
       if (formData.idFile) {
         console.log("File to upload:", formData.idFile.name, "Size:", formData.idFile.size, "Type:", formData.idFile.type);
@@ -259,7 +259,7 @@ const KYCVerification = () => {
       } else {
         console.log("No new file selected, keeping existing government_id");
       }
-      
+
       formDataToSend.append("date_of_birth", dateOfBirth);
       formDataToSend.append("street_address", formData.streetAddress.trim());
       formDataToSend.append("city", formData.city.trim());
@@ -278,7 +278,7 @@ const KYCVerification = () => {
       }
 
       // Get API URL from environment variable
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const finalUrl = `${API_URL.replace(/\/$/, "")}/profiles/${currentProfileId}/update_step2/`;
 
       console.log("Sending KYC data to:", finalUrl);
@@ -296,7 +296,7 @@ const KYCVerification = () => {
       console.log("KYC data updated successfully:", response.data);
 
       // Navigate to next step on success
-    navigate("/investor-onboarding/bank-details");
+      navigate("/investor-onboarding/bank-details");
     } catch (err) {
       console.error("Error updating KYC data:", err);
       console.error("Error response:", err.response);
@@ -423,9 +423,8 @@ const KYCVerification = () => {
               <button
                 key={step}
                 onClick={() => handleStepClick(step)}
-                className={`w-full text-left rounded-lg px-4 py-3 transition-colors font-poppins-custom ${
-                  activeStep === step ? "bg-white text-[#001D21]" : "text-[#001D21] hover:bg-[#ffffff]/60"
-                }`}
+                className={`w-full text-left rounded-lg px-4 py-3 transition-colors font-poppins-custom ${activeStep === step ? "bg-white text-[#001D21]" : "text-[#001D21] hover:bg-[#ffffff]/60"
+                  }`}
               >
                 {step}
               </button>
@@ -438,7 +437,7 @@ const KYCVerification = () => {
           <div className="mx-auto w-full max-w-3xl">
             {/* Title */}
             <h1 className="text-3xl text-[#0A2A2E] mb-2 font-poppins-custom">Step 2: KYC / Identity Verification</h1>
-            
+
             {/* Subtitle */}
             <p className="text-sm sm:text-base text-[#748A91] mb-4 font-poppins-custom text-center sm:text-left">
               Help us verify your identity to meet compliance and protect your investment account.
@@ -472,24 +471,23 @@ const KYCVerification = () => {
                 <label className="block text-base font-medium text-[#0A2A2E] mb-2 font-poppins-custom flex items-center gap-2">
                   Upload Government-Issued ID <span className="text-red-500">*</span>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="cursor-help">
-                    <circle cx="8" cy="8" r="7" stroke="#748A91" strokeWidth="1.5" fill="none"/>
-                    <path d="M8 5V8M8 11H8.01" stroke="#748A91" strokeWidth="1.5" strokeLinecap="round"/>
+                    <circle cx="8" cy="8" r="7" stroke="#748A91" strokeWidth="1.5" fill="none" />
+                    <path d="M8 5V8M8 11H8.01" stroke="#748A91" strokeWidth="1.5" strokeLinecap="round" />
                   </svg>
                 </label>
-                <div 
-                  className={`border-2 rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                    formData.idFile 
-                      ? "bg-green-50 border-green-400" 
+                <div
+                  className={`border-2 rounded-lg p-8 text-center cursor-pointer transition-colors ${formData.idFile
+                      ? "bg-green-50 border-green-400"
                       : existingGovernmentId
-                      ? "bg-blue-50 border-blue-400"
-                      : "bg-[#F4F6F5] hover:border-[#9889FF]"
-                  }`}
-                  style={{ 
-                    border: formData.idFile 
-                      ? "2px solid #10B981" 
+                        ? "bg-blue-50 border-blue-400"
+                        : "bg-[#F4F6F5] hover:border-[#9889FF]"
+                    }`}
+                  style={{
+                    border: formData.idFile
+                      ? "2px solid #10B981"
                       : existingGovernmentId
-                      ? "2px solid #3B82F6"
-                      : "0.5px solid #0A2A2E" 
+                        ? "2px solid #3B82F6"
+                        : "0.5px solid #0A2A2E"
                   }}
                 >
                   <input
@@ -500,22 +498,22 @@ const KYCVerification = () => {
                     className="hidden"
                   />
                   <label htmlFor="idUpload" className="cursor-pointer block">
-                    <div className="mb-4 flex justify-center"> 
+                    <div className="mb-4 flex justify-center">
                       {formData.idFile ? (
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <circle cx="12" cy="12" r="10" stroke="#10B981" strokeWidth="2" fill="none"/>
-                          <path d="M8 12L11 15L16 9" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <circle cx="12" cy="12" r="10" stroke="#10B981" strokeWidth="2" fill="none" />
+                          <path d="M8 12L11 15L16 9" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       ) : existingGovernmentId ? (
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M9 12L11 14L15 10" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#3B82F6" strokeWidth="2"/>
+                          <path d="M9 12L11 14L15 10" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#3B82F6" strokeWidth="2" />
                         </svg>
                       ) : (
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M17 8L12 3L7 8" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M12 3V15" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M17 8L12 3L7 8" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M12 3V15" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       )}
                     </div>
@@ -540,14 +538,14 @@ const KYCVerification = () => {
                           ✓ Government ID Already Uploaded
                         </p>
                         <p className="text-[#0A2A2E] font-poppins-custom mb-2 font-medium">
-                          {typeof existingGovernmentId === 'string' && existingGovernmentId.includes('/') 
-                            ? existingGovernmentId.split('/').pop() 
+                          {typeof existingGovernmentId === 'string' && existingGovernmentId.includes('/')
+                            ? existingGovernmentId.split('/').pop()
                             : 'Government ID File'}
                         </p>
                         {typeof existingGovernmentId === 'string' && (existingGovernmentId.startsWith('http://') || existingGovernmentId.startsWith('https://')) && (
-                          <a 
-                            href={existingGovernmentId} 
-                            target="_blank" 
+                          <a
+                            href={existingGovernmentId}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:text-blue-800 underline text-sm font-poppins-custom mb-2 inline-block"
                             onClick={(e) => e.stopPropagation()}
@@ -629,7 +627,7 @@ const KYCVerification = () => {
                 <label className="block text-base font-medium text-[#0A2A2E] mb-4 font-poppins-custom">
                   Residential Address<span className="text-red-500">*</span>
                 </label>
-                
+
                 <div className="space-y-4">
                   {/* Street Address */}
                   <div>
@@ -738,9 +736,8 @@ const KYCVerification = () => {
 
       {/* Mobile Sidebar Drawer */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-full transform bg-white transition-transform duration-300 ease-in-out lg:hidden ${
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-full transform bg-white transition-transform duration-300 ease-in-out lg:hidden ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
           <h4 className="text-lg font-semibold text-[#01373D]">Onboarding Steps</h4>
@@ -760,9 +757,8 @@ const KYCVerification = () => {
             <button
               key={step}
               onClick={() => handleStepClick(step)}
-              className={`w-full text-left rounded-lg px-4 py-3 transition-colors font-poppins-custom ${
-                activeStep === step ? "bg-[#00F0C3]/20 text-[#001D21]" : "text-[#001D21] hover:bg-[#F4F6F5]"
-              }`}
+              className={`w-full text-left rounded-lg px-4 py-3 transition-colors font-poppins-custom ${activeStep === step ? "bg-[#00F0C3]/20 text-[#001D21]" : "text-[#001D21] hover:bg-[#F4F6F5]"
+                }`}
             >
               {step}
             </button>

@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import logoImage from "../../../assets/img/logo.png";
 import profileImage from "../../../assets/img/profile.png";
-import {HomeIcon,InvitesIcon,PortfolioIcon,TaxesIcon,MessagesIcon,SettingsIcon, GrowthIcon, AlertsIcon } from "./icon.jsx";
+import { HomeIcon, InvitesIcon, PortfolioIcon, TaxesIcon, MessagesIcon, SettingsIcon, GrowthIcon, AlertsIcon } from "./icon.jsx";
 import {
   AreaChart,
   Area,
@@ -19,8 +19,7 @@ import {
 
 
 const navButtonClasses = (isActive) =>
-  `px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${
-    isActive ? "bg-[#FFFFFF1A] text-white" : "text-gray-300 hover:text-white"
+  `px-4 py-4 font-medium font-poppins-custom flex items-center gap-2 rounded-lg transition-colors ${isActive ? "bg-[#FFFFFF1A] text-white" : "text-gray-300 hover:text-white"
   }`;
 
 const Portfolio = () => {
@@ -78,9 +77,9 @@ const Portfolio = () => {
   useEffect(() => {
     const fetchPortfolioOverview = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const accessToken = localStorage.getItem("accessToken");
-        
+
         if (!accessToken) {
           console.error("No access token found");
           setLoading(false);
@@ -121,9 +120,9 @@ const Portfolio = () => {
   useEffect(() => {
     const fetchPortfolioPerformance = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const accessToken = localStorage.getItem("accessToken");
-        
+
         if (!accessToken) {
           console.error("No access token found");
           setPerformanceLoading(false);
@@ -147,14 +146,14 @@ const Portfolio = () => {
             const month = date.toLocaleDateString('en-US', { month: 'short' });
             const year = date.getFullYear().toString().slice(-2);
             const monthFormatted = `${month} '${year}`;
-            
+
             return {
               month: monthFormatted,
               invested: item.total_invested / 1000, // Convert to thousands
               invested90: item.current_value / 1000, // Convert to thousands
             };
           });
-          
+
           setPerformanceData(transformedData);
         }
       } catch (error) {
@@ -171,9 +170,9 @@ const Portfolio = () => {
   useEffect(() => {
     const fetchPieChartData = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const accessToken = localStorage.getItem("accessToken");
-        
+
         if (!accessToken) {
           console.error("No access token found");
           setPieChartLoading(false);
@@ -242,9 +241,9 @@ const Portfolio = () => {
   useEffect(() => {
     const fetchInvestments = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const accessToken = localStorage.getItem("accessToken");
-        
+
         if (!accessToken) {
           console.error("No access token found");
           setInvestmentsLoading(false);
@@ -284,7 +283,7 @@ const Portfolio = () => {
               gainLossPositive: (item.gain_loss_percentage || 0) >= 0,
             };
           });
-          
+
           setInvestments(transformedInvestments);
         }
       } catch (error) {
@@ -338,9 +337,9 @@ const Portfolio = () => {
 
   return (
     <div className="min-h-screen bg-[#F4F6F5] overflow-x-hidden">
-     
-        
-     
+
+
+
 
       {/* Main Content */}
       <main className="w-full px-4 sm:px-6 py-8">
@@ -365,76 +364,74 @@ const Portfolio = () => {
           {/* Total Portfolio Value */}
           <div className="bg-[#CAE6FF] rounded-lg p-4 sm:p-6 relative overflow-hidden">
             <div className="flex flex-row justify-between mb-4 sm:mb-7">
-                <p className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">Total Portfolio Value</p>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-6 sm:h-6">
-                    <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="#01373D" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+              <p className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">Total Portfolio Value</p>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-6 sm:h-6">
+                <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="#01373D" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </div>
             <div className="flex flex-row justify-between items-center">
-                <p className="text-xl sm:text-2xl text-[#0A2A2E] font-poppins-custom">
-                  {loading ? "Loading..." : portfolioOverview.total_portfolio_value_formatted}
-                </p>
-                <p className={`text-xs sm:text-sm font-poppins-custom ${
-                  portfolioOverview.growth_percentage >= 0 ? "text-green-600" : "text-red-600"
+              <p className="text-xl sm:text-2xl text-[#0A2A2E] font-poppins-custom">
+                {loading ? "Loading..." : portfolioOverview.total_portfolio_value_formatted}
+              </p>
+              <p className={`text-xs sm:text-sm font-poppins-custom ${portfolioOverview.growth_percentage >= 0 ? "text-green-600" : "text-red-600"
                 }`}>
-                  {portfolioOverview.growth_percentage >= 0 ? "+" : ""}{portfolioOverview.growth_percentage.toFixed(1)}% overall
-                </p>
+                {portfolioOverview.growth_percentage >= 0 ? "+" : ""}{portfolioOverview.growth_percentage.toFixed(1)}% overall
+              </p>
             </div>
           </div>
 
           {/* Total Invested */}
           <div className="bg-green-100 rounded-lg p-4 sm:p-6 relative overflow-hidden">
             <div className="flex flex-row justify-between mb-4 sm:mb-7">
-                <div className="">
-                    <p className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">Total Invested</p>   
-                </div>
-                <div className="w-5 h-5 sm:w-6 sm:h-6">
-                    <GrowthIcon />
-                </div>
+              <div className="">
+                <p className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">Total Invested</p>
+              </div>
+              <div className="w-5 h-5 sm:w-6 sm:h-6">
+                <GrowthIcon />
+              </div>
             </div>
             <div className="flex flex-row justify-between items-center">
-                <p className="text-xl sm:text-2xl text-[#0A2A2E] font-poppins-custom">
-                  {loading ? "Loading..." : portfolioOverview.total_invested_formatted}
-                </p>
-                <p className={`text-xs sm:text-sm font-poppins-custom ${
-                  portfolioOverview.growth_percentage >= 0 ? "text-green-600" : "text-red-600"
+              <p className="text-xl sm:text-2xl text-[#0A2A2E] font-poppins-custom">
+                {loading ? "Loading..." : portfolioOverview.total_invested_formatted}
+              </p>
+              <p className={`text-xs sm:text-sm font-poppins-custom ${portfolioOverview.growth_percentage >= 0 ? "text-green-600" : "text-red-600"
                 }`}>
-                  {portfolioOverview.growth_percentage >= 0 ? "+" : ""}{portfolioOverview.growth_percentage.toFixed(1)}% overall
-                </p>
+                {portfolioOverview.growth_percentage >= 0 ? "+" : ""}{portfolioOverview.growth_percentage.toFixed(1)}% overall
+              </p>
             </div>
           </div>
 
           {/* Total Gains */}
           <div className="bg-[#CAE6FF] rounded-lg p-4 sm:p-6 relative overflow-hidden">
-            <div className="flex flex-row justify-between mb-4 sm:mb-7"> 
-                <p className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">Total Gains</p>
-                <div className="w-5 h-5 sm:w-6 sm:h-6">
-                    <GrowthIcon />
-                </div>
+            <div className="flex flex-row justify-between mb-4 sm:mb-7">
+              <p className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">Total Gains</p>
+              <div className="w-5 h-5 sm:w-6 sm:h-6">
+                <GrowthIcon />
+              </div>
             </div>
             <div className="flex flex-row justify-between items-center">
-                <p className="text-xl sm:text-2xl  text-[#0A2A2E] font-poppins-custom">
-                  {loading ? "Loading..." : portfolioOverview.total_gains_formatted}
-                </p>
-                <p className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">Unrealized gains</p>
+              <p className="text-xl sm:text-2xl  text-[#0A2A2E] font-poppins-custom">
+                {loading ? "Loading..." : portfolioOverview.total_gains_formatted}
+              </p>
+              <p className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">Unrealized gains</p>
             </div>
           </div>
 
           {/* Active Investments */}
           <div className="bg-orange-100 rounded-lg p-4 sm:p-6 relative overflow-hidden">
-            <div className="flex flex-row justify-between mb-4 sm:mb-7">   
-                <p className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">Active Investments</p>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-6 sm:h-6">
-                <path d="M21.2099 15.89C20.5737 17.3945 19.5787 18.7202 18.3118 19.7513C17.0449 20.7824 15.5447 21.4874 13.9424 21.8048C12.34 22.1221 10.6843 22.0421 9.12006 21.5718C7.55578 21.1014 6.13054 20.2551 4.96893 19.1067C3.80733 17.9582 2.94473 16.5428 2.45655 14.9839C1.96837 13.4251 1.86948 11.7705 2.16851 10.1646C2.46755 8.55878 3.15541 7.05063 4.17196 5.77203C5.18851 4.49343 6.5028 3.48332 7.99992 2.83M21.9999 12C21.9999 10.6868 21.7413 9.38642 21.2387 8.17317C20.7362 6.95991 19.9996 5.85752 19.071 4.92893C18.1424 4.00035 17.04 3.26375 15.8267 2.7612C14.6135 2.25866 13.3131 2 11.9999 2V12H21.9999Z" stroke="#01373D" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <div className="flex flex-row justify-between mb-4 sm:mb-7">
+              <p className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">Active Investments</p>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-6 sm:h-6">
+                <path d="M21.2099 15.89C20.5737 17.3945 19.5787 18.7202 18.3118 19.7513C17.0449 20.7824 15.5447 21.4874 13.9424 21.8048C12.34 22.1221 10.6843 22.0421 9.12006 21.5718C7.55578 21.1014 6.13054 20.2551 4.96893 19.1067C3.80733 17.9582 2.94473 16.5428 2.45655 14.9839C1.96837 13.4251 1.86948 11.7705 2.16851 10.1646C2.46755 8.55878 3.15541 7.05063 4.17196 5.77203C5.18851 4.49343 6.5028 3.48332 7.99992 2.83M21.9999 12C21.9999 10.6868 21.7413 9.38642 21.2387 8.17317C20.7362 6.95991 19.9996 5.85752 19.071 4.92893C18.1424 4.00035 17.04 3.26375 15.8267 2.7612C14.6135 2.25866 13.3131 2 11.9999 2V12H21.9999Z" stroke="#01373D" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </div>
             <div className="flex flex-row justify-between items-center">
-                <p className="text-xl sm:text-2xl text-[#0A2A2E] font-poppins-custom">
-                  {loading ? "Loading..." : portfolioOverview.active_investments}
-                </p>
-                <p className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">
-                  {portfolioOverview.pending_investments} pending
-                </p>
+              <p className="text-xl sm:text-2xl text-[#0A2A2E] font-poppins-custom">
+                {loading ? "Loading..." : portfolioOverview.active_investments}
+              </p>
+              <p className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">
+                {portfolioOverview.pending_investments} pending
+              </p>
             </div>
           </div>
         </div>
@@ -470,22 +467,22 @@ const Portfolio = () => {
                   <AreaChart data={portfolioData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorInvested" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00F0C3" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#00F0C3" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#00F0C3" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#00F0C3" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="colorInvested90" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#9889FF" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#9889FF" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#9889FF" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#9889FF" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#E5E7EB" />
-                    <XAxis 
-                      dataKey="month" 
+                    <XAxis
+                      dataKey="month"
                       stroke="#748A91"
                       style={{ fontSize: '10px', fontFamily: 'Poppins' }}
                       tick={{ fontSize: 10 }}
                     />
-                    <YAxis 
+                    <YAxis
                       stroke="#748A91"
                       style={{ fontSize: '10px', fontFamily: 'Poppins' }}
                       tick={{ fontSize: 10 }}
@@ -493,21 +490,21 @@ const Portfolio = () => {
                       domain={['auto', 'auto']}
                     />
                     <Tooltip content={<CustomTooltip />} />
-                    <Area 
-                      type="monotone" 
-                      dataKey="invested" 
-                      stroke="#00F0C3" 
+                    <Area
+                      type="monotone"
+                      dataKey="invested"
+                      stroke="#00F0C3"
                       strokeWidth={2}
-                      fill="url(#colorInvested)" 
+                      fill="url(#colorInvested)"
                       dot={{ fill: "#00F0C3", r: 3 }}
                       activeDot={{ r: 5 }}
                     />
-                    <Area 
-                      type="monotone" 
-                      dataKey="invested90" 
-                      stroke="#9889FF" 
+                    <Area
+                      type="monotone"
+                      dataKey="invested90"
+                      stroke="#9889FF"
                       strokeWidth={2}
-                      fill="url(#colorInvested90)" 
+                      fill="url(#colorInvested90)"
                       dot={{ fill: "#9889FF", r: 3 }}
                       activeDot={{ r: 5 }}
                     />
@@ -522,14 +519,14 @@ const Portfolio = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4">
               <h3 className="text-base sm:text-lg font-semibold text-[#0A2A2E] font-poppins-custom break-words">{chartTitle}</h3>
               <div className="relative self-start sm:self-auto" ref={chartDropdownRef}>
-                <button 
+                <button
                   onClick={() => setShowChartDropdown(!showChartDropdown)}
                   className="w-full sm:w-auto px-3 py-1.5 bg-[#F4F6F5] text-[#0A2A2E] rounded-lg font-medium font-poppins-custom flex items-center justify-center sm:justify-start gap-2 text-sm"
-                  style={{border: "0.5px solid #01373D"}}
+                  style={{ border: "0.5px solid #01373D" }}
                 >
                   {chartFilter === "round" ? "Round" : "Sector"}
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
                 {showChartDropdown && (
@@ -539,9 +536,8 @@ const Portfolio = () => {
                         setChartFilter("round");
                         setShowChartDropdown(false);
                       }}
-                      className={`w-full text-left px-4 py-2 text-sm font-poppins-custom text-[#0A2A2E] rounded-t-lg hover:bg-gray-50 transition-colors ${
-                        chartFilter === "round" ? "bg-gray-50" : ""
-                      }`}
+                      className={`w-full text-left px-4 py-2 text-sm font-poppins-custom text-[#0A2A2E] rounded-t-lg hover:bg-gray-50 transition-colors ${chartFilter === "round" ? "bg-gray-50" : ""
+                        }`}
                     >
                       Round
                     </button>
@@ -550,9 +546,8 @@ const Portfolio = () => {
                         setChartFilter("sector");
                         setShowChartDropdown(false);
                       }}
-                      className={`w-full text-left px-4 py-2 text-sm font-poppins-custom text-[#0A2A2E] rounded-b-lg hover:bg-gray-50 transition-colors ${
-                        chartFilter === "sector" ? "bg-gray-50" : ""
-                      }`}
+                      className={`w-full text-left px-4 py-2 text-sm font-poppins-custom text-[#0A2A2E] rounded-b-lg hover:bg-gray-50 transition-colors ${chartFilter === "sector" ? "bg-gray-50" : ""
+                        }`}
                     >
                       Sector
                     </button>
@@ -588,7 +583,7 @@ const Portfolio = () => {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip 
+                      <Tooltip
                         formatter={(value) => `$${value.toLocaleString()}`}
                         contentStyle={{
                           backgroundColor: 'white',
@@ -608,8 +603,8 @@ const Portfolio = () => {
                   {chartData.map((entry, index) => (
                     <div key={index} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
+                        <div
+                          className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: entry.color }}
                         ></div>
                         <span className="text-xs sm:text-sm text-[#0A2A2E] font-poppins-custom">{entry.name}</span>
@@ -648,69 +643,67 @@ const Portfolio = () => {
           ) : (
             <div className="space-y-4">
               {investments.map((investment, index) => (
-              <div key={index} className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl font-semibold text-[#0A2A2E] font-poppins-custom mb-2">
-                      {investment.name}
-                    </h3>
-                    <div className="flex items-center gap-2 text-xs sm:text-sm text-[#748A91] font-poppins-custom">
-                      <div className="w-4 h-4">
-                        {/* Calendar icon placeholder */}
+                <div key={index} className="bg-white rounded-lg p-4 sm:p-6 border border-gray-200">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg sm:text-xl font-semibold text-[#0A2A2E] font-poppins-custom mb-2">
+                        {investment.name}
+                      </h3>
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-[#748A91] font-poppins-custom">
+                        <div className="w-4 h-4">
+                          {/* Calendar icon placeholder */}
+                        </div>
+                        Updated {investment.updated}
                       </div>
-                      Updated {investment.updated}
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {investment.tags.map((tag, tagIndex) => (
+                        <span
+                          key={tagIndex}
+                          className={`px-3 py-1 rounded-full text-xs font-medium font-poppins-custom ${tag === "Active"
+                              ? "bg-green-500 text-white"
+                              : "bg-gray-100 text-[#0A2A2E] border border-gray-300"
+                            }`}
+                        >
+                          {tag}
+                        </span>
+                      ))}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {investment.tags.map((tag, tagIndex) => (
-                      <span
-                        key={tagIndex}
-                        className={`px-3 py-1 rounded-full text-xs font-medium font-poppins-custom ${
-                          tag === "Active"
-                            ? "bg-green-500 text-white"
-                            : "bg-gray-100 text-[#0A2A2E] border border-gray-300"
-                        }`}
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-4">
                     <div className="bg-[#F9F8FF] rounded-lg p-3 sm:p-2 flex flex-row items-center justify-between"
-                    style={{border: "0.5px solid #E2E2FB"}}
+                      style={{ border: "0.5px solid #E2E2FB" }}
                     >
-                        <p className="text-xs text-[#748A91] font-poppins-custom">Invested</p>
-                        <p className="text-sm sm:text-base font-semibold text-[#0A2A2E] font-poppins-custom">{investment.invested}</p>
+                      <p className="text-xs text-[#748A91] font-poppins-custom">Invested</p>
+                      <p className="text-sm sm:text-base font-semibold text-[#0A2A2E] font-poppins-custom">{investment.invested}</p>
+                    </div>
+                    <div className="bg-[#F9F8FF] rounded-lg p-3 sm:p-2 flex flex-row items-center justify-between"
+                      style={{ border: "0.5px solid #E2E2FB" }}
+                    >
+                      <p className="text-xs text-[#748A91] font-poppins-custom">Current Value</p>
+                      <p className="text-sm sm:text-base font-semibold text-[#0A2A2E] font-poppins-custom">{investment.currentValue}</p>
+                    </div>
+                    <div className="bg-[#F9F8FF] rounded-lg p-3 sm:p-2 flex flex-row items-center justify-between"
+                      style={{ border: "0.5px solid #E2E2FB" }}
+                    >
+                      <p className="text-xs text-[#748A91] font-poppins-custom">Gain/Loss</p>
+                      <p className={`text-sm sm:text-base font-poppins-custom ${investment.gainLossPositive ? "text-[#22C55E]" : "text-[#ED1C24]"
+                        }`}>
+                        {investment.gainLoss}
+                      </p>
+                    </div>
                   </div>
-                  <div className="bg-[#F9F8FF] rounded-lg p-3 sm:p-2 flex flex-row items-center justify-between"
-                style={{border: "0.5px solid #E2E2FB"}}
-                >
-                    <p className="text-xs text-[#748A91] font-poppins-custom">Current Value</p>
-                    <p className="text-sm sm:text-base font-semibold text-[#0A2A2E] font-poppins-custom">{investment.currentValue}</p>
-                  </div>
-                  <div className="bg-[#F9F8FF] rounded-lg p-3 sm:p-2 flex flex-row items-center justify-between"
-                style={{border: "0.5px solid #E2E2FB"}}
-                >
-                    <p className="text-xs text-[#748A91] font-poppins-custom">Gain/Loss</p>
-                    <p className={`text-sm sm:text-base font-poppins-custom ${
-                      investment.gainLossPositive ? "text-[#22C55E]" : "text-[#ED1C24]"
-                    }`}>
-                      {investment.gainLoss}
-                    </p>
-                  </div>
-                </div>
 
-                <button 
-                  onClick={() => navigate(`/investor-panel/portfolio/investment/${investment.id}`)}
-                  className="w-full sm:w-auto px-4 py-2 bg-[#F4F6F5] text-[#0A2A2E] rounded-lg hover:bg-gray-50 transition-colors font-medium font-poppins-custom text-sm"
-                  style={{border: "0.5px solid #01373D"}}
-                >
-                  View Details
-                </button>
-              </div>
-            ))}
+                  <button
+                    onClick={() => navigate(`/investor-panel/portfolio/investment/${investment.id}`)}
+                    className="w-full sm:w-auto px-4 py-2 bg-[#F4F6F5] text-[#0A2A2E] rounded-lg hover:bg-gray-50 transition-colors font-medium font-poppins-custom text-sm"
+                    style={{ border: "0.5px solid #01373D" }}
+                  >
+                    View Details
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>

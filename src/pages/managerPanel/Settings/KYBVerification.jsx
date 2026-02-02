@@ -25,7 +25,7 @@ const RightErrorIcon = () => (
 
 const KYBVerification = () => {
   // --- Configuration ---
-  const API_URL = "http://168.231.121.7/blockchain-backend/api/syndicate/settings/kyb-verification/";
+  const API_URL = "http://72.61.251.114/blockchain-backend/api/syndicate/settings/kyb-verification/";
   const TEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY0MzI5Njg3LCJpYXQiOjE3NjQzMTE2ODcsImp0aSI6Ijk5NzA1NzUyNGY5ZjQ2OTU5MTIzOTQyMWEwOWI1YjY4IiwidXNlcl9pZCI6IjY0In0.gt2lL5WVEjTHsEudojWQhP0APayBtG8CfwWgLpH6bA0";
 
   // --- State ---
@@ -76,7 +76,7 @@ const KYBVerification = () => {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json' 
+          'Content-Type': 'application/json'
         }
       });
 
@@ -84,8 +84,8 @@ const KYBVerification = () => {
         const result = await response.json();
         // Updated to handle { success: true, data: { ... } } structure
         if (result.success && result.data) {
-           const data = result.data;
-           setFormData({
+          const data = result.data;
+          setFormData({
             companyLegalName: data.company_legal_name || "",
             fullName: data.kyb_full_name || "",
             position: data.kyb_position || "",
@@ -94,12 +94,12 @@ const KYBVerification = () => {
             townCity: data.town_city || "",
             postalCode: data.postal_code || "",
             country: data.country || "",
-            
+
             // Map API values (lowercase/yes/no) to UI State (Capitalized for display if needed)
             spvEligibility: mapApiToUi(data.sse_eligibility, "Hidden"),
             notarySigning: mapApiToUi(data.is_notary_wet_signing, "NO"),
             deedOfAdherence: mapApiToUi(data.will_require_unlockley, "NO"),
-            
+
             contactNumber: data.investee_company_contact_number || "",
             email: data.investee_company_email || "",
             agreeToTerms: data.agree_to_investee_terms === true
@@ -107,11 +107,11 @@ const KYBVerification = () => {
 
           // Store info about existing files using the _url fields provided in response
           setExistingFiles({
-             certificate_of_incorporation: data.certificate_of_incorporation_url,
-             company_bank_statement: data.company_bank_statement_url,
-             company_proof_of_address: data.company_proof_of_address_url,
-             beneficiary_owner_identity_document: data.beneficiary_owner_identity_document_url,
-             beneficiary_owner_proof_of_address: data.beneficiary_owner_proof_of_address_url
+            certificate_of_incorporation: data.certificate_of_incorporation_url,
+            company_bank_statement: data.company_bank_statement_url,
+            company_proof_of_address: data.company_proof_of_address_url,
+            beneficiary_owner_identity_document: data.beneficiary_owner_identity_document_url,
+            beneficiary_owner_proof_of_address: data.beneficiary_owner_proof_of_address_url
           });
         }
       }
@@ -173,7 +173,7 @@ const KYBVerification = () => {
 
     // Construct FormData for PATCH
     const apiPayload = new FormData();
-    
+
     apiPayload.append('company_legal_name', formData.companyLegalName);
     apiPayload.append('kyb_full_name', formData.fullName);
     apiPayload.append('kyb_position', formData.position);
@@ -182,11 +182,11 @@ const KYBVerification = () => {
     apiPayload.append('town_city', formData.townCity);
     apiPayload.append('postal_code', formData.postalCode);
     apiPayload.append('country', formData.country);
-    
+
     apiPayload.append('sse_eligibility', mapUiToApi(formData.spvEligibility));
     apiPayload.append('is_notary_wet_signing', mapUiToApi(formData.notarySigning));
     apiPayload.append('will_require_unlockley', mapUiToApi(formData.deedOfAdherence));
-    
+
     apiPayload.append('investee_company_contact_number', formData.contactNumber);
     apiPayload.append('investee_company_email', formData.email);
     apiPayload.append('agree_to_investee_terms', formData.agreeToTerms);
@@ -212,7 +212,7 @@ const KYBVerification = () => {
         console.log("KYB Updated:", result);
         alert("KYB Verification details saved successfully!");
         // Refresh data to show uploaded file state if necessary
-        fetchKYBData(); 
+        fetchKYBData();
       } else {
         throw new Error("Failed to save data");
       }
@@ -228,7 +228,7 @@ const KYBVerification = () => {
   const FileUploadBox = ({ label, fieldKey, existingFile, currentFile }) => (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-2 font-poppins-custom">{label}</label>
-      <div 
+      <div
         className={`border border-[#0A2A2E] rounded-lg p-6 text-center hover:bg-gray-50 transition-colors bg-[#F4F6F5] ${currentFile ? 'border-green-500 bg-green-50' : ''}`}
       >
         <div className="flex flex-col items-center">
@@ -238,23 +238,23 @@ const KYBVerification = () => {
               <span className="font-medium text-[#748A91] hover:text-[#5a6b70]">
                 {currentFile ? currentFile.name : (existingFile ? "Replace File (File Exists)" : "Click to upload Files")}
               </span>
-              <input 
-                type="file" 
-                className="hidden" 
-                onChange={(e) => handleFileChange(e, fieldKey)} 
+              <input
+                type="file"
+                className="hidden"
+                onChange={(e) => handleFileChange(e, fieldKey)}
                 accept=".pdf,.png,.jpg,.jpeg"
               />
             </label>
             {existingFile && !currentFile && (
-               <a 
-                 href={existingFile} 
-                 target="_blank" 
-                 rel="noopener noreferrer" 
-                 className="text-xs text-green-600 mt-1 block hover:underline"
-                 onClick={(e) => e.stopPropagation()} // Prevent triggering file input
-               >
-                 ✓ View Current File
-               </a>
+              <a
+                href={existingFile}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-green-600 mt-1 block hover:underline"
+                onClick={(e) => e.stopPropagation()} // Prevent triggering file input
+              >
+                ✓ View Current File
+              </a>
             )}
           </div>
         </div>
@@ -263,7 +263,7 @@ const KYBVerification = () => {
   );
 
   if (isLoading) {
-      return <div className="p-8 text-center text-gray-500">Loading KYB Data...</div>;
+    return <div className="p-8 text-center text-gray-500">Loading KYB Data...</div>;
   }
 
   return (
@@ -271,8 +271,8 @@ const KYBVerification = () => {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
-            <ShieldCheckIcon />
-            <h2 className="text-2xl font-bold text-[#01373D]">Step 3: KYB Verification</h2>
+          <ShieldCheckIcon />
+          <h2 className="text-2xl font-bold text-[#01373D]">Step 3: KYB Verification</h2>
         </div>
         <p className="text-gray-600 font-poppins-custom">Trustworthy business starts here with fast, accurate KYB verification</p>
       </div>
@@ -321,15 +321,15 @@ const KYBVerification = () => {
           </div>
 
           {/* File Upload Sections */}
-          <FileUploadBox 
-            label="Company certificate of incorporation" 
+          <FileUploadBox
+            label="Company certificate of incorporation"
             fieldKey="certificate_of_incorporation"
             existingFile={existingFiles.certificate_of_incorporation}
             currentFile={files.certificate_of_incorporation}
           />
 
-          <FileUploadBox 
-            label="Company Bank statement of the account you wish to receive The Invest in" 
+          <FileUploadBox
+            label="Company Bank statement of the account you wish to receive The Invest in"
             fieldKey="company_bank_statement"
             existingFile={existingFiles.company_bank_statement}
             currentFile={files.company_bank_statement}
@@ -394,24 +394,24 @@ const KYBVerification = () => {
 
         {/* Additional File Upload Sections */}
         <div className="space-y-4">
-            <FileUploadBox 
-                label="Company Proof Of Address" 
-                fieldKey="company_proof_of_address"
-                existingFile={existingFiles.company_proof_of_address}
-                currentFile={files.company_proof_of_address}
-            />
-            <FileUploadBox 
-                label="Beneficiary Owner Identity Document" 
-                fieldKey="beneficiary_owner_identity_document"
-                existingFile={existingFiles.beneficiary_owner_identity_document}
-                currentFile={files.beneficiary_owner_identity_document}
-            />
-            <FileUploadBox 
-                label="Beneficiary Owner Proof Of Address" 
-                fieldKey="beneficiary_owner_proof_of_address"
-                existingFile={existingFiles.beneficiary_owner_proof_of_address}
-                currentFile={files.beneficiary_owner_proof_of_address}
-            />
+          <FileUploadBox
+            label="Company Proof Of Address"
+            fieldKey="company_proof_of_address"
+            existingFile={existingFiles.company_proof_of_address}
+            currentFile={files.company_proof_of_address}
+          />
+          <FileUploadBox
+            label="Beneficiary Owner Identity Document"
+            fieldKey="beneficiary_owner_identity_document"
+            existingFile={existingFiles.beneficiary_owner_identity_document}
+            currentFile={files.beneficiary_owner_identity_document}
+          />
+          <FileUploadBox
+            label="Beneficiary Owner Proof Of Address"
+            fieldKey="beneficiary_owner_proof_of_address"
+            existingFile={existingFiles.beneficiary_owner_proof_of_address}
+            currentFile={files.beneficiary_owner_proof_of_address}
+          />
         </div>
 
         {/* Custom Dropdown Selectors */}
@@ -419,7 +419,7 @@ const KYBVerification = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2 font-poppins-custom">S/SIE Eligibility</label>
             <div className="relative">
-              <div 
+              <div
                 onClick={() => handleDropdownClick('spvEligibility')}
                 className="w-full px-3 py-2 border border-[#0A2A2E] rounded-lg bg-[#F4F6F5] font-poppins-custom flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
               >
@@ -431,9 +431,9 @@ const KYBVerification = () => {
               {openDropdown === 'spvEligibility' && (
                 <div className="absolute z-10 w-full mt-1 bg-white border border-[#0A2A2E] rounded-lg shadow-lg">
                   {['Hidden', 'YES', 'NO'].map(opt => (
-                     <div key={opt} onClick={() => handleOptionSelect('spvEligibility', opt)} className="px-3 py-2 hover:bg-gray-50 cursor-pointer text-gray-700">
-                        {opt}
-                     </div>
+                    <div key={opt} onClick={() => handleOptionSelect('spvEligibility', opt)} className="px-3 py-2 hover:bg-gray-50 cursor-pointer text-gray-700">
+                      {opt}
+                    </div>
                   ))}
                 </div>
               )}
@@ -443,7 +443,7 @@ const KYBVerification = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2 font-poppins-custom">Is Notary / Wet Signing Of Document At Close Or Conversion Of Share</label>
             <div className="relative">
-              <div 
+              <div
                 onClick={() => handleDropdownClick('notarySigning')}
                 className="w-full px-3 py-2 border border-[#0A2A2E] rounded-lg bg-[#F4F6F5] font-poppins-custom flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
               >
@@ -455,9 +455,9 @@ const KYBVerification = () => {
               {openDropdown === 'notarySigning' && (
                 <div className="absolute z-10 w-full mt-1 bg-white border border-[#0A2A2E] rounded-lg shadow-lg">
                   {['YES', 'NO'].map(opt => (
-                     <div key={opt} onClick={() => handleOptionSelect('notarySigning', opt)} className="px-3 py-2 hover:bg-gray-50 cursor-pointer text-gray-700">
-                        {opt}
-                     </div>
+                    <div key={opt} onClick={() => handleOptionSelect('notarySigning', opt)} className="px-3 py-2 hover:bg-gray-50 cursor-pointer text-gray-700">
+                      {opt}
+                    </div>
                   ))}
                 </div>
               )}
@@ -467,7 +467,7 @@ const KYBVerification = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2 font-poppins-custom">Will You Required Unlocksley To Sign a Deed Of adherence in Order To Close The Deal</label>
             <div className="relative">
-              <div 
+              <div
                 onClick={() => handleDropdownClick('deedOfAdherence')}
                 className="w-full px-3 py-2 border border-[#0A2A2E] rounded-lg bg-[#F4F6F5] font-poppins-custom flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
               >
@@ -479,9 +479,9 @@ const KYBVerification = () => {
               {openDropdown === 'deedOfAdherence' && (
                 <div className="absolute z-10 w-full mt-1 bg-white border border-[#0A2A2E] rounded-lg shadow-lg">
                   {['YES', 'NO'].map(opt => (
-                     <div key={opt} onClick={() => handleOptionSelect('deedOfAdherence', opt)} className="px-3 py-2 hover:bg-gray-50 cursor-pointer text-gray-700">
-                        {opt}
-                     </div>
+                    <div key={opt} onClick={() => handleOptionSelect('deedOfAdherence', opt)} className="px-3 py-2 hover:bg-gray-50 cursor-pointer text-gray-700">
+                      {opt}
+                    </div>
                   ))}
                 </div>
               )}

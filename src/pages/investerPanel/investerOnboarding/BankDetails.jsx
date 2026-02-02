@@ -32,7 +32,7 @@ const BankDetails = () => {
     const file = e.target.files[0];
     if (file) {
       console.log("File selected:", file.name, "Size:", file.size, "Type:", file.type);
-      
+
       // Validate file size (max 5MB)
       const maxSize = 5 * 1024 * 1024; // 5MB in bytes
       if (file.size > maxSize) {
@@ -52,7 +52,7 @@ const BankDetails = () => {
 
       // Clear any previous errors
       setError("");
-      
+
       // Update form data with file
       handleInputChange("proofFile", file);
       console.log("File stored in formData:", file.name);
@@ -74,7 +74,7 @@ const BankDetails = () => {
         }
 
         // Get API URL from environment variable
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const finalUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
 
         console.log("Fetching profile data from:", finalUrl);
@@ -173,7 +173,7 @@ const BankDetails = () => {
       let currentProfileId = profileId;
       if (!currentProfileId) {
         // Fetch profile to get ID
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const profilesUrl = `${API_URL.replace(/\/$/, "")}/profiles/`;
         const profileResponse = await axios.get(profilesUrl, {
           headers: {
@@ -182,7 +182,7 @@ const BankDetails = () => {
             Accept: "application/json",
           },
         });
-        
+
         if (profileResponse.data?.results?.length > 0) {
           currentProfileId = profileResponse.data.results[0].id;
           setProfileId(currentProfileId);
@@ -195,13 +195,13 @@ const BankDetails = () => {
 
       // Prepare FormData for multipart/form-data request
       const formDataToSend = new FormData();
-      
+
       // Only append file if a new one is selected
       if (formData.proofFile) {
         console.log("File to upload:", formData.proofFile.name, "Size:", formData.proofFile.size, "Type:", formData.proofFile.type);
         formDataToSend.append("proof_of_bank_ownership", formData.proofFile);
       }
-      
+
       formDataToSend.append("bank_account_number", formData.accountNumber.trim());
       formDataToSend.append("bank_name", formData.bankName.trim());
       formDataToSend.append("account_holder_name", formData.accountHolderName.trim());
@@ -218,7 +218,7 @@ const BankDetails = () => {
       }
 
       // Get API URL from environment variable
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const finalUrl = `${API_URL.replace(/\/$/, "")}/profiles/${currentProfileId}/update_step3/`;
 
       console.log("Sending bank details to:", finalUrl);
@@ -350,14 +350,13 @@ const BankDetails = () => {
               <button
                 key={step}
                 onClick={() => handleStepClick(step)}
-                className={`w-full text-left rounded-lg px-4 py-3 transition-colors font-poppins-custom ${
-                  activeStep === step ? "bg-white text-[#001D21]" : "text-[#001D21] hover:bg-[#ffffff]/60"
-                } flex items-center gap-2`}
+                className={`w-full text-left rounded-lg px-4 py-3 transition-colors font-poppins-custom ${activeStep === step ? "bg-white text-[#001D21]" : "text-[#001D21] hover:bg-[#ffffff]/60"
+                  } flex items-center gap-2`}
               >
                 {index < 2 && (
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="10" cy="10" r="9" stroke="#10B981" strokeWidth="2" fill="none"/>
-                    <path d="M6 10L9 13L14 7" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="10" cy="10" r="9" stroke="#10B981" strokeWidth="2" fill="none" />
+                    <path d="M6 10L9 13L14 7" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )}
                 <span>{step}</span>
@@ -371,7 +370,7 @@ const BankDetails = () => {
           <div className="mx-auto w-full max-w-3xl">
             {/* Title */}
             <h1 className="text-3xl text-[#0A2A2E] mb-2 font-poppins-custom">Step 3: Bank Details / Payment Setup</h1>
-            
+
             {/* Subtitle */}
             <p className="text-sm sm:text-base text-[#748A91] mb-8 font-poppins-custom text-center sm:text-left">
               Securely add your bank or wallet details for payouts and fund transfers.
@@ -458,9 +457,9 @@ const BankDetails = () => {
                 <label className="block text-base font-medium text-[#0A2A2E] mb-2 font-poppins-custom flex items-center gap-2">
                   Upload Proof of Bank Ownership
                   <div className="relative group">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6.41699 9.91797H7.58366V6.41797H6.41699V9.91797ZM7.00033 5.2513C7.1656 5.2513 7.30424 5.1953 7.41624 5.0833C7.52824 4.9713 7.58405 4.83286 7.58366 4.66797C7.58327 4.50308 7.52727 4.36464 7.41566 4.25264C7.30405 4.14064 7.1656 4.08464 7.00033 4.08464C6.83505 4.08464 6.6966 4.14064 6.58499 4.25264C6.47338 4.36464 6.41738 4.50308 6.41699 4.66797C6.4166 4.83286 6.4726 4.9715 6.58499 5.08389C6.69738 5.19627 6.83583 5.25208 7.00033 5.2513ZM7.00033 12.8346C6.19338 12.8346 5.43505 12.6814 4.72533 12.375C4.0156 12.0685 3.39824 11.653 2.87324 11.1284C2.34824 10.6038 1.93272 9.98641 1.62666 9.2763C1.3206 8.56619 1.16738 7.80786 1.16699 7.0013C1.1666 6.19475 1.31983 5.43641 1.62666 4.7263C1.93349 4.01619 2.34902 3.39883 2.87324 2.87422C3.39747 2.34961 4.01483 1.93408 4.72533 1.62764C5.43583 1.32119 6.19416 1.16797 7.00033 1.16797C7.80649 1.16797 8.56483 1.32119 9.27533 1.62764C9.98583 1.93408 10.6032 2.34961 11.1274 2.87422C11.6516 3.39883 12.0674 4.01619 12.3746 4.7263C12.6818 5.43641 12.8348 6.19475 12.8337 7.0013C12.8325 7.80786 12.6793 8.56619 12.374 9.2763C12.0687 9.98641 11.6532 10.6038 11.1274 11.1284C10.6016 11.653 9.98427 12.0687 9.27533 12.3756C8.56638 12.6824 7.80805 12.8354 7.00033 12.8346Z" fill="#E9BB30"/>
-                  </svg>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M6.41699 9.91797H7.58366V6.41797H6.41699V9.91797ZM7.00033 5.2513C7.1656 5.2513 7.30424 5.1953 7.41624 5.0833C7.52824 4.9713 7.58405 4.83286 7.58366 4.66797C7.58327 4.50308 7.52727 4.36464 7.41566 4.25264C7.30405 4.14064 7.1656 4.08464 7.00033 4.08464C6.83505 4.08464 6.6966 4.14064 6.58499 4.25264C6.47338 4.36464 6.41738 4.50308 6.41699 4.66797C6.4166 4.83286 6.4726 4.9715 6.58499 5.08389C6.69738 5.19627 6.83583 5.25208 7.00033 5.2513ZM7.00033 12.8346C6.19338 12.8346 5.43505 12.6814 4.72533 12.375C4.0156 12.0685 3.39824 11.653 2.87324 11.1284C2.34824 10.6038 1.93272 9.98641 1.62666 9.2763C1.3206 8.56619 1.16738 7.80786 1.16699 7.0013C1.1666 6.19475 1.31983 5.43641 1.62666 4.7263C1.93349 4.01619 2.34902 3.39883 2.87324 2.87422C3.39747 2.34961 4.01483 1.93408 4.72533 1.62764C5.43583 1.32119 6.19416 1.16797 7.00033 1.16797C7.80649 1.16797 8.56483 1.32119 9.27533 1.62764C9.98583 1.93408 10.6032 2.34961 11.1274 2.87422C11.6516 3.39883 12.0674 4.01619 12.3746 4.7263C12.6818 5.43641 12.8348 6.19475 12.8337 7.0013C12.8325 7.80786 12.6793 8.56619 12.374 9.2763C12.0687 9.98641 11.6532 10.6038 11.1274 11.1284C10.6016 11.653 9.98427 12.0687 9.27533 12.3756C8.56638 12.6824 7.80805 12.8354 7.00033 12.8346Z" fill="#E9BB30" />
+                    </svg>
 
                     {/* Tooltip */}
                     <div className="absolute left-0 top-6 bg-yellow-100 border border-yellow-300 rounded-lg px-3 py-2 whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
@@ -470,20 +469,19 @@ const BankDetails = () => {
                     </div>
                   </div>
                 </label>
-                <div 
-                  className={`border-2 rounded-lg p-8 text-center cursor-pointer transition-colors ${
-                    formData.proofFile 
-                      ? "bg-green-50 border-green-400" 
+                <div
+                  className={`border-2 rounded-lg p-8 text-center cursor-pointer transition-colors ${formData.proofFile
+                      ? "bg-green-50 border-green-400"
                       : existingProofFile
-                      ? "bg-blue-50 border-blue-400"
-                      : "bg-[#F4F6F5] hover:border-[#9889FF]"
-                  }`}
-                  style={{ 
-                    border: formData.proofFile 
-                      ? "2px solid #10B981" 
+                        ? "bg-blue-50 border-blue-400"
+                        : "bg-[#F4F6F5] hover:border-[#9889FF]"
+                    }`}
+                  style={{
+                    border: formData.proofFile
+                      ? "2px solid #10B981"
                       : existingProofFile
-                      ? "2px solid #3B82F6"
-                      : "0.5px solid #0A2A2E" 
+                        ? "2px solid #3B82F6"
+                        : "0.5px solid #0A2A2E"
                   }}
                 >
                   <input
@@ -497,19 +495,19 @@ const BankDetails = () => {
                     <div className="mb-4 flex justify-center">
                       {formData.proofFile ? (
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <circle cx="12" cy="12" r="10" stroke="#10B981" strokeWidth="2" fill="none"/>
-                          <path d="M8 12L11 15L16 9" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <circle cx="12" cy="12" r="10" stroke="#10B981" strokeWidth="2" fill="none" />
+                          <path d="M8 12L11 15L16 9" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       ) : existingProofFile ? (
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M9 12L11 14L15 10" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#3B82F6" strokeWidth="2"/>
+                          <path d="M9 12L11 14L15 10" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#3B82F6" strokeWidth="2" />
                         </svg>
                       ) : (
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M17 8L12 3L7 8" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                          <path d="M12 3V15" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M17 8L12 3L7 8" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M12 3V15" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       )}
                     </div>
@@ -534,14 +532,14 @@ const BankDetails = () => {
                           ✓ Proof of Bank Ownership Already Uploaded
                         </p>
                         <p className="text-[#0A2A2E] font-poppins-custom mb-2 font-medium">
-                          {typeof existingProofFile === 'string' && existingProofFile.includes('/') 
-                            ? existingProofFile.split('/').pop() 
+                          {typeof existingProofFile === 'string' && existingProofFile.includes('/')
+                            ? existingProofFile.split('/').pop()
                             : 'Proof of Bank Ownership File'}
                         </p>
                         {typeof existingProofFile === 'string' && (existingProofFile.startsWith('http://') || existingProofFile.startsWith('https://')) && (
-                          <a 
-                            href={existingProofFile} 
-                            target="_blank" 
+                          <a
+                            href={existingProofFile}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:text-blue-800 underline text-sm font-poppins-custom mb-2 inline-block"
                             onClick={(e) => e.stopPropagation()}
@@ -594,9 +592,8 @@ const BankDetails = () => {
 
       {/* Mobile Sidebar Drawer */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-full transform bg-white transition-transform duration-300 ease-in-out lg:hidden ${
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 w-72 max-w-full transform bg-white transition-transform duration-300 ease-in-out lg:hidden ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
           <h4 className="text-lg font-semibold text-[#01373D]">Onboarding Steps</h4>
@@ -616,14 +613,13 @@ const BankDetails = () => {
             <button
               key={step}
               onClick={() => handleStepClick(step)}
-              className={`w-full text-left rounded-lg px-4 py-3 transition-colors font-poppins-custom flex items-center gap-2 ${
-                activeStep === step ? "bg-[#00F0C3]/20 text-[#001D21]" : "text-[#001D21] hover:bg-[#F4F6F5]"
-              }`}
+              className={`w-full text-left rounded-lg px-4 py-3 transition-colors font-poppins-custom flex items-center gap-2 ${activeStep === step ? "bg-[#00F0C3]/20 text-[#001D21]" : "text-[#001D21] hover:bg-[#F4F6F5]"
+                }`}
             >
               {index < 2 && (
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="10" cy="10" r="9" stroke="#10B981" strokeWidth="2" fill="none"/>
-                  <path d="M6 10L9 13L14 7" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="10" cy="10" r="9" stroke="#10B981" strokeWidth="2" fill="none" />
+                  <path d="M6 10L9 13L14 7" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               )}
               <span>{step}</span>

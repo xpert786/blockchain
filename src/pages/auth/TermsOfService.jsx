@@ -20,7 +20,7 @@ const TermsOfService = () => {
       // First try localStorage (should have role from verify_code response)
       const rawUserData = localStorage.getItem("userData");
       console.log("📋 TermsOfService: Raw localStorage userData string:", rawUserData);
-      
+
       let userData = {};
       try {
         userData = JSON.parse(rawUserData || "{}");
@@ -28,25 +28,25 @@ const TermsOfService = () => {
         console.error("📋 TermsOfService: Error parsing userData:", e);
         userData = {};
       }
-      
+
       let detectedRole = (userData?.role || "").toLowerCase().trim();
-      
+
       console.log("📋 TermsOfService: Checking role from localStorage:", detectedRole);
       console.log("📋 TermsOfService: Full userData object:", JSON.stringify(userData, null, 2));
       console.log("📋 TermsOfService: userData.role value:", userData?.role);
       console.log("📋 TermsOfService: userData.role type:", typeof userData?.role);
-      
+
       // If role not found in localStorage, try user API endpoint
       if (!detectedRole || detectedRole === "") {
         console.log("📋 TermsOfService: Role not found in localStorage, trying user API...");
         try {
-          const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+          const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
           const accessToken = localStorage.getItem("accessToken");
-          
+
           if (accessToken) {
             // Get user_id from localStorage or try to extract from token
             let userId = userData?.user_id || userData?.id;
-            
+
             // If no user_id, try to extract from token
             if (!userId) {
               try {
@@ -59,22 +59,22 @@ const TermsOfService = () => {
                 console.warn("Could not extract user_id from token:", e);
               }
             }
-            
+
             if (userId) {
               // Use the user API endpoint to get role
               const userUrl = `${API_URL.replace(/\/$/, "")}/users/${userId}/`;
               console.log("📋 TermsOfService: Fetching user from:", userUrl);
-              
+
               const resp = await axios.get(userUrl, {
                 headers: { Authorization: `Bearer ${accessToken}` }
               });
               const userInfo = resp.data;
               console.log("📋 TermsOfService: User API response:", JSON.stringify(userInfo, null, 2));
-              
+
               // Get role from user response
               detectedRole = (userInfo?.role || "").toLowerCase().trim();
               console.log("📋 TermsOfService: Role from user API:", detectedRole);
-              
+
               // Update localStorage if role found
               if (detectedRole) {
                 userData.role = detectedRole;
@@ -100,15 +100,15 @@ const TermsOfService = () => {
       } else {
         console.log("✅ TermsOfService: Role found in localStorage, using it:", detectedRole);
       }
-      
+
       // Store role in state for use in handleSubmit
       setUserRole(detectedRole);
       setRoleChecked(true);
-      
+
       console.log("📋 TermsOfService: Final detected role:", detectedRole);
       console.log("✅ TermsOfService: Showing terms page for user to accept (role will be checked on submit)");
     };
-    
+
     checkRoleAndRedirect();
   }, [navigate]);
 
@@ -117,23 +117,23 @@ const TermsOfService = () => {
     // First try localStorage
     let userData = JSON.parse(localStorage.getItem("userData") || "{}");
     let userRole = (userData?.role || "").toLowerCase();
-    
+
     // If role not found, try registration status API
     if (!userRole) {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const statusUrl = `${API_URL.replace(/\/$/, "")}/registration-flow/get_registration_status/`;
         const accessToken = localStorage.getItem("accessToken");
-        
+
         if (accessToken) {
           const resp = await axios.get(statusUrl, {
             headers: { Authorization: `Bearer ${accessToken}` }
           });
           const status = resp.data;
-          
+
           // Try to get role from status response
           userRole = (status?.role || status?.user?.role || status?.user_role || "").toLowerCase();
-          
+
           // Update localStorage if role found
           if (userRole) {
             userData.role = userRole;
@@ -144,7 +144,7 @@ const TermsOfService = () => {
         console.warn("Could not fetch role from registration status:", e);
       }
     }
-    
+
     return userRole;
   };
 
@@ -159,25 +159,25 @@ const TermsOfService = () => {
     e.preventDefault();
     if (agreements.acknowledge && agreements.termsAndPrivacy && agreements.cookies) {
       console.log("All agreements accepted:", agreements);
-      
+
       // Use role from state (already checked on mount)
       let finalRole = userRole;
-      
+
       // If role not in state, try to get it again
       if (!finalRole || finalRole === "") {
         const userData = JSON.parse(localStorage.getItem("userData") || "{}");
         finalRole = (userData?.role || "").toLowerCase().trim();
-        
+
         // If still not found, try user API endpoint
         if (!finalRole || finalRole === "") {
           try {
-            const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+            const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
             const accessToken = localStorage.getItem("accessToken");
-            
+
             if (accessToken) {
               // Get user_id from localStorage or extract from token
               let userId = userData?.user_id || userData?.id;
-              
+
               if (!userId) {
                 try {
                   const parts = accessToken.split('.');
@@ -189,7 +189,7 @@ const TermsOfService = () => {
                   console.warn("Could not extract user_id from token:", e);
                 }
               }
-              
+
               if (userId) {
                 // Use the user API endpoint to get role
                 const userUrl = `${API_URL.replace(/\/$/, "")}/users/${userId}/`;
@@ -198,7 +198,7 @@ const TermsOfService = () => {
                 });
                 const userInfo = resp.data;
                 finalRole = (userInfo?.role || "").toLowerCase().trim();
-                
+
                 // Update localStorage if role found
                 if (finalRole) {
                   userData.role = finalRole;
@@ -211,13 +211,13 @@ const TermsOfService = () => {
           }
         }
       }
-      
+
       console.log("📋 TermsOfService handleSubmit - Final role:", finalRole);
       console.log("📋 TermsOfService handleSubmit - Role check:", {
         isSyndicate: finalRole === "syndicate" || finalRole.includes("syndicate"),
         roleValue: finalRole
       });
-      
+
       if (finalRole === "syndicate" || finalRole.includes("syndicate")) {
         // Syndicate users go to syndicate creation
         console.log("✅ Redirecting syndicate user to syndicate creation");

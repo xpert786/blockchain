@@ -49,8 +49,8 @@ const SPVStep5 = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
-        
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
+
         let step5Data = null;
         let currentSpvId = null;
 
@@ -90,7 +90,7 @@ const SPVStep5 = () => {
         // Try to get step5 data with SPV ID or default to 1
         const testSpvId = currentSpvId || 1;
         const step5Url = `${API_URL.replace(/\/$/, "")}/spv/${testSpvId}/update_step5/`;
-        
+
         try {
           console.log("🔍 Fetching step5 data from:", step5Url);
           const step5Response = await axios.get(step5Url, {
@@ -132,7 +132,7 @@ const SPVStep5 = () => {
         // If we got step5 data, populate the form
         if (step5Data) {
           const responseData = step5Data.step_data || step5Data.data || step5Data;
-          
+
           console.log("✅ Step5 data found:", responseData);
           console.log("📋 Raw step5 response:", step5Data);
 
@@ -166,23 +166,23 @@ const SPVStep5 = () => {
           };
 
           const mappedData = {
-            lpInviteEmails: Array.isArray(responseData.lp_invite_emails) 
-              ? responseData.lp_invite_emails 
+            lpInviteEmails: Array.isArray(responseData.lp_invite_emails)
+              ? responseData.lp_invite_emails
               : (responseData.lp_invite_emails ? [responseData.lp_invite_emails] : []),
             lpInviteMessage: responseData.lp_invite_message || "",
             leadCarryPercentage: formatNumber(responseData.lead_carry_percentage),
-            investmentVisibility: investmentVisibilityMap[responseData.investment_visibility] || 
-              (responseData.investment_visibility ? 
-                responseData.investment_visibility.charAt(0).toUpperCase() + 
-                responseData.investment_visibility.slice(1).toLowerCase() 
+            investmentVisibility: investmentVisibilityMap[responseData.investment_visibility] ||
+              (responseData.investment_visibility ?
+                responseData.investment_visibility.charAt(0).toUpperCase() +
+                responseData.investment_visibility.slice(1).toLowerCase()
                 : "Hidden"),
             autoInviteActiveSpvs: responseData.auto_invite_active_spvs || false,
             invitePrivateNote: responseData.invite_private_note || "",
-            inviteTags: Array.isArray(responseData.invite_tags) 
-              ? responseData.invite_tags 
+            inviteTags: Array.isArray(responseData.invite_tags)
+              ? responseData.invite_tags
               : (responseData.invite_tags ? [responseData.invite_tags] : []),
-            dealTags: Array.isArray(responseData.deal_tags) 
-              ? responseData.deal_tags 
+            dealTags: Array.isArray(responseData.deal_tags)
+              ? responseData.deal_tags
               : (responseData.deal_tags ? [responseData.deal_tags] : []),
             syndicateSelection: responseData.syndicate_selection || "",
             dealMemo: responseData.deal_memo || ""
@@ -190,7 +190,7 @@ const SPVStep5 = () => {
 
           setInviteData(mappedData);
           setHasExistingData(true);
-          
+
           // Display invites if we have emails
           if (mappedData.lpInviteEmails && mappedData.lpInviteEmails.length > 0) {
             const invitesList = mappedData.lpInviteEmails.map((email, index) => ({
@@ -201,7 +201,7 @@ const SPVStep5 = () => {
             }));
             setInvites(invitesList);
           }
-          
+
           console.log("✅ Form populated with existing step5 data:", mappedData);
         } else if (currentSpvId) {
           setSpvId(currentSpvId);
@@ -239,11 +239,11 @@ const SPVStep5 = () => {
         throw new Error("No access token found. Please login again.");
       }
 
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
 
       // Get SPV ID from state, localStorage, or fetch it
       let currentSpvId = spvId || localStorage.getItem("currentSpvId");
-      
+
       // Parse if it's a string from localStorage
       if (currentSpvId && typeof currentSpvId === 'string' && !isNaN(currentSpvId)) {
         currentSpvId = parseInt(currentSpvId, 10);
@@ -342,13 +342,13 @@ const SPVStep5 = () => {
 
       // Parse emails first (will be used for both invite and step5 update)
       const emailsArray = parseEmailsToArray(modalFormData.emails);
-      
+
       // First, send invite using the same endpoint as SPVDetails
       if (emailsArray.length > 0) {
         try {
           const inviteLpsUrl = `${API_URL.replace(/\/$/, "")}/spv/${currentSpvId}/invite-lps/`;
           console.log("📤 Sending invite to:", inviteLpsUrl);
-          
+
           const invitePayload = {
             emails: emailsArray,
             message: modalFormData.message || "",
@@ -370,7 +370,7 @@ const SPVStep5 = () => {
           });
 
           console.log("✅ Invite sent successfully:", inviteResponse.data);
-          
+
           // Update invites list with the newly invited emails
           const newInvites = emailsArray.map((email, index) => ({
             id: Date.now() + index,
@@ -432,7 +432,7 @@ const SPVStep5 = () => {
 
       // Investment visibility - convert to lowercase
       if (modalFormData.investmentVisibility) {
-        dataToSend.investment_visibility = investmentVisibilityMap[modalFormData.investmentVisibility] || 
+        dataToSend.investment_visibility = investmentVisibilityMap[modalFormData.investmentVisibility] ||
           modalFormData.investmentVisibility.toLowerCase();
       }
 
@@ -514,7 +514,7 @@ const SPVStep5 = () => {
         console.log("📋 POST response:", response);
         console.log("📋 POST response status:", response.status);
         console.log("📋 POST response data:", response.data);
-        
+
         if (response?.data?.id || response?.data?.spv_id) {
           const newSpvId = response.data.id || response.data.spv_id;
           setSpvId(newSpvId);
@@ -527,7 +527,7 @@ const SPVStep5 = () => {
       if (response?.data) {
         const responseData = response.data.step_data || response.data.data || response.data;
         const allEmails = responseData.lp_invite_emails || dataToSend.lp_invite_emails || [];
-        
+
         if (allEmails.length > 0) {
           const allInvites = allEmails.map((email, index) => ({
             id: Date.now() + index,
@@ -560,8 +560,8 @@ const SPVStep5 = () => {
           lpInviteEmails: responseData.lp_invite_emails || prev.lpInviteEmails,
           lpInviteMessage: responseData.lp_invite_message || prev.lpInviteMessage,
           leadCarryPercentage: responseData.lead_carry_percentage ? parseFloat(responseData.lead_carry_percentage).toString() : prev.leadCarryPercentage,
-          investmentVisibility: responseData.investment_visibility ? 
-            responseData.investment_visibility.charAt(0).toUpperCase() + responseData.investment_visibility.slice(1).toLowerCase() 
+          investmentVisibility: responseData.investment_visibility ?
+            responseData.investment_visibility.charAt(0).toUpperCase() + responseData.investment_visibility.slice(1).toLowerCase()
             : prev.investmentVisibility,
           autoInviteActiveSpvs: responseData.auto_invite_active_spvs !== undefined ? responseData.auto_invite_active_spvs : prev.autoInviteActiveSpvs,
           invitePrivateNote: responseData.invite_private_note || prev.invitePrivateNote,
@@ -593,14 +593,14 @@ const SPVStep5 = () => {
       console.error("Error response:", err.response);
       console.error("Error status:", err.response?.status);
       console.error("Error data:", err.response?.data);
-      
+
       const backendData = err.response?.data;
-      
+
       if (backendData) {
         if (typeof backendData === "object") {
           // Handle specific field errors
           let errorMessages = [];
-          
+
           // Check for field errors
           Object.keys(backendData).forEach(key => {
             if (Array.isArray(backendData[key])) {
@@ -616,7 +616,7 @@ const SPVStep5 = () => {
               errorMessages.push(`${key}: ${backendData[key]}`);
             }
           });
-          
+
           if (errorMessages.length > 0) {
             setError(errorMessages.join(" "));
           } else {
@@ -644,7 +644,7 @@ const SPVStep5 = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="space-y-2 text-center sm:text-left">
-            <h1 className="text-3xl font-medium text-gray-800">Invite LPs</h1>
+          <h1 className="text-3xl font-medium text-gray-800">Invite LPs</h1>
           <p className="text-gray-600">
             Configure how your SPV will appear to investors and control access settings.
           </p>
@@ -721,7 +721,7 @@ const SPVStep5 = () => {
         </div>
         {invites.length > 0 ? (
           invites
-            .filter(invite => 
+            .filter(invite =>
               invite.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
               invite.name.toLowerCase().includes(searchQuery.toLowerCase())
             )
@@ -797,8 +797,8 @@ const SPVStep5 = () => {
       </div>
 
       {/* Invite LPs Modal */}
-      <InviteLPsModal 
-        isOpen={isModalOpen} 
+      <InviteLPsModal
+        isOpen={isModalOpen}
         onClose={handleCloseModal}
         onSubmit={handleSubmitInvite}
         loading={loading}

@@ -8,14 +8,14 @@ const SPVManagement = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
-  
+
   // API data states
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [summary, setSummary] = useState(null);
   const [tabs, setTabs] = useState([]);
   const [spvs, setSpvs] = useState([]);
-  
+
   // Modal states
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedSpv, setSelectedSpv] = useState(null);
@@ -24,7 +24,7 @@ const SPVManagement = () => {
   const [archiving, setArchiving] = useState(false);
   const [showDocumentsModal, setShowDocumentsModal] = useState(false);
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
-  
+
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -35,7 +35,7 @@ const SPVManagement = () => {
         setLoading(true);
         setError(null);
 
-        const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+        const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
         const accessToken = localStorage.getItem("accessToken");
 
         if (!accessToken) {
@@ -67,10 +67,10 @@ const SPVManagement = () => {
         const mappedSPVs = data.spvs.map(spv => {
           // Format date
           const createdDate = new Date(spv.created_at);
-          const formattedDate = createdDate.toLocaleDateString('en-US', { 
-            month: 'numeric', 
-            day: 'numeric', 
-            year: 'numeric' 
+          const formattedDate = createdDate.toLocaleDateString('en-US', {
+            month: 'numeric',
+            day: 'numeric',
+            year: 'numeric'
           });
 
           // Format currency
@@ -155,7 +155,7 @@ const SPVManagement = () => {
       iconColor: "text-[#01373D]",
       icon: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M6 22V4C6 3.46957 6.21071 2.96086 6.58579 2.58579C6.96086 2.21071 7.46957 2 8 2H16C16.5304 2 17.0391 2.21071 17.4142 2.58579C17.7893 2.96086 18 3.46957 18 4V22M6 22H18M6 22H4C3.46957 22 2.96086 21.7893 2.58579 21.4142C2.21071 21.0391 2 20.5304 2 20V14C2 13.4696 2.21071 12.9609 2.58579 12.5858C2.96086 12.2107 3.46957 12 4 12H6M18 22H20C20.5304 22 21.0391 21.7893 21.4142 21.4142C21.7893 21.0391 22 20.5304 22 20V11C22 10.4696 21.7893 9.96086 21.4142 9.58579C21.0391 9.21071 20.5304 9 20 9H18M10 6H14M10 10H14M10 14H14M10 18H14" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M6 22V4C6 3.46957 6.21071 2.96086 6.58579 2.58579C6.96086 2.21071 7.46957 2 8 2H16C16.5304 2 17.0391 2.21071 17.4142 2.58579C17.7893 2.96086 18 3.46957 18 4V22M6 22H18M6 22H4C3.46957 22 2.96086 21.7893 2.58579 21.4142C2.21071 21.0391 2 20.5304 2 20V14C2 13.4696 2.21071 12.9609 2.58579 12.5858C2.96086 12.2107 3.46957 12 4 12H6M18 22H20C20.5304 22 21.0391 21.7893 21.4142 21.4142C21.7893 21.0391 22 20.5304 22 20V11C22 10.4696 21.7893 9.96086 21.4142 9.58579C21.0391 9.21071 20.5304 9 20 9H18M10 6H14M10 10H14M10 14H14M10 18H14" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       )
     },
@@ -167,7 +167,7 @@ const SPVManagement = () => {
       iconColor: "text-[#01373D]",
       icon: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="#01373D" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="#01373D" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       )
     },
@@ -179,7 +179,7 @@ const SPVManagement = () => {
       iconColor: "text-[#01373D]",
       icon: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21M13 7C13 9.20914 11.2091 11 9 11C6.79086 11 5 9.20914 5 7C5 4.79086 6.79086 3 9 3C11.2091 3 13 4.79086 13 7ZM23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45768C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21M13 7C13 9.20914 11.2091 11 9 11C6.79086 11 5 9.20914 5 7C5 4.79086 6.79086 3 9 3C11.2091 3 13 4.79086 13 7ZM23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45768C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       )
     },
@@ -191,7 +191,7 @@ const SPVManagement = () => {
       iconColor: "text-[#01373D]",
       icon: () => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 3V21H21M7 16L10 13L14 17L21 10" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M3 3V21H21M7 16L10 13L14 17L21 10" stroke="#01373D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       )
     }
@@ -213,10 +213,10 @@ const SPVManagement = () => {
   const handleViewDetails = (spv) => {
     console.log('=== VIEW DETAILS FUNCTION CALLED ===');
     console.log('SPV Data:', spv);
-    
+
     // Close dropdown menu
     setOpenDropdown(null);
-    
+
     // Navigate to SPV details page with SPV data
     console.log('Navigating to SPV Details...');
     navigate('/manager-panel/spv-details', { state: { spv: spv.rawData || spv } });
@@ -234,7 +234,7 @@ const SPVManagement = () => {
 
     try {
       setArchiving(true);
-      const API_URL = import.meta.env.VITE_API_URL || "http://168.231.121.7/blockchain-backend";
+      const API_URL = import.meta.env.VITE_API_URL || "http://72.61.251.114/blockchain-backend";
       const accessToken = localStorage.getItem("accessToken");
 
       if (!accessToken) {
@@ -333,7 +333,7 @@ const SPVManagement = () => {
     let matchesSearch = true;
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
-      matchesSearch = 
+      matchesSearch =
         spv.name?.toLowerCase().includes(query) ||
         spv.id?.toLowerCase().includes(query) ||
         spv.location?.toLowerCase().includes(query) ||
@@ -396,7 +396,7 @@ const SPVManagement = () => {
                 {metric.icon()}
               </div>
             </div>
-            
+
             {/* Bottom Row - Large Number and Change */}
             <div className="flex justify-between items-end">
               <p className="text-xl font-bold text-[#01373D]">{metric.value}</p>
@@ -414,11 +414,10 @@ const SPVManagement = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  activeTab === tab.id
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${activeTab === tab.id
                     ? "bg-[#00F0C3] text-black"
                     : "bg-[#F4F6F5] text-gray-700 hover:bg-gray-50"
-                }`}
+                  }`}
               >
                 {tab.label} ({tab.count})
               </button>
@@ -464,37 +463,35 @@ const SPVManagement = () => {
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setViewMode("grid")}
-            className={`p-2 rounded-lg border transition-colors ${
-              viewMode === "grid" ? "bg-[#01373D] border-transparent text-[#01373D]" : "bg-white border-gray-200 text-gray-600"
-            }`}
+            className={`p-2 rounded-lg border transition-colors ${viewMode === "grid" ? "bg-[#01373D] border-transparent text-[#01373D]" : "bg-white border-gray-200 text-gray-600"
+              }`}
           >
             {viewMode === "grid" ? (
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path fillRule="evenodd" clipRule="evenodd" d="M7 4H4V7H7V4ZM4 3C3.73478 3 3.48043 3.10536 3.29289 3.29289C3.10536 3.48043 3 3.73478 3 4V7C3 7.26522 3.10536 7.51957 3.29289 7.70711C3.48043 7.89464 3.73478 8 4 8H7C7.26522 8 7.51957 7.89464 7.70711 7.70711C7.89464 7.51957 8 7.26522 8 7V4C8 3.73478 7.89464 3.48043 7.70711 3.29289C7.51957 3.10536 7.26522 3 7 3H4ZM7 10.5H4V13.5H7V10.5ZM4 9.5C3.73478 9.5 3.48043 9.60536 3.29289 9.79289C3.10536 9.98043 3 10.2348 3 10.5V13.5C3 13.7652 3.10536 14.0196 3.29289 14.2071C3.48043 14.3946 3.73478 14.5 4 14.5H7C7.26522 14.5 7.51957 14.3946 7.70711 14.2071C7.89464 14.0196 8 13.7652 8 13.5V10.5C8 10.2348 7.89464 9.98043 7.70711 9.79289C7.51957 9.60536 7.26522 9.5 7 9.5H4ZM7 17H4V20H7V17ZM4 16C3.73478 16 3.48043 16.1054 3.29289 16.2929C3.10536 16.4804 3 16.7348 3 17V20C3 20.2652 3.10536 20.5196 3.29289 20.7071C3.4804 20.8946 3.7348 21 4 21H7C7.2652 21 7.5196 20.8946 7.7071 20.7071C7.8946 20.5196 8 20.2652 8 20V17C8 16.7348 7.8946 16.4804 7.7071 16.2929C7.5196 16.1054 7.2652 16 7 16H4ZM13.5 4H10.5V7H13.5V4ZM10.5 3C10.2348 3 9.98043 3.10536 9.79289 3.29289C9.60536 3.48043 9.5 3.73478 9.5 4V7C9.5 7.26522 9.60536 7.51957 9.79289 7.70711C9.98043 7.89464 10.2348 8 10.5 8H13.5C13.7652 8 14.0196 7.89464 14.2071 7.70711C14.3946 7.51957 14.5 7.26522 14.5 7V4C14.5 3.73478 14.3946 3.48043 14.2071 3.29289C14.0196 3.10536 13.7652 3 13.5 3H10.5ZM13.5 10.5H10.5V13.5H13.5V10.5ZM10.5 9.5C10.2348 9.5 9.98043 9.60536 9.79289 9.79289C9.60536 9.98043 9.5 10.2348 9.5 10.5V13.5C9.5 13.7652 9.60536 14.0196 9.79289 14.2071C9.98043 14.3946 10.2348 14.5 10.5 14.5H13.5C13.7652 14.5 14.0196 14.3946 14.2071 14.2071C14.3946 14.0196 14.5 13.7652 14.5 13.5V10.5C14.5 10.2348 14.3946 9.98043 14.2071 9.79289C14.0196 9.60536 13.7652 9.5 13.5 9.5H10.5ZM13.5 17H10.5V20H13.5V17ZM10.5 16C10.2348 16 9.98043 16.1054 9.79289 16.2929C9.60536 16.4804 9.5 16.7348 9.5 17V20C9.5 20.2652 9.60536 20.5196 9.79289 20.7071C9.98043 20.8946 10.2348 21 10.5 21H13.5C13.7652 21 14.0196 20.8946 14.2071 20.7071C14.3946 20.5196 14.5 20.2652 14.5 20V17C14.5 16.7348 14.3946 16.4804 14.2071 16.2929C14.0196 16.1054 13.7652 16 13.5 16H10.5ZM20 4H17V7H20V4ZM17 3C16.7348 3 16.4804 3.10536 16.2929 3.29289C16.1054 3.48043 16 3.73478 16 4V7C16 7.26522 16.1054 7.51957 16.2929 7.70711C16.4804 7.89464 16.7348 8 17 8H20C20.2652 8 20.5196 7.89464 20.7071 7.70711C20.8946 7.51957 21 7.26522 21 7V4C21 3.73478 20.8946 3.48043 20.7071 3.29289C20.5196 3.10536 20.2652 3 20 3H17ZM20 10.5H17V13.5H20V10.5ZM17 9.5C16.7348 9.5 16.4804 9.60536 16.2929 9.79289C16.1054 9.98043 16 10.2348 16 10.5V13.5C16 13.7652 16.1054 14.0196 16.2929 14.2071C16.4804 14.3946 16.7348 14.5 17 14.5H20C20.2652 14.5 20.5196 14.3946 20.7071 14.2071C20.8946 14.0196 21 13.7652 21 13.5V10.5C21 10.2348 20.8946 9.98043 20.7071 9.79289C20.5196 9.60536 20.2652 9.5 20 9.5H17ZM20 17H17V20H20V17ZM17 16C16.7348 16 16.4804 16.1054 16.2929 16.2929C16.1054 16.4804 16 16.7348 16 17V20C16 20.2652 16.1054 20.5196 16.2929 20.7071C16.4804 20.8946 16.7348 21 17 21H20C20.2652 21 20.5196 20.8946 20.7071 20.7071C20.8946 20.5196 21 20.2652 21 20V17C21 16.7348 20.8946 16.4804 20.7071 16.2929C20.5196 16.1054 20.2652 16 20 16H17Z" fill="#FFFFFF"/>
+                <path fillRule="evenodd" clipRule="evenodd" d="M7 4H4V7H7V4ZM4 3C3.73478 3 3.48043 3.10536 3.29289 3.29289C3.10536 3.48043 3 3.73478 3 4V7C3 7.26522 3.10536 7.51957 3.29289 7.70711C3.48043 7.89464 3.73478 8 4 8H7C7.26522 8 7.51957 7.89464 7.70711 7.70711C7.89464 7.51957 8 7.26522 8 7V4C8 3.73478 7.89464 3.48043 7.70711 3.29289C7.51957 3.10536 7.26522 3 7 3H4ZM7 10.5H4V13.5H7V10.5ZM4 9.5C3.73478 9.5 3.48043 9.60536 3.29289 9.79289C3.10536 9.98043 3 10.2348 3 10.5V13.5C3 13.7652 3.10536 14.0196 3.29289 14.2071C3.48043 14.3946 3.73478 14.5 4 14.5H7C7.26522 14.5 7.51957 14.3946 7.70711 14.2071C7.89464 14.0196 8 13.7652 8 13.5V10.5C8 10.2348 7.89464 9.98043 7.70711 9.79289C7.51957 9.60536 7.26522 9.5 7 9.5H4ZM7 17H4V20H7V17ZM4 16C3.73478 16 3.48043 16.1054 3.29289 16.2929C3.10536 16.4804 3 16.7348 3 17V20C3 20.2652 3.10536 20.5196 3.29289 20.7071C3.4804 20.8946 3.7348 21 4 21H7C7.2652 21 7.5196 20.8946 7.7071 20.7071C7.8946 20.5196 8 20.2652 8 20V17C8 16.7348 7.8946 16.4804 7.7071 16.2929C7.5196 16.1054 7.2652 16 7 16H4ZM13.5 4H10.5V7H13.5V4ZM10.5 3C10.2348 3 9.98043 3.10536 9.79289 3.29289C9.60536 3.48043 9.5 3.73478 9.5 4V7C9.5 7.26522 9.60536 7.51957 9.79289 7.70711C9.98043 7.89464 10.2348 8 10.5 8H13.5C13.7652 8 14.0196 7.89464 14.2071 7.70711C14.3946 7.51957 14.5 7.26522 14.5 7V4C14.5 3.73478 14.3946 3.48043 14.2071 3.29289C14.0196 3.10536 13.7652 3 13.5 3H10.5ZM13.5 10.5H10.5V13.5H13.5V10.5ZM10.5 9.5C10.2348 9.5 9.98043 9.60536 9.79289 9.79289C9.60536 9.98043 9.5 10.2348 9.5 10.5V13.5C9.5 13.7652 9.60536 14.0196 9.79289 14.2071C9.98043 14.3946 10.2348 14.5 10.5 14.5H13.5C13.7652 14.5 14.0196 14.3946 14.2071 14.2071C14.3946 14.0196 14.5 13.7652 14.5 13.5V10.5C14.5 10.2348 14.3946 9.98043 14.2071 9.79289C14.0196 9.60536 13.7652 9.5 13.5 9.5H10.5ZM13.5 17H10.5V20H13.5V17ZM10.5 16C10.2348 16 9.98043 16.1054 9.79289 16.2929C9.60536 16.4804 9.5 16.7348 9.5 17V20C9.5 20.2652 9.60536 20.5196 9.79289 20.7071C9.98043 20.8946 10.2348 21 10.5 21H13.5C13.7652 21 14.0196 20.8946 14.2071 20.7071C14.3946 20.5196 14.5 20.2652 14.5 20V17C14.5 16.7348 14.3946 16.4804 14.2071 16.2929C14.0196 16.1054 13.7652 16 13.5 16H10.5ZM20 4H17V7H20V4ZM17 3C16.7348 3 16.4804 3.10536 16.2929 3.29289C16.1054 3.48043 16 3.73478 16 4V7C16 7.26522 16.1054 7.51957 16.2929 7.70711C16.4804 7.89464 16.7348 8 17 8H20C20.2652 8 20.5196 7.89464 20.7071 7.70711C20.8946 7.51957 21 7.26522 21 7V4C21 3.73478 20.8946 3.48043 20.7071 3.29289C20.5196 3.10536 20.2652 3 20 3H17ZM20 10.5H17V13.5H20V10.5ZM17 9.5C16.7348 9.5 16.4804 9.60536 16.2929 9.79289C16.1054 9.98043 16 10.2348 16 10.5V13.5C16 13.7652 16.1054 14.0196 16.2929 14.2071C16.4804 14.3946 16.7348 14.5 17 14.5H20C20.2652 14.5 20.5196 14.3946 20.7071 14.2071C20.8946 14.0196 21 13.7652 21 13.5V10.5C21 10.2348 20.8946 9.98043 20.7071 9.79289C20.5196 9.60536 20.2652 9.5 20 9.5H17ZM20 17H17V20H20V17ZM17 16C16.7348 16 16.4804 16.1054 16.2929 16.2929C16.1054 16.4804 16 16.7348 16 17V20C16 20.2652 16.1054 20.5196 16.2929 20.7071C16.4804 20.8946 16.7348 21 17 21H20C20.2652 21 20.5196 20.8946 20.7071 20.7071C20.8946 20.5196 21 20.2652 21 20V17C21 16.7348 20.8946 16.4804 20.7071 16.2929C20.5196 16.1054 20.2652 16 20 16H17Z" fill="#FFFFFF" />
               </svg>
             ) : (
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path fillRule="evenodd" clipRule="evenodd" d="M7 4H4V7H7V4ZM4 3C3.73478 3 3.48043 3.10536 3.29289 3.29289C3.10536 3.48043 3 3.73478 3 4V7C3 7.26522 3.10536 7.51957 3.29289 7.70711C3.48043 7.89464 3.73478 8 4 8H7C7.26522 8 7.51957 7.89464 7.70711 7.70711C7.89464 7.51957 8 7.26522 8 7V4C8 3.73478 7.89464 3.48043 7.70711 3.29289C7.51957 3.10536 7.26522 3 7 3H4ZM7 10.5H4V13.5H7V10.5ZM4 9.5C3.73478 9.5 3.48043 9.60536 3.29289 9.79289C3.10536 9.98043 3 10.2348 3 10.5V13.5C3 13.7652 3.10536 14.0196 3.29289 14.2071C3.48043 14.3946 3.73478 14.5 4 14.5H7C7.26522 14.5 7.51957 14.3946 7.70711 14.2071C7.89464 14.0196 8 13.7652 8 13.5V10.5C8 10.2348 7.89464 9.98043 7.70711 9.79289C7.51957 9.60536 7.26522 9.5 7 9.5H4ZM7 17H4V20H7V17ZM4 16C3.73478 16 3.48043 16.1054 3.29289 16.2929C3.10536 16.4804 3 16.7348 3 17V20C3 20.2652 3.10536 20.5196 3.29289 20.7071C3.4804 20.8946 3.7348 21 4 21H7C7.2652 21 7.5196 20.8946 7.7071 20.7071C7.8946 20.5196 8 20.2652 8 20V17C8 16.7348 7.8946 16.4804 7.7071 16.2929C7.5196 16.1054 7.2652 16 7 16H4ZM13.5 4H10.5V7H13.5V4ZM10.5 3C10.2348 3 9.98043 3.10536 9.79289 3.29289C9.60536 3.48043 9.5 3.73478 9.5 4V7C9.5 7.26522 9.60536 7.51957 9.79289 7.70711C9.98043 7.89464 10.2348 8 10.5 8H13.5C13.7652 8 14.0196 7.89464 14.2071 7.70711C14.3946 7.51957 14.5 7.26522 14.5 7V4C14.5 3.73478 14.3946 3.48043 14.2071 3.29289C14.0196 3.10536 13.7652 3 13.5 3H10.5ZM13.5 10.5H10.5V13.5H13.5V10.5ZM10.5 9.5C10.2348 9.5 9.98043 9.60536 9.79289 9.79289C9.60536 9.98043 9.5 10.2348 9.5 10.5V13.5C9.5 13.7652 9.60536 14.0196 9.79289 14.2071C9.98043 14.3946 10.2348 14.5 10.5 14.5H13.5C13.7652 14.5 14.0196 14.3946 14.2071 14.2071C14.3946 14.0196 14.5 13.7652 14.5 13.5V10.5C14.5 10.2348 14.3946 9.98043 14.2071 9.79289C14.0196 9.60536 13.7652 9.5 13.5 9.5H10.5ZM13.5 17H10.5V20H13.5V17ZM10.5 16C10.2348 16 9.98043 16.1054 9.79289 16.2929C9.60536 16.4804 9.5 16.7348 9.5 17V20C9.5 20.2652 9.60536 20.5196 9.79289 20.7071C9.98043 20.8946 10.2348 21 10.5 21H13.5C13.7652 21 14.0196 20.8946 14.2071 20.7071C14.3946 20.5196 14.5 20.2652 14.5 20V17C14.5 16.7348 14.3946 16.4804 14.2071 16.2929C14.0196 16.1054 13.7652 16 13.5 16H10.5ZM20 4H17V7H20V4ZM17 3C16.7348 3 16.4804 3.10536 16.2929 3.29289C16.1054 3.48043 16 3.73478 16 4V7C16 7.26522 16.1054 7.51957 16.2929 7.70711C16.4804 7.89464 16.7348 8 17 8H20C20.2652 8 20.5196 7.89464 20.7071 7.70711C20.8946 7.51957 21 7.26522 21 7V4C21 3.73478 20.8946 3.48043 20.7071 3.29289C20.5196 3.10536 20.2652 3 20 3H17ZM20 10.5H17V13.5H20V10.5ZM17 9.5C16.7348 9.5 16.4804 9.60536 16.2929 9.79289C16.1054 9.98043 16 10.2348 16 10.5V13.5C16 13.7652 16.1054 14.0196 16.2929 14.2071C16.4804 14.3946 16.7348 14.5 17 14.5H20C20.2652 14.5 20.5196 14.3946 20.7071 14.2071C20.8946 14.0196 21 13.7652 21 13.5V10.5C21 10.2348 20.8946 9.98043 20.7071 9.79289C20.5196 9.60536 20.2652 9.5 20 9.5H17ZM20 17H17V20H20V17ZM17 16C16.7348 16 16.4804 16.1054 16.2929 16.2929C16.1054 16.4804 16 16.7348 16 17V20C16 20.2652 16.1054 20.5196 16.2929 20.7071C16.4804 20.8946 16.7348 21 17 21H20C20.2652 21 20.5196 20.8946 20.7071 20.7071C20.8946 20.5196 21 20.2652 21 20V17C21 16.7348 20.8946 16.4804 20.7071 16.2929C20.5196 16.1054 20.2652 16 20 16H17Z" fill="#748A91"/>
+                <path fillRule="evenodd" clipRule="evenodd" d="M7 4H4V7H7V4ZM4 3C3.73478 3 3.48043 3.10536 3.29289 3.29289C3.10536 3.48043 3 3.73478 3 4V7C3 7.26522 3.10536 7.51957 3.29289 7.70711C3.48043 7.89464 3.73478 8 4 8H7C7.26522 8 7.51957 7.89464 7.70711 7.70711C7.89464 7.51957 8 7.26522 8 7V4C8 3.73478 7.89464 3.48043 7.70711 3.29289C7.51957 3.10536 7.26522 3 7 3H4ZM7 10.5H4V13.5H7V10.5ZM4 9.5C3.73478 9.5 3.48043 9.60536 3.29289 9.79289C3.10536 9.98043 3 10.2348 3 10.5V13.5C3 13.7652 3.10536 14.0196 3.29289 14.2071C3.48043 14.3946 3.73478 14.5 4 14.5H7C7.26522 14.5 7.51957 14.3946 7.70711 14.2071C7.89464 14.0196 8 13.7652 8 13.5V10.5C8 10.2348 7.89464 9.98043 7.70711 9.79289C7.51957 9.60536 7.26522 9.5 7 9.5H4ZM7 17H4V20H7V17ZM4 16C3.73478 16 3.48043 16.1054 3.29289 16.2929C3.10536 16.4804 3 16.7348 3 17V20C3 20.2652 3.10536 20.5196 3.29289 20.7071C3.4804 20.8946 3.7348 21 4 21H7C7.2652 21 7.5196 20.8946 7.7071 20.7071C7.8946 20.5196 8 20.2652 8 20V17C8 16.7348 7.8946 16.4804 7.7071 16.2929C7.5196 16.1054 7.2652 16 7 16H4ZM13.5 4H10.5V7H13.5V4ZM10.5 3C10.2348 3 9.98043 3.10536 9.79289 3.29289C9.60536 3.48043 9.5 3.73478 9.5 4V7C9.5 7.26522 9.60536 7.51957 9.79289 7.70711C9.98043 7.89464 10.2348 8 10.5 8H13.5C13.7652 8 14.0196 7.89464 14.2071 7.70711C14.3946 7.51957 14.5 7.26522 14.5 7V4C14.5 3.73478 14.3946 3.48043 14.2071 3.29289C14.0196 3.10536 13.7652 3 13.5 3H10.5ZM13.5 10.5H10.5V13.5H13.5V10.5ZM10.5 9.5C10.2348 9.5 9.98043 9.60536 9.79289 9.79289C9.60536 9.98043 9.5 10.2348 9.5 10.5V13.5C9.5 13.7652 9.60536 14.0196 9.79289 14.2071C9.98043 14.3946 10.2348 14.5 10.5 14.5H13.5C13.7652 14.5 14.0196 14.3946 14.2071 14.2071C14.3946 14.0196 14.5 13.7652 14.5 13.5V10.5C14.5 10.2348 14.3946 9.98043 14.2071 9.79289C14.0196 9.60536 13.7652 9.5 13.5 9.5H10.5ZM13.5 17H10.5V20H13.5V17ZM10.5 16C10.2348 16 9.98043 16.1054 9.79289 16.2929C9.60536 16.4804 9.5 16.7348 9.5 17V20C9.5 20.2652 9.60536 20.5196 9.79289 20.7071C9.98043 20.8946 10.2348 21 10.5 21H13.5C13.7652 21 14.0196 20.8946 14.2071 20.7071C14.3946 20.5196 14.5 20.2652 14.5 20V17C14.5 16.7348 14.3946 16.4804 14.2071 16.2929C14.0196 16.1054 13.7652 16 13.5 16H10.5ZM20 4H17V7H20V4ZM17 3C16.7348 3 16.4804 3.10536 16.2929 3.29289C16.1054 3.48043 16 3.73478 16 4V7C16 7.26522 16.1054 7.51957 16.2929 7.70711C16.4804 7.89464 16.7348 8 17 8H20C20.2652 8 20.5196 7.89464 20.7071 7.70711C20.8946 7.51957 21 7.26522 21 7V4C21 3.73478 20.8946 3.48043 20.7071 3.29289C20.5196 3.10536 20.2652 3 20 3H17ZM20 10.5H17V13.5H20V10.5ZM17 9.5C16.7348 9.5 16.4804 9.60536 16.2929 9.79289C16.1054 9.98043 16 10.2348 16 10.5V13.5C16 13.7652 16.1054 14.0196 16.2929 14.2071C16.4804 14.3946 16.7348 14.5 17 14.5H20C20.2652 14.5 20.5196 14.3946 20.7071 14.2071C20.8946 14.0196 21 13.7652 21 13.5V10.5C21 10.2348 20.8946 9.98043 20.7071 9.79289C20.5196 9.60536 20.2652 9.5 20 9.5H17ZM20 17H17V20H20V17ZM17 16C16.7348 16 16.4804 16.1054 16.2929 16.2929C16.1054 16.4804 16 16.7348 16 17V20C16 20.2652 16.1054 20.5196 16.2929 20.7071C16.4804 20.8946 16.7348 21 17 21H20C20.2652 21 20.5196 20.8946 20.7071 20.7071C20.8946 20.5196 21 20.2652 21 20V17C21 16.7348 20.8946 16.4804 20.7071 16.2929C20.5196 16.1054 20.2652 16 20 16H17Z" fill="#748A91" />
               </svg>
             )}
           </button>
           <button
             onClick={() => setViewMode("list")}
-            className={`p-2 rounded-lg border transition-colors ${
-              viewMode === "list" ? "bg-[#01373D] border-transparent text-[#01373D]" : "bg-white border-gray-200 text-gray-600"
-            }`}
+            className={`p-2 rounded-lg border transition-colors ${viewMode === "list" ? "bg-[#01373D] border-transparent text-[#01373D]" : "bg-white border-gray-200 text-gray-600"
+              }`}
           >
             {viewMode === "list" ? (
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path fillRule="evenodd" clipRule="evenodd" d="M17 1H1V4H17V1ZM1 0C0.734784 0 0.480429 0.105357 0.292892 0.292893C0.105356 0.48043 0 0.734784 0 1V4C0 4.26522 0.105356 4.51957 0.292892 4.70711C0.480429 4.89464 0.734784 5 1 5H17C17.2653 5 17.5196 4.89464 17.7072 4.70711C17.8947 4.51957 18 4.26522 18 4V1C18 0.734784 17.8947 0.48043 17.7072 0.292893C17.5196 0.105357 17.2653 0 17 0H1Z" fill="white"/>
-                <path fillRule="evenodd" clipRule="evenodd" d="M17 7.5H1V10.5H17V7.5ZM1 6.5C0.734784 6.5 0.480429 6.60536 0.292892 6.79289C0.105356 6.98043 0 7.23478 0 7.5V10.5C0 10.7652 0.105356 11.0196 0.292892 11.2071C0.480429 11.3946 0.734784 11.5 1 11.5H17C17.2653 11.5 17.5196 11.3946 17.7072 11.2071C17.8947 11.0196 18 10.7652 18 10.5V7.5C18 7.23478 17.8947 6.98043 17.7072 6.79289C17.5196 6.60536 17.2653 6.5 17 6.5H1Z" fill="white"/>
-                <path fillRule="evenodd" clipRule="evenodd" d="M17 14H1V17H17V14ZM1 13C0.734784 13 0.480429 13.1054 0.292892 13.2929C0.105356 13.4804 0 13.7348 0 14V17C0 17.2652 0.105356 17.5196 0.292892 17.7071C0.480429 17.8946 0.734784 18 1 18H17C17.2653 18 17.5196 17.8946 17.7072 17.7071C17.8947 17.5196 18 17.2652 18 17V14C18 13.7348 17.8947 13.4804 17.7072 13.2929C17.5196 13.1054 17.2653 13 17 13H1Z" fill="white"/>
+                <path fillRule="evenodd" clipRule="evenodd" d="M17 1H1V4H17V1ZM1 0C0.734784 0 0.480429 0.105357 0.292892 0.292893C0.105356 0.48043 0 0.734784 0 1V4C0 4.26522 0.105356 4.51957 0.292892 4.70711C0.480429 4.89464 0.734784 5 1 5H17C17.2653 5 17.5196 4.89464 17.7072 4.70711C17.8947 4.51957 18 4.26522 18 4V1C18 0.734784 17.8947 0.48043 17.7072 0.292893C17.5196 0.105357 17.2653 0 17 0H1Z" fill="white" />
+                <path fillRule="evenodd" clipRule="evenodd" d="M17 7.5H1V10.5H17V7.5ZM1 6.5C0.734784 6.5 0.480429 6.60536 0.292892 6.79289C0.105356 6.98043 0 7.23478 0 7.5V10.5C0 10.7652 0.105356 11.0196 0.292892 11.2071C0.480429 11.3946 0.734784 11.5 1 11.5H17C17.2653 11.5 17.5196 11.3946 17.7072 11.2071C17.8947 11.0196 18 10.7652 18 10.5V7.5C18 7.23478 17.8947 6.98043 17.7072 6.79289C17.5196 6.60536 17.2653 6.5 17 6.5H1Z" fill="white" />
+                <path fillRule="evenodd" clipRule="evenodd" d="M17 14H1V17H17V14ZM1 13C0.734784 13 0.480429 13.1054 0.292892 13.2929C0.105356 13.4804 0 13.7348 0 14V17C0 17.2652 0.105356 17.5196 0.292892 17.7071C0.480429 17.8946 0.734784 18 1 18H17C17.2653 18 17.5196 17.8946 17.7072 17.7071C17.8947 17.5196 18 17.2652 18 17V14C18 13.7348 17.8947 13.4804 17.7072 13.2929C17.5196 13.1054 17.2653 13 17 13H1Z" fill="white" />
               </svg>
             ) : (
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path fillRule="evenodd" clipRule="evenodd" d="M17 1H1V4H17V1ZM1 0C0.734784 0 0.480429 0.105357 0.292892 0.292893C0.105356 0.48043 0 0.734784 0 1V4C0 4.26522 0.105356 4.51957 0.292892 4.70711C0.480429 4.89464 0.734784 5 1 5H17C17.2653 5 17.5196 4.89464 17.7072 4.70711C17.8947 4.51957 18 4.26522 18 4V1C18 0.734784 17.8947 0.48043 17.7072 0.292893C17.5196 0.105357 17.2653 0 17 0H1Z" fill="#748A91"/>
-                <path fillRule="evenodd" clipRule="evenodd" d="M17 7.5H1V10.5H17V7.5ZM1 6.5C0.734784 6.5 0.480429 6.60536 0.292892 6.79289C0.105356 6.98043 0 7.23478 0 7.5V10.5C0 10.7652 0.105356 11.0196 0.292892 11.2071C0.480429 11.3946 0.734784 11.5 1 11.5H17C17.2653 11.5 17.5196 11.3946 17.7072 11.2071C17.8947 11.0196 18 10.7652 18 10.5V7.5C18 7.23478 17.8947 6.98043 17.7072 6.79289C17.5196 6.60536 17.2653 6.5 17 6.5H1Z" fill="#748A91"/>
-                <path fillRule="evenodd" clipRule="evenodd" d="M17 14H1V17H17V14ZM1 13C0.734784 13 0.480429 13.1054 0.292892 13.2929C0.105356 13.4804 0 13.7348 0 14V17C0 17.2652 0.105356 17.5196 0.292892 17.7071C0.480429 17.8946 0.734784 18 1 18H17C17.2653 18 17.5196 17.8946 17.7072 17.7071C17.8947 17.5196 18 17.2652 18 17V14C18 13.7348 17.8947 13.4804 17.7072 13.2929C17.5196 13.1054 17.2653 13 17 13H1Z" fill="#748A91"/>
+                <path fillRule="evenodd" clipRule="evenodd" d="M17 1H1V4H17V1ZM1 0C0.734784 0 0.480429 0.105357 0.292892 0.292893C0.105356 0.48043 0 0.734784 0 1V4C0 4.26522 0.105356 4.51957 0.292892 4.70711C0.480429 4.89464 0.734784 5 1 5H17C17.2653 5 17.5196 4.89464 17.7072 4.70711C17.8947 4.51957 18 4.26522 18 4V1C18 0.734784 17.8947 0.48043 17.7072 0.292893C17.5196 0.105357 17.2653 0 17 0H1Z" fill="#748A91" />
+                <path fillRule="evenodd" clipRule="evenodd" d="M17 7.5H1V10.5H17V7.5ZM1 6.5C0.734784 6.5 0.480429 6.60536 0.292892 6.79289C0.105356 6.98043 0 7.23478 0 7.5V10.5C0 10.7652 0.105356 11.0196 0.292892 11.2071C0.480429 11.3946 0.734784 11.5 1 11.5H17C17.2653 11.5 17.5196 11.3946 17.7072 11.2071C17.8947 11.0196 18 10.7652 18 10.5V7.5C18 7.23478 17.8947 6.98043 17.7072 6.79289C17.5196 6.60536 17.2653 6.5 17 6.5H1Z" fill="#748A91" />
+                <path fillRule="evenodd" clipRule="evenodd" d="M17 14H1V17H17V14ZM1 13C0.734784 13 0.480429 13.1054 0.292892 13.2929C0.105356 13.4804 0 13.7348 0 14V17C0 17.2652 0.105356 17.5196 0.292892 17.7071C0.480429 17.8946 0.734784 18 1 18H17C17.2653 18 17.5196 17.8946 17.7072 17.7071C17.8947 17.5196 18 17.2652 18 17V14C18 13.7348 17.8947 13.4804 17.7072 13.2929C17.5196 13.1054 17.2653 13 17 13H1Z" fill="#748A91" />
               </svg>
             )}
           </button>
@@ -535,167 +532,167 @@ const SPVManagement = () => {
           </div>
         ) : viewMode === "grid" ? (
           filteredSPVs.map((spv, index) => (
-          <div key={index} className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
-            {/* Header Section */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
-              <div className="space-y-1">
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-800">{spv.name}</h3>
-                <p className="text-sm text-gray-500">{spv.id} • {spv.location} • Created {spv.created} • {spv.category}</p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${spv.statusColor}`}>
-                  {spv.status}
-                </span>
-                <div className="flex items-center space-x-1">
-                  <button
-                    onClick={() => {
-                      setSelectedSpv(spv);
-                      setShowViewModal(true);
-                    }}
-                    className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  </button>
-                  <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <div className="relative" ref={dropdownRef}>
-                    <button 
-                      onClick={() => setOpenDropdown(openDropdown === index ? null : index)}
+            <div key={index} className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
+              {/* Header Section */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
+                <div className="space-y-1">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800">{spv.name}</h3>
+                  <p className="text-sm text-gray-500">{spv.id} • {spv.location} • Created {spv.created} • {spv.category}</p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${spv.statusColor}`}>
+                    {spv.status}
+                  </span>
+                  <div className="flex items-center space-x-1">
+                    <button
+                      onClick={() => {
+                        setSelectedSpv(spv);
+                        setShowViewModal(true);
+                      }}
                       className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
                     </button>
-                    
-                    {/* Dropdown Menu */}
-                    {openDropdown === index && (
-                      <div 
-                        className="absolute right-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onClick={(e) => e.stopPropagation()}
+                    <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <div className="relative" ref={dropdownRef}>
+                      <button
+                        onClick={() => setOpenDropdown(openDropdown === index ? null : index)}
+                        className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                       >
-                        <div className="p-2 mb-2">
-                          <div 
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              console.log('=== VIEW DETAILS DIV CLICKED ===');
-                              console.log('SPV:', spv);
-                              console.log('Event:', e);
-                              
-                              // Close dropdown first
-                              setOpenDropdown(null);
-                              
-                              // Navigate with SPV data
-                              console.log('Navigating to SPV Details...');
-                              navigate('/manager-panel/spv-details', { state: { spv: spv.rawData || spv } });
-                              console.log('Navigation completed!');
-                            }}
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              console.log('VIEW DETAILS MOUSEDOWN');
-                            }}
-                            className="w-full px-4 py-3 text-left text-sm font-medium text-black bg-[#00F0C3] hover:bg-[#00D4A3] transition-colors rounded-lg mb-2 cursor-pointer">
-                            View Details
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                        </svg>
+                      </button>
+
+                      {/* Dropdown Menu */}
+                      {openDropdown === index && (
+                        <div
+                          className="absolute right-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="p-2 mb-2">
+                            <div
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('=== VIEW DETAILS DIV CLICKED ===');
+                                console.log('SPV:', spv);
+                                console.log('Event:', e);
+
+                                // Close dropdown first
+                                setOpenDropdown(null);
+
+                                // Navigate with SPV data
+                                console.log('Navigating to SPV Details...');
+                                navigate('/manager-panel/spv-details', { state: { spv: spv.rawData || spv } });
+                                console.log('Navigation completed!');
+                              }}
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('VIEW DETAILS MOUSEDOWN');
+                              }}
+                              className="w-full px-4 py-3 text-left text-sm font-medium text-black bg-[#00F0C3] hover:bg-[#00D4A3] transition-colors rounded-lg mb-2 cursor-pointer">
+                              View Details
+                            </div>
+                            <button className="w-full px-4 py-3 text-left text-sm font-medium text-black bg-gray-100 hover:bg-gray-200 transition-colors rounded-lg mb-2">
+                              Edit SPV
+                            </button>
+                            <button className="w-full px-4 py-3 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors rounded-lg mb-2   ">
+                              Manage Investors
+                            </button>
+                            <button
+                              onClick={() => handleArchiveClick(spv)}
+                              className="w-full px-4 py-3 text-left text-sm font-medium text-red-600 hover:bg-red-50 transition-colors rounded-lg"
+                            >
+                              Archive SPV
+                            </button>
                           </div>
-                          <button className="w-full px-4 py-3 text-left text-sm font-medium text-black bg-gray-100 hover:bg-gray-200 transition-colors rounded-lg mb-2">
-                            Edit SPV
-                          </button>
-                          <button className="w-full px-4 py-3 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors rounded-lg mb-2   ">
-                            Manage Investors
-                          </button>
-                          <button
-                            onClick={() => handleArchiveClick(spv)}
-                            className="w-full px-4 py-3 text-left text-sm font-medium text-red-600 hover:bg-red-50 transition-colors rounded-lg"
-                          >
-                            Archive SPV
-                          </button>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Stats Section */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-              <div>
-                <p className="text-sm text-gray-500">Raised</p>
-                <p className="text-lg font-semibold text-gray-900">{spv.raised}</p>
+              {/* Stats Section */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                <div>
+                  <p className="text-sm text-gray-500">Raised</p>
+                  <p className="text-lg font-semibold text-gray-900">{spv.raised}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Target</p>
+                  <p className="text-lg font-semibold text-gray-900">{spv.target}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Investors</p>
+                  <p className="text-lg font-semibold text-gray-900">{spv.investors}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Min Investment</p>
+                  <p className="text-lg font-semibold text-gray-900">{spv.minInvestment}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-500">Target</p>
-                <p className="text-lg font-semibold text-gray-900">{spv.target}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Investors</p>
-                <p className="text-lg font-semibold text-gray-900">{spv.investors}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Min Investment</p>
-                <p className="text-lg font-semibold text-gray-900">{spv.minInvestment}</p>
-              </div>
-            </div>
 
-            {/* Progress Bar */}
-            <div className="mb-4">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-600">Funding Progress</span>
-                <span className="text-sm font-medium text-gray-900">{spv.progress}%</span>
+              {/* Progress Bar */}
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-gray-600">Funding Progress</span>
+                  <span className="text-sm font-medium text-gray-900">{spv.progress}%</span>
+                </div>
+                <div className="w-full bg-[#CEC6FF] rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full ${getProgressColor(spv.status)}`}
+                    style={{ width: `${spv.progress}%` }}
+                  ></div>
+                </div>
               </div>
-              <div className="w-full bg-[#CEC6FF] rounded-full h-2">
-                <div 
-                  className={`h-2 rounded-full ${getProgressColor(spv.status)}`}
-                  style={{ width: `${spv.progress}%` }}
-                ></div>
-              </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 gap-2">
-                <button className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                  </svg>
-                  <span>Manage Investors</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectedSpv(spv);
-                    setShowDocumentsModal(true);
-                  }}
-                  className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <span>Documents</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectedSpv(spv);
-                    setShowAnalyticsModal(true);
-                  }}
-                  className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                  <span>Analytics</span>
-                </button>
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-3 gap-2">
+                  <button className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                    </svg>
+                    <span>Manage Investors</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedSpv(spv);
+                      setShowDocumentsModal(true);
+                    }}
+                    className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Documents</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedSpv(spv);
+                      setShowAnalyticsModal(true);
+                    }}
+                    className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span>Analytics</span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
           ))
         ) : (
           /* List/Table View */
@@ -787,7 +784,7 @@ const SPVManagement = () => {
                       {spv.status}
                     </span>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-3 mb-3">
                     <div>
                       <p className="text-xs text-gray-500">Raised</p>
